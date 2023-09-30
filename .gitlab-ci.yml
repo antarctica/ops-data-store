@@ -1,0 +1,41 @@
+---
+
+include:
+  - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
+
+variables:
+  # CI config
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+
+cache:
+  paths:
+    - .cache/pip  # for pipx/pip
+    - .venv/      # for project dependencies
+
+image:
+  name: python:3.9-slim
+
+stages:
+  - 📦 package
+
+before_script:
+    - apt-get update
+    - apt-get install -y tree libxml2-utils
+    - python --version
+    - python -m pip install --upgrade pip
+    - python -m pip install pipx
+    - python -m pipx install poetry==1.4.2
+    - python -m pipx ensurepath
+    - export PATH=$PATH:/root/.local/bin
+    - poetry --version
+    - poetry check
+    - poetry config virtualenvs.in-project true
+    - poetry config repositories.gitlab "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/packages/pypi"
+    - poetry config http-basic.gitlab gitlab-ci-token "$CI_JOB_TOKEN" --local
+    - poetry install --no-interaction --no-ansi
+
+package:
+  stage: 📦 package
+  needs: []
+  script:
+    - poetry publish --build --no-interaction --repository gitlab

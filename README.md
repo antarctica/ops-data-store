@@ -55,6 +55,30 @@ specific project is not aimed at end-users directly.
 
 ## Development
 
+### Local development environment
+
+Check out project:
+
+```shell
+$ git clone https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store.git
+$ cd ops-data-store
+```
+
+**Note:** If you do not have access to the BAS GitLab instance, clone from GitHub as a read-only copy instead.
+
+#### Python
+
+[Poetry](https://python-poetry.org/docs/#installation) is used for managing the Python environment and dependencies.
+
+It's strongly recommended to use the same Python version that will be used when deployed. This is currently *3.9.x*.
+It's recommended to use [pyenv](https://github.com/pyenv/pyenv) to install and use a suitable version:
+
+```shell
+$ pyenv install 3.9.x
+$ pyenv local 3.9.x
+$ poetry install
+```
+
 ### Contribution workflow
 
 All code changes should be:
