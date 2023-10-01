@@ -70,6 +70,62 @@ $ ods-ctl --help
 
 The control CLI uses [Typer](https://typer.tiangolo.com) as a framework.
 
+## Setup
+
+### Requirements
+
+Required OS packages:
+
+* Python 3.9+
+* GDAL
+* libxml (including the `xmllint` binary)
+
+**Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `x.x`.
+
+### Installation
+
+It's strongly recommended to install this project into a virtual environment:
+
+```shell
+$ python -m venv /path/to/venv
+$ source /path/to/venv/bin/activate
+$ pip install --upgrade pip
+```
+
+The Python Package for this project (see [Deployment](#deployment) section) requires installing from a private package
+registry provided by the BAS GitLab instance. This registry requires authentication, however as this project is
+available publicly, and has been open sourced, the generic deployment token below can be used by anyone to access it.
+
+```shell
+pip install ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+```
+
+The control CLI can be used to check the application has been installed correctly and is the expected version:
+
+```shell
+# if installed in a virtual environment
+$ source /path/to/venv/bin/activate
+
+$ ods-ctl --version
+0.1.0
+```
+
+## Project Setup [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
+
+### GitLab
+
+- create project with package registry and CI/CD enabled
+- create deployment token for allowing anyone to install packages:
+  - name: "Public Access"
+  - username: "public-access"
+  - scopes: *read_package_registry*
+
+### BAS IT
+
+- contact IT to request an application server for running Python applications
+
 ## Development
 
 ### Local development environment
