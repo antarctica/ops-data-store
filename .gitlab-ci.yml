@@ -51,7 +51,9 @@ test:
     expire_in: 1 month
   rules:
     - changes:
-        - '**/*.py'
+      - '**/*.py'
+    - if: '$CI_COMMIT_TAG'
+      when: never
 
 lint:
   stage: 📋 lint
@@ -65,7 +67,10 @@ lint:
       codequality: lint-results.json
   rules:
     - changes:
-        - '**/*.py'
+      - '**/*.py'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
 build:
   stage: 🏗 build
   needs: []
