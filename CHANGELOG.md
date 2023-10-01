@@ -14,6 +14,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * note in release issue template to add link to README in each release
   [#15](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/15)
 
+### Changed
+
+* Python package should only published on tagged releases
+  [#14](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/14)
+
 ## [0.1.0] - 2023-10-01
 
 ### Added

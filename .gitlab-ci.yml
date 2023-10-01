@@ -17,6 +17,7 @@ image:
 stages:
   - 🧪 test
   - 📋 lint
+  - 🏗 build
   - 📦 package
 
 before_script:
@@ -50,7 +51,9 @@ test:
     expire_in: 1 month
   rules:
     - changes:
-        - '**/*.py'
+      - '**/*.py'
+    - if: '$CI_COMMIT_TAG'
+      when: never
 
 lint:
   stage: 📋 lint
@@ -64,10 +67,26 @@ lint:
       codequality: lint-results.json
   rules:
     - changes:
-        - '**/*.py'
+      - '**/*.py'
+    - if: '$CI_COMMIT_TAG'
+      when: never
+
+build:
+  stage: 🏗 build
+  needs: []
+  script:
+    - poetry build
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 month
 
 package:
   stage: 📦 package
-  needs: []
+  needs:
+    - job: build
+      artifacts: true
   script:
-    - poetry publish --build --no-interaction --repository gitlab
+    - poetry publish --no-interaction --repository gitlab
+  rules:
+    - if: '$CI_COMMIT_TAG'
