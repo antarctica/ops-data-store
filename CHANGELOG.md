@@ -19,3 +19,5 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#6](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/6)
 - Python linting, formatting and vulnerability tools
   [#7](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/7)
+- Python tests and coverage checks
+  [#10](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/10)

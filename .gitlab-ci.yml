@@ -16,6 +16,7 @@ image:
   name: python:3.9-slim
 
 stages:
+  - 🧪 test
   - 📋 lint
   - 📦 package
 
@@ -35,12 +36,29 @@ before_script:
     - poetry config http-basic.gitlab gitlab-ci-token "$CI_JOB_TOKEN" --local
     - poetry install --no-interaction --no-ansi
 
+test:
+  stage: 🧪 test
+  needs: []
+  script:
+    - poetry run pytest --strict-markers --random-order --cov --cov-report=html -o junit_family=xunit2 --junitxml=test-results.xml
+  coverage: '/Total coverage: \d+\.\d+/'
+  artifacts:
+    when: always
+    reports:
+      junit: test-results.xml
+    paths:
+      - htmlcov
+    expire_in: 1 month
+  # rules:
+  #   - changes:
+  #       - '**/*.py'
+
 lint:
   stage: 📋 lint
   needs: []
   script:
-    - poetry run black --check src/
-    - poetry run ruff check src/ --output-format gitlab > lint-results.json
+    - poetry run black --check src/ tests/
+    - poetry run ruff check src/ tests/ --output-format gitlab > lint-results.json
     - poetry run safety check --full-report
   artifacts:
     reports:

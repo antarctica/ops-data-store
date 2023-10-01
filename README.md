@@ -141,6 +141,48 @@ locally:
 $ poetry run ruff src/
 ```
 
+## Testing
+
+### Python tests
+
+All 1st party Python code in the [`ops_data_store`](/src/ops_data_store/) package must be covered by tests, defined in
+the [`ops_data_store_tests`](/tests/ops_data_store_tests/) package.
+
+[`pytest`](https://pytest.org) is used as the test framework, configured in [`pyproject.toml`](pyproject.toml). Fixtures
+should be defined in [`conftest.py`](tests/conftest.py), prefixed with `fx_` to indicate they are a fixture, e.g.:
+
+```python
+import pytest
+
+@pytest.fixture()
+def fx_test_foo() -> str:
+    """Example of a test fixture."""
+    return 'foo'
+```
+
+Test coverage is checked with [`pytest-cov`](https://pypi.org/project/pytest-cov/) with an aim for 100% coverage
+(with some exceptions). Exemptions for coverage should be used sparingly and only with good justification. Where tests
+are added to ensure coverage, the `cov` [mark](https://docs.pytest.org/en/7.1.x/how-to/mark.html) should be added, e.g:
+
+```python
+import pytest
+
+@pytest.mark.cov
+def test_foo():
+    assert 'foo' == 'foo'
+```
+
+Tests and coverage checks are run automatically in [Continuous Integration](#continuous-integration). To check
+locally:
+
+```shell
+poetry run pytest --strict-markers --random-order --cov --cov-report=html tests
+```
+
+### Continuous Integration
+
+All commits will trigger Continuous Integration using GitLab's CI/CD platform, configured in `.gitlab-ci.yml`.
+
 
 1. create a release issue and merge request using the *release* issue template
 
