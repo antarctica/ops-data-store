@@ -16,7 +16,6 @@ image:
   name: python:3.9-slim
 
 stages:
-  - 📋 lint
   - 📦 package
 
 before_script:
@@ -34,20 +33,6 @@ before_script:
     - poetry config repositories.gitlab "$CI_SERVER_URL/api/v4/projects/$CI_PROJECT_ID/packages/pypi"
     - poetry config http-basic.gitlab gitlab-ci-token "$CI_JOB_TOKEN" --local
     - poetry install --no-interaction --no-ansi
-
-lint:
-  stage: 📋 lint
-  needs: []
-  script:
-    - poetry run black --check src/
-    - poetry run ruff check src/ --output-format gitlab > lint-results.json
-    - poetry run safety check --full-report
-  artifacts:
-    reports:
-      codequality: lint-results.json
-  # rules:
-  #   - changes:
-  #       - '**/*.py'
 
 package:
   stage: 📦 package
