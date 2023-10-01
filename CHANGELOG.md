@@ -17,5 +17,3 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#3](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/3)
 - Initial control CLI
   [#6](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/6)
-- Python linting, formatting and vulnerability tools
-  [#7](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/7)

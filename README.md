@@ -107,40 +107,6 @@ All code changes should be:
 For consistency is strongly recommended to configure your IDE or other editor to use the [EditorConfig](https://EditorConfig.org) settings defined in [`.editorconfig`](.editorconfig).
 
 ## Release procedure
-### Python dependencies
-
-Python dependencies for this project are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`.
-
-### Python dependency vulnerability checks
-
-The [Safety](https://pypi.org/project/safety/) package is used to check dependencies against known vulnerabilities.
-
-**WARNING!** As with all security tools, Safety is an aid for spotting common mistakes, not a guarantee of secure code.
-In particular this is using the free vulnerability database, which is updated less frequently than paid options.
-
-Checks are run automatically in [Continuous Integration](#continuous-integration). To check locally:
-
-```shell
-$ poetry run safety check --full-report
-```
-
-### Python static security analysis
-
-Ruff is configured to run [Bandit](https://github.com/PyCQA/bandit), a static analysis tool for Python.
-
-**WARNING!** As with all security tools, Bandit is an aid for spotting common mistakes, not a guarantee of secure code.
-In particular this tool can't check for issues that are only be detectable when running code.
-
-### Python linting
-
-[Ruff](https://docs.astral.sh/ruff/) is used to lint Python files. Specific checks and config options are set in
-`pyproject.toml`. Linting checks are run automatically in [Continuous Integration](#continuous-integration). To check
-locally:
-
-```shell
-$ poetry run ruff src/
-```
-
 
 1. create a release issue and merge request using the *release* issue template
 
