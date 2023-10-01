@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "ops-data-store"
-version = "0.0.5"
+version = "0.0.6"
 description = "Data store for hosted and managed datasets for BAS Field Operations and Air Unit."
 authors = ["Felix Fennell <felnne@bas.ac.uk>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "src/ops_data_store"}]
+packages = [{include = "ops_data_store", from = "src"}]
 
 [tool.poetry.scripts]
 ods-ctl = 'ops_data_store.cli:app'
@@ -19,6 +19,11 @@ python-dotenv = "^1.0.0"
 ruff = "^0.0.291"
 safety = "^2.3.5"
 black = "^23.9.1"
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.2"
+pytest-random-order = "^1.1.0"
+pytest-cov = "^4.1.0"
 
 [tool.black]
 line-length = 120
@@ -74,6 +79,23 @@ ignore = ['ANN101', 'D100', 'D104', 'D107', 'D203', 'D212', 'D402', 'E501', 'TD0
 #   tests/* | ANN401 | ignore use of 'Any' type
 #   tests/* |   S101 | ignore use of assert
 # config.py |   N802 | ignore use of upper case method names
+
+[tool.pytest.ini_options]
+markers = [
+  "cov: coverage checks (deselect with '-m \"not cov\"')",
+]
+
+[tool.coverage.report]
+skip_empty = true
+show_missing = false
+fail_under = 100
+
+[tool.coverage.html]
+directory = "htmlcov"
+
+[tool.coverage.run]
+branch = true
+source = ["src"]
 
 [build-system]
 requires = ["poetry-core"]
