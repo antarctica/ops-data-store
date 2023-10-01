@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.1.0] - 2023-10-01
+
 ### Added
 
 - Initial project documentation

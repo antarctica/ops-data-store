@@ -4,7 +4,6 @@ include:
   - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
 
 variables:
-  # CI config
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
 cache:
@@ -49,9 +48,9 @@ test:
     paths:
       - htmlcov
     expire_in: 1 month
-  # rules:
-  #   - changes:
-  #       - '**/*.py'
+  rules:
+    - changes:
+        - '**/*.py'
 
 lint:
   stage: 📋 lint
@@ -63,9 +62,9 @@ lint:
   artifacts:
     reports:
       codequality: lint-results.json
-  # rules:
-  #   - changes:
-  #       - '**/*.py'
+  rules:
+    - changes:
+        - '**/*.py'
 
 package:
   stage: 📦 package

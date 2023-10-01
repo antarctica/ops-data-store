@@ -64,6 +64,68 @@ $ source [venv/bin/activate]
 $ ods-ctl --help
 ```
 
+## Implementation
+
+### Command line interface
+
+The control CLI uses [Typer](https://typer.tiangolo.com) as a framework.
+
+## Setup
+
+### Requirements
+
+Required OS packages:
+
+* Python 3.9+
+* GDAL
+* libxml (including the `xmllint` binary)
+
+**Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `x.x`.
+
+### Installation
+
+It's strongly recommended to install this project into a virtual environment:
+
+```shell
+$ python -m venv /path/to/venv
+$ source /path/to/venv/bin/activate
+$ pip install --upgrade pip
+```
+
+The Python Package for this project (see [Deployment](#deployment) section) requires installing from a private package
+registry provided by the BAS GitLab instance. This registry requires authentication, however as this project is
+available publicly, and has been open sourced, the generic deployment token below can be used by anyone to access it.
+
+```shell
+pip install ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+```
+
+The control CLI can be used to check the application has been installed correctly and is the expected version:
+
+```shell
+# if installed in a virtual environment
+$ source /path/to/venv/bin/activate
+
+$ ods-ctl --version
+0.1.0
+```
+
+## Project Setup [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
+
+### GitLab
+
+- create project with package registry and CI/CD enabled
+- create deployment token for allowing anyone to install packages:
+  - name: "Public Access"
+  - username: "public-access"
+  - scopes: *read_package_registry*
+
+### BAS IT
+
+- contact IT to request an application server for running Python applications
+
 ## Development
 
 ### Local development environment
@@ -88,13 +150,13 @@ $ pyenv local 3.9.x
 $ poetry install
 ```
 
-### Contribution workflow
 ### Running control CLI locally
 
 ```shell
 $ poetry run ods-ctl [COMMAND] [ARGS]
 ```
 
+### Contributing
 
 All code changes should be:
 
@@ -106,7 +168,14 @@ All code changes should be:
 
 For consistency is strongly recommended to configure your IDE or other editor to use the [EditorConfig](https://EditorConfig.org) settings defined in [`.editorconfig`](.editorconfig).
 
-## Release procedure
+### Python package structure
+
+Except for tests, all Python code should be contained in the [`ops_data_store`](/src/ops_data_store/) package.
+
+### Python conventions
+
+- use `Path.resolve()` if displaying or logging file/directory paths
+
 ### Python dependencies
 
 Python dependencies for this project are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`.
@@ -183,8 +252,26 @@ poetry run pytest --strict-markers --random-order --cov --cov-report=html tests
 
 All commits will trigger Continuous Integration using GitLab's CI/CD platform, configured in `.gitlab-ci.yml`.
 
+## Deployment
 
-1. create a release issue and merge request using the *release* issue template
+This project is distributed as a Python package installable from a private package registry provided by the BAS
+GitLab instance. It is built by Poetry automatically as part of [Continuous Deployment](#continuous-deployment). If
+needed it can also be built manually:
+
+```
+$ poetry build
+```
+
+### Continuous Deployment
+
+Tagged commits will trigger Continuous Deployment using GitLab's CI/CD platform, configured in `.gitlab-ci.yml`.
+
+## Releases
+
+- [all releases 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/releases)
+- [latest release 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/releases/permalink/latest)
+
+To create a release, create an issue using the *release* issue template and follow it's steps.
 
 ## Feedback
 
