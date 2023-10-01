@@ -11,7 +11,9 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ### Added
 
-- Initial Python package
-  [#3](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/3)
 - Initial project documentation
   [#1](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/1)
+- Initial Python package
+  [#3](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/3)
+- Initial control CLI
+  [#6](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/6)

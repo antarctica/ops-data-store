@@ -1,14 +1,20 @@
 [tool.poetry]
 name = "ops-data-store"
-version = "0.0.1"
+version = "0.0.2"
 description = "Data store for hosted and managed datasets for BAS Field Operations and Air Unit."
 authors = ["Felix Fennell <felnne@bas.ac.uk>"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "src/ops_data_store"}]
 
+[tool.poetry.scripts]
+ods-ctl = 'ops_data_store.cli:app'
+
 [tool.poetry.dependencies]
 python = "^3.9"
+typer = "^0.9.0"
+python-dotenv = "^1.0.0"
+
 
 [build-system]
 requires = ["poetry-core"]

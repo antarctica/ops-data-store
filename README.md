@@ -53,6 +53,17 @@ End-users should consult the documentation developed for the wider
 [Field Operations GIS Platform 🛡](https://app.gitbook.com/o/-MbhSFJ1AEZxhIfX9tgr/s/HmSXoUpviCA3XCta5MDr/), as this
 specific project is not aimed at end-users directly.
 
+### Control CLI
+
+A command line interface is available for performing administrative tasks. Calling this CLI typically requires
+connecting to a specific instance/environment and activating the relevant Python virtual environment
+
+```
+$ ssh [instance]
+$ source [venv/bin/activate]
+$ ods-ctl --help
+```
+
 ## Development
 
 ### Local development environment
@@ -66,8 +77,6 @@ $ cd ops-data-store
 
 **Note:** If you do not have access to the BAS GitLab instance, clone from GitHub as a read-only copy instead.
 
-#### Python
-
 [Poetry](https://python-poetry.org/docs/#installation) is used for managing the Python environment and dependencies.
 
 It's strongly recommended to use the same Python version that will be used when deployed. This is currently *3.9.x*.
@@ -80,6 +89,12 @@ $ poetry install
 ```
 
 ### Contribution workflow
+### Running control CLI locally
+
+```shell
+$ poetry run ods-ctl [COMMAND] [ARGS]
+```
+
 
 All code changes should be:
 
