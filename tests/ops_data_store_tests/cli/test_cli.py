@@ -9,13 +9,14 @@ class TestCli:
     """Tests for core Typer CLI object."""
 
     def test_cli(self, fx_cli_runner: CliRunner) -> None:
-        """Basic call to CLI exits ok."""
+        """Empty call to CLI exits ok with no output."""
         result = fx_cli_runner.invoke(app=cli)
 
         assert result.exit_code == 0
+        assert result.output == ""
 
     def test_help(self, fx_cli_runner: CliRunner) -> None:
-        """The --help global option includes basic app details."""
+        """The `--help` global option includes basic app details."""
         result = fx_cli_runner.invoke(app=cli, args=["--help"])
 
         assert result.exit_code == 0
@@ -23,7 +24,7 @@ class TestCli:
         assert "BAS MAGIC Operations Data Store control CLI." in result.output
 
     def test_version(self, fx_cli_runner: CliRunner) -> None:
-        """The --version global option returns the app package version."""
+        """The `--version` global option returns the app package version."""
         result = fx_cli_runner.invoke(app=cli, args=["--version"])
 
         assert result.exit_code == 0

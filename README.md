@@ -64,6 +64,10 @@ $ source [venv/bin/activate]
 $ ods-ctl --help
 ```
 
+#### Control CLI `config` commands
+
+- `ods-ctl config show`: displays the current application configuration
+
 ## Implementation
 
 ### Command line interface
