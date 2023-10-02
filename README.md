@@ -74,6 +74,16 @@ $ ods-ctl --help
 
 The control CLI uses [Typer](https://typer.tiangolo.com) as a framework.
 
+### Configuration
+
+The [control CLI](#command-line-interface) uses a [`Config`](src/ops_data_store/config.py) class for all settings. Some
+settings are read-only, such as the application version, others are write-only, such as database connection details,
+and must be defined by the user.
+
+| Config Property | Type   | Description                                     | Example |
+|-----------------|--------|-------------------------------------------------|---------|
+| `VERSION`       | String | Application version, read from package metadata | '0.1.0' |
+
 ## Setup
 
 ### Requirements
@@ -172,17 +182,12 @@ All code changes should be:
 
 For consistency is strongly recommended to configure your IDE or other editor to use the [EditorConfig](https://EditorConfig.org) settings defined in [`.editorconfig`](.editorconfig).
 
-### Python package structure
+### Conventions
 
-Except for tests, all Python code should be contained in the [`ops_data_store`](/src/ops_data_store/) package.
-
-### Python conventions
-
-- use `Path.resolve()` if displaying or logging file/directory paths
-
-### Python dependencies
-
-Python dependencies for this project are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`.
+- except for tests, all Python code should be contained in the [`ops_data_store`](/src/ops_data_store/) package.
+- use `Path.resolve()` if displaying or logging file/directory paths in Python
+- Python dependencies are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`
+- configuration options should be defined in the common [`Config`](/src/ops_data_store/config.py) class and this README
 
 ### Python dependency vulnerability checks
 
