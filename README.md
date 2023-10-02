@@ -72,6 +72,17 @@ $ ods-ctl --help
 
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
 
+### QGIS project
+
+The included QGIS project, developed as part of the wider Field Operations and Air Unit GIS, can be used for testing
+editing workflows and verifying expected behaviour.
+
+
+1. start QGIS LTR with the *ops-data-store* profile selected:
+    - macOS: `open -a QGIS-LTR.app --args --profile ops-data-store`
+    - windows: `qgis-bin.exe --profile ops-data-store`
+1. open the included QGIS project file [`qgis-project.qgz`](/qgis/qgis-project.qgz)
+
 ## Implementation
 
 ### Command line interface
@@ -91,6 +102,14 @@ and must be defined by the user using an appropriate environment variable, or `.
 
 The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string. Only Postgres databases
 are officially supported in this project.
+
+### QGIS
+
+[QGIS](https://qgis.org) is the tool used by end-users for editing and visualising geospatial data. For this project
+specifically, QGIS forms the Postgres database client used.
+
+To ensure consistency/compatibility with the QGIS environment end-users will use, The QGIS profile and project
+developed outside this project are used for consistency and compatibility.
 
 ## Setup
 
@@ -205,6 +224,14 @@ It's strongly recommended to set required configuration options using a `.env` f
 
 A `.test.env` file MUST be created as per the [Testing Configuration](#test-config) section.
 
+The QGIS profile used for testing needs [downloading 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/)
+from GitLab package registry (as it's too large to sensibly store in Git).
+
+Once downloaded, extract and rename to `ops-data-store`. Then copy to the relevant QGIS profile directory:
+
+* macOS: `~/Library/Application\ Support/QGIS/QGIS3/profiles/`
+* Windows: `%APPDATA%\Roaming\QGIS\QGIS3\profiles/`
+
 ### Running control CLI locally
 
 ```shell
@@ -317,12 +344,31 @@ All commits will trigger Continuous Integration using GitLab's CI/CD platform, c
 
 ## Deployment
 
+### Python package
+
 This project is distributed as a Python package installable from a private package registry provided by the BAS
 GitLab instance. It is built by Poetry automatically as part of [Continuous Deployment](#continuous-deployment). If
 needed it can also be built manually:
 
 ```
 $ poetry build
+```
+
+### QGIS profile
+
+If the QGIS profile used for testing needs updating, the generic package stored in GitLab can be updated:
+
+```shell
+$ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/[version]/qgis-profile.zip
+```
+
+Where `[version]` is replaced with a calendar based version `YYYY-MM-DD.N`, e.g. the first release on April 12th 2024
+would become `2023-04-12.0`. A second release that day would be `2023-04-12.1` etc.
+
+For example:
+
+```shell
+$ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/2023-04-12.0/qgis-profile.zip
 ```
 
 ### Continuous Deployment
