@@ -1,7 +1,16 @@
-.venv
-.python-version
-__pycache__/
-.pytest_cache/
-.ruff_cache/
-.coverage
-htmlcov/
+# Python
+/.python-version
+/.venv/
+__pycache__
+
+# Tools
+/.ruff_cache/
+
+# Testing
+/.pytest_cache/
+/htmlcov/
+/.coverage
+
+# Secrets
+.env
+.test.env

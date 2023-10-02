@@ -68,6 +68,10 @@ $ ods-ctl --help
 
 - `ods-ctl config show`: displays the current application configuration
 
+#### Control CLI `db` commands
+
+- `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
+
 ## Implementation
 
 ### Command line interface
@@ -78,27 +82,46 @@ The control CLI uses [Typer](https://typer.tiangolo.com) as a framework.
 
 The [control CLI](#command-line-interface) uses a [`Config`](src/ops_data_store/config.py) class for all settings. Some
 settings are read-only, such as the application version, others are write-only, such as database connection details,
-and must be defined by the user.
+and must be defined by the user using an appropriate environment variable, or `.env` file.
 
-| Config Property | Type   | Description                                     | Example |
-|-----------------|--------|-------------------------------------------------|---------|
-| `VERSION`       | String | Application version, read from package metadata | '0.1.0' |
+| Config Property | Environment Variable | Required | Type   | Description                                     | Example                          |
+|-----------------|----------------------|----------|--------|-------------------------------------------------|----------------------------------|
+| `VERSION`       | -                    | No       | String | Application version, read from package metadata | '0.1.0'                          |
+| `DB_DSN`        | `APP_ODS_DB_DSN`     | Yes      | String | Application database connection string          | 'postgresql://user:pass@host/db' |
+
+The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string. Only Postgres databases
+are officially supported in this project.
 
 ## Setup
 
 ### Requirements
 
-Required OS packages:
+Required infrastructure:
+
+* a service or server for running [Python](https://www.python.org) applications
+* a service or server for running [Postgres](https://www.postgresql.org) databases
+
+Required OS packages for Python app server:
 
 * Python 3.9+
 * GDAL
 * libxml (including the `xmllint` binary)
+* libpq
 
 **Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `x.x`.
 
+Required Postgres extensions:
+
+* PostGIS
+* pgcrypto
+
+A single database, and an account with permissions to create, read, update and delete objects within this, is required
+to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`
+are recommended as conventional defaults.
+
 ### Installation
 
-It's strongly recommended to install this project into a virtual environment:
+For the Python application, it is strongly recommended to install this project into a virtual environment:
 
 ```shell
 $ python -m venv /path/to/venv
@@ -139,6 +162,7 @@ $ ods-ctl --version
 ### BAS IT
 
 - contact IT to request an application server for running Python applications
+- contact IT to request a Postgres database with required extensions
 
 ## Development
 
@@ -155,14 +179,31 @@ $ cd ops-data-store
 
 [Poetry](https://python-poetry.org/docs/#installation) is used for managing the Python environment and dependencies.
 
-It's strongly recommended to use the same Python version that will be used when deployed. This is currently *3.9.x*.
-It's recommended to use [pyenv](https://github.com/pyenv/pyenv) to install and use a suitable version:
+[pyenv](https://github.com/pyenv/pyenv) is strongly recommended to ensure the Python version is the same as the one
+used in externally provisioned environments. This is currently *3.9.x*.
 
 ```shell
 $ pyenv install 3.9.x
 $ pyenv local 3.9.x
 $ poetry install
 ```
+
+Two [Postgres](https://www.postgresql.org) databases on a host running or accessible locally with the required
+extensions available are required (one for local development and one for testing).
+
+For example, if a Postgres instance is running locally with trust based authentication for the local user:
+
+```shell
+psql -d postgres -c "CREATE DATABASE ops_data_store_dev;"
+psql -d postgres -c "COMMENT ON DATABASE ops_data_store_dev IS 'Ops Data Store local development DB'";
+psql -d postgres -c "CREATE DATABASE ops_data_store_test;"
+psql -d postgres -c "COMMENT ON DATABASE ops_data_store_test IS 'Ops Data Store local development testing DB'"
+```
+
+It's strongly recommended to set required configuration options using a `.env` file based off the
+[`.example.env`](/.example.env) file as a reference.
+
+A `.test.env` file MUST be created as per the [Testing Configuration](#test-config) section.
 
 ### Running control CLI locally
 
@@ -226,8 +267,12 @@ $ poetry run ruff src/
 All 1st party Python code in the [`ops_data_store`](/src/ops_data_store/) package must be covered by tests, defined in
 the [`ops_data_store_tests`](/tests/ops_data_store_tests/) package.
 
-[`pytest`](https://pytest.org) is used as the test framework, configured in [`pyproject.toml`](pyproject.toml). Fixtures
-should be defined in [`conftest.py`](tests/conftest.py), prefixed with `fx_` to indicate they are a fixture, e.g.:
+[`pytest`](https://pytest.org) is used as the test framework, configured in [`pyproject.toml`](pyproject.toml).
+
+#### Python test fixtures
+
+Fixtures should be defined in [`conftest.py`](tests/conftest.py), prefixed with `fx_` to indicate they are a fixture,
+e.g.:
 
 ```python
 import pytest
@@ -237,6 +282,8 @@ def fx_test_foo() -> str:
     """Example of a test fixture."""
     return 'foo'
 ```
+
+#### Python test coverage
 
 Test coverage is checked with [`pytest-cov`](https://pypi.org/project/pytest-cov/) with an aim for 100% coverage
 (with some exceptions). Exemptions for coverage should be used sparingly and only with good justification. Where tests
@@ -250,11 +297,18 @@ def test_foo():
     assert 'foo' == 'foo'
 ```
 
+#### Test config
+
+An additional [`.test.env`](/.test.env) file is used to override some application config properties, such as the
+database. This file requires creating from the [`.example.env`](/.example.env) reference file.
+
+#### Running tests
+
 Tests and coverage checks are run automatically in [Continuous Integration](#continuous-integration). To check
 locally:
 
 ```shell
-poetry run pytest --strict-markers --random-order --cov --cov-report=html tests
+poetry run dotenv -f .test.env run -- pytest --strict-markers --random-order --cov --cov-report=html tests
 ```
 
 ### Continuous Integration

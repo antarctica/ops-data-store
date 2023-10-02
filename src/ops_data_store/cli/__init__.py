@@ -5,12 +5,14 @@ from typing import Optional
 import typer
 
 from ops_data_store.cli.config import app as config_cli
+from ops_data_store.cli.db import app as db_cli
 from ops_data_store.config import Config
 
 config = Config()
 
 app = typer.Typer(name="ods-ctl", help="BAS MAGIC Operations Data Store control CLI.")
 app.add_typer(config_cli, name="config", help="Application configuration commands.")
+app.add_typer(db_cli, name="db", help="Application database commands.")
 _version_option = typer.Option(None, "-v", "--version", is_eager=True, help="Show application version and exit.")
 
 
