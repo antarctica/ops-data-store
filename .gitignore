@@ -5,6 +5,7 @@ __pycache__
 
 # Tools
 /.ruff_cache/
+/qgis/qgis-profile.zip
 
 # Testing
 /.pytest_cache/
