@@ -199,11 +199,11 @@ $ cd ops-data-store
 [Poetry](https://python-poetry.org/docs/#installation) is used for managing the Python environment and dependencies.
 
 [pyenv](https://github.com/pyenv/pyenv) is strongly recommended to ensure the Python version is the same as the one
-used in externally provisioned environments. This is currently *3.9.x*.
+used in externally provisioned environments. This is currently *3.9.18*.
 
 ```shell
-$ pyenv install 3.9.x
-$ pyenv local 3.9.x
+$ pyenv install 3.9.18
+$ pyenv local 3.9.18
 $ poetry install
 ```
 

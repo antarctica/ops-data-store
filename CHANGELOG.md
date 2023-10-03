@@ -29,6 +29,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Python package should only published on tagged releases
   [#14](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/14)
+* Documenting IT Python version
+  [#4](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/4)
 
 ## [0.1.0] - 2023-10-01
 
