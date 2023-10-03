@@ -123,11 +123,11 @@ Required infrastructure:
 Required OS packages for Python app server:
 
 * Python 3.9+
-* GDAL
+* GDAL 3.4
 * libxml (including the `xmllint` binary)
 * libpq
 
-**Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `x.x`.
+**Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `3.4`.
 
 Required Postgres extensions:
 
