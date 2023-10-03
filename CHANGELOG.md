@@ -20,6 +20,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * application database and CLI command to run commands from SQL files
   [#16](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/16)
 
+### Fixed
+
+* CI job rules
+  [#24](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/24)
+
 ### Changed
 
 * Python package should only published on tagged releases
