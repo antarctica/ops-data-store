@@ -26,6 +26,7 @@ black = "^23.9.1"
 pytest = "^7.4.2"
 pytest-random-order = "^1.1.0"
 pytest-cov = "^4.1.0"
+pytest-mock = "^3.11.1"
 
 [tool.black]
 line-length = 120

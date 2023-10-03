@@ -72,6 +72,7 @@ Currently, all log entries, at debug level, are displayed alongside programme ou
 
 #### Control CLI `db` commands
 
+- `ods-ctl db check`: verifies the database is available
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
 
 ### QGIS project
@@ -166,6 +167,9 @@ $ source /path/to/venv/bin/activate
 
 $ ods-ctl --version
 0.1.0
+
+$ ods-ctl db check
+Ok. DB connection successful.
 ```
 
 ## Project Setup [WIP]
