@@ -80,7 +80,7 @@ editing workflows and verifying expected behaviour.
 
 1. start QGIS LTR with the *ops-data-store* profile selected:
     - macOS: `open -a QGIS-LTR.app --args --profile ops-data-store`
-    - windows: `qgis-bin.exe --profile ops-data-store`
+    - windows: `C:\Program Files\QGIS 3.28.7\bin\qgis-bin.exe --profile ops-data-store`
 1. open the included QGIS project file [`qgis-project.qgz`](/qgis/qgis-project.qgz)
 
 ## Implementation
