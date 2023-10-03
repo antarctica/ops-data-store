@@ -290,6 +290,20 @@ files = [
 test = ["pytest (>=6)"]
 
 [[package]]
+name = "gdal"
+version = "3.4.3"
+description = "GDAL: Geospatial Data Abstraction Library"
+category = "main"
+optional = false
+python-versions = ">=3.6.0"
+files = [
+    {file = "GDAL-3.4.3.tar.gz", hash = "sha256:f4f4b0bb34073b164c5a05a1b0eb44af47349e5606eb7b75244c2167ac462f36"},
+]
+
+[package.extras]
+numpy = ["numpy (>1.0.0)"]
+
+[[package]]
 name = "idna"
 version = "3.4"
 description = "Internationalized Domain Names in Applications (IDNA)"
@@ -888,4 +902,4 @@ zstd = ["zstandard (>=0.18.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "93b3ec27ccc83a5408b2315646f243b6ffcc1a4d62ddcacc772c013204682308"
+content-hash = "34dc9838a75b9dabd3d4caa8b1a40bae48af26633bb9e8bbae984ee48082b1ae"
