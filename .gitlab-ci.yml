@@ -71,9 +71,10 @@ test:
       - htmlcov
     expire_in: 1 month
   rules:
-    - changes:
-      - '**/*.py'
-    - if: '$CI_COMMIT_BRANCH != "main"'
+    - 
+      changes:
+        - '**/*.py'
+      if: '$CI_COMMIT_BRANCH != "main"'
 
 lint:
   stage: 📋 lint
@@ -86,9 +87,10 @@ lint:
     reports:
       codequality: lint-results.json
   rules:
-    - changes:
-      - '**/*.py'
-    - if: '$CI_COMMIT_BRANCH != "main"'
+    - 
+      changes:
+        - '**/*.py'
+      if: '$CI_COMMIT_BRANCH != "main"'
 
 build:
   stage: 🏗 build
@@ -100,7 +102,10 @@ build:
       - dist/
     expire_in: 1 month
   rules:
-    - if: '$CI_COMMIT_BRANCH != "main"'
+    - 
+      changes:
+        - '**/*.py'
+      if: '$CI_COMMIT_BRANCH != "main" || $CI_COMMIT_TAG != null'
 
 package:
   stage: 📦 package
