@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.2.0] - 2023-10-04
+
 ### Added
 
 * note in release issue template to add link to README in each release
