@@ -4,6 +4,7 @@
 __pycache__
 
 # Tools
+/.idea/
 /.ruff_cache/
 /qgis/qgis-profile.zip
 
