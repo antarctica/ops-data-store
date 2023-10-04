@@ -2,10 +2,41 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import psycopg
+import pytest
+from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
 from ops_data_store.cli import app as cli
 from ops_data_store.config import Config
+
+
+class TestCliDBCheck:
+    """Tests for `db check` CLI command."""
+
+    def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+        """Succeeds when DB is reachable."""
+        result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
+
+        assert "Checking DB connectivity." in caplog.text
+        assert "DB connectivity ok." in caplog.text
+
+        assert result.exit_code == 0
+        assert "Ok. DB connection successful." in result.output
+
+    def test_db_not_reachable(
+        self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, mocker: MockerFixture
+    ) -> None:
+        """Aborts when DB is not reachable."""
+        mock_db_dsn = mocker.PropertyMock(return_value="invalid")
+        mocker.patch.object(target=Config, attribute="DB_DSN", new_callable=mock_db_dsn)
+
+        result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
+
+        assert "Checking DB connectivity." in caplog.text
+        assert 'OperationalError: missing "=" after "invalid" in connection info string' in caplog.text
+
+        assert result.exit_code == 1
+        assert "No. DB connection failed." in result.output
 
 
 class TestCliDBRun:

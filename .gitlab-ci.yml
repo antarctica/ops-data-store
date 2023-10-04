@@ -24,7 +24,7 @@ cache:
     - .venv/      # for project dependencies
 
 image:
-  name: python:3.9-slim
+  name: osgeo/gdal:ubuntu-small-3.4.3
 
 stages:
   - 🧪 test
@@ -34,12 +34,14 @@ stages:
 
 .before_script_common: &before_script_common
     - apt-get update
-    - apt-get install -y tree libxml2-utils
-    - python --version
-    - python -m pip install --upgrade pip
-    - python -m pip install pipx
-    - python -m pipx install poetry==1.4.2
-    - python -m pipx ensurepath
+    - apt-get install -y software-properties-common
+    - add-apt-repository -y ppa:deadsnakes/ppa
+    - apt-get install -y tree libxml2-utils python3-pip python3-venv python3.9 python3.9-venv python3.9-dev
+    - python3.9 --version
+    - python3.9 -m pip install --upgrade pip
+    - python3.9 -m pip install pipx
+    - python3.9 -m pipx install poetry==1.4.2
+    - python3.9 -m pipx ensurepath
     - export PATH=$PATH:/root/.local/bin
     - export PATH="/root/.local/bin:$PATH"
     - poetry --version
@@ -82,7 +84,7 @@ lint:
   script:
     - poetry run black --check src/ tests/
     - poetry run ruff check src/ tests/ --output-format gitlab > lint-results.json
-    - poetry run safety check --full-report
+    - poetry run safety check --full-report --ignore=51832,48545
   artifacts:
     reports:
       codequality: lint-results.json

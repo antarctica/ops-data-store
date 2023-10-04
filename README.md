@@ -64,12 +64,15 @@ $ source [venv/bin/activate]
 $ ods-ctl --help
 ```
 
+Currently, all log entries, at debug level, are displayed alongside programme output.
+
 #### Control CLI `config` commands
 
 - `ods-ctl config show`: displays the current application configuration
 
 #### Control CLI `db` commands
 
+- `ods-ctl db check`: verifies the database is available
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
 
 ### QGIS project
@@ -164,6 +167,9 @@ $ source /path/to/venv/bin/activate
 
 $ ods-ctl --version
 0.1.0
+
+$ ods-ctl db check
+Ok. DB connection successful.
 ```
 
 ## Project Setup [WIP]
@@ -256,6 +262,7 @@ For consistency is strongly recommended to configure your IDE or other editor to
 - use `Path.resolve()` if displaying or logging file/directory paths in Python
 - Python dependencies are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`
 - configuration options should be defined in the common [`Config`](/src/ops_data_store/config.py) class and this README
+- use logging to record how actions progress, using the `app` logger (e.g. `logger = logging.getLogger('app')`)
 
 ### Python dependency vulnerability checks
 

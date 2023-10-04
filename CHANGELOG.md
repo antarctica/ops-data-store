@@ -19,6 +19,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#20](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/20)
 * application database and CLI command to run commands from SQL files
   [#16](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/16)
+* `db check` CLI command
+  [#22](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/22)
 
 ### Fixed
 
