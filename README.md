@@ -80,7 +80,6 @@ Currently, all log entries, at debug level, are displayed alongside programme ou
 The included QGIS project, developed as part of the wider Field Operations and Air Unit GIS, can be used for testing
 editing workflows and verifying expected behaviour.
 
-
 1. start QGIS LTR with the *ops-data-store* profile selected:
     - macOS: `open -a QGIS-LTR.app --args --profile ops-data-store`
     - windows: `C:\Program Files\QGIS 3.28.7\bin\qgis-bin.exe --profile ops-data-store`
@@ -90,7 +89,7 @@ editing workflows and verifying expected behaviour.
 
 ### Command line interface
 
-The control CLI uses [Typer](https://typer.tiangolo.com) as a framework.
+[Typer](https://typer.tiangolo.com) is used as the framework for the control CLI.
 
 ### Configuration
 
@@ -106,13 +105,20 @@ and must be defined by the user using an appropriate environment variable, or `.
 The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string. Only Postgres databases
 are officially supported in this project.
 
+### Database
+
+[PostgreSQL](https://www.postgresql.org) is used as the database used for storing datasets.
+
+It uses the [PostGIS](https://postgis.net) extension for storing spatial information and the
+[pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension for generating ULID identifiers internally.
+
 ### QGIS
 
-[QGIS](https://qgis.org) is the tool used by end-users for editing and visualising geospatial data. For this project
-specifically, QGIS forms the Postgres database client used.
+[QGIS](https://qgis.org) is the QGIS client end-users will use for editing and visualising geospatial data, and acts as
+the database client in relation to this project specifically.
 
-To ensure consistency/compatibility with the QGIS environment end-users will use, The QGIS profile and project
-developed outside this project are used for consistency and compatibility.
+For consistency/compatibility, the QGIS profile and project developed for the wider GIS are used for consistency and
+compatibility.
 
 ## Setup
 
@@ -348,6 +354,9 @@ poetry run dotenv -f .test.env run -- pytest --strict-markers --random-order --c
 ### Continuous Integration
 
 All commits will trigger Continuous Integration using GitLab's CI/CD platform, configured in `.gitlab-ci.yml`.
+
+The Docker Image used for CI is needed to ensure the correct version of the GDAL is used, which is then configured to
+use the correct Python version.
 
 ## Deployment
 

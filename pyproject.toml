@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ops-data-store"
-version = "0.1.0"
+version = "0.2.0"
 description = "Data store for hosted and managed datasets for BAS Field Operations and Air Unit."
 authors = ["Felix Fennell <felnne@bas.ac.uk>"]
 license = "MIT"
