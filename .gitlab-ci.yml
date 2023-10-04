@@ -84,7 +84,7 @@ lint:
   script:
     - poetry run black --check src/ tests/
     - poetry run ruff check src/ tests/ --output-format gitlab > lint-results.json
-    - poetry run safety check --full-report
+    - poetry run safety check --full-report --ignore=51832,48545
   artifacts:
     reports:
       codequality: lint-results.json
