@@ -105,6 +105,13 @@ and must be defined by the user using an appropriate environment variable, or `.
 The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string. Only Postgres databases
 are officially supported in this project.
 
+### Database
+
+[PostgreSQL](https://www.postgresql.org) is used as the database used for storing datasets.
+
+It uses the [PostGIS](https://postgis.net) extension for storing spatial information and the
+[pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension for generating ULID identifiers internally.
+
 ### QGIS
 
 [QGIS](https://qgis.org) is the QGIS client end-users will use for editing and visualising geospatial data, and acts as
