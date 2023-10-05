@@ -39,6 +39,23 @@ class TestCliDBCheck:
         assert "No. DB connection failed." in result.output
 
 
+class TestCliDBSetup:
+    """Tests for `db setup` CLI command."""
+
+    def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner):
+        """Creates any missing DB extensions or functions."""
+        result = fx_cli_runner.invoke(app=cli, args=["db", "setup"])
+
+        assert "Required DB extension 'postgis' ok." in caplog.text
+        assert "Required DB extension 'pgcrypto' ok." in caplog.text
+        assert "Required DB function 'generate_ulid' ok." in caplog.text
+        assert "Database setup complete." in caplog.text
+
+        assert result.exit_code == 0
+        assert "Setting up database for first time use." in result.output
+        assert "Complete." in result.output
+
+
 class TestCliDBRun:
     """Tests for `db run` CLI command."""
 

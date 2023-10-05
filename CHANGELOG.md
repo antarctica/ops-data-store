@@ -9,6 +9,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Added
+
+* `db setup` CLI command
+  [#33](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/33)
+
 ## [0.2.0] - 2023-10-04
 
 ### Added
