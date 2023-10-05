@@ -73,6 +73,7 @@ Currently, all log entries, at debug level, are displayed alongside programme ou
 #### Control CLI `db` commands
 
 - `ods-ctl db check`: verifies the database is available
+- `ods-ctl db setup`: configure a new database for use
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
 
 ### QGIS project
@@ -176,6 +177,18 @@ $ ods-ctl --version
 
 $ ods-ctl db check
 Ok. DB connection successful.
+```
+
+To configure the application database for use run the `db setup` command:
+
+```
+# if installed in a virtual environment
+$ source /path/to/venv/bin/activate
+
+$ ods-ctl db setup
+Setting up database for first time use.
+Note: If this command fails, please either create an issue in the 'Ops Data Store' project in GitLab, or contact MAGIC at magic@bas.ac.uk with the output of this command.
+Ok. Database setup complete.
 ```
 
 ## Project Setup [WIP]
