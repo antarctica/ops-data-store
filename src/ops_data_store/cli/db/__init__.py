@@ -56,9 +56,9 @@ def setup() -> None:
             logger.info(f"Setting up required DB extension {extension}.")
             # exempting SQL injection check as extension names are effectively fixed
             cur.execute(f"CREATE EXTENSION IF NOT EXISTS {extension}")
-            cur.execute(f"SELECT COUNT(name) FROM pg_available_extensions WHERE name='{extension}'")  # noqa: S608
+            cur.execute(f"SELECT 1 FROM pg_available_extensions WHERE name='{extension}'")  # noqa: S608
             if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
-                logger.error(f"Required extension '{extension}' not found after creating.")
+                logger.error(f"Required extension '{extension}' not found after attempting to create.")
                 print(f"No. Required extension '{extension}' not found.")
                 raise typer.Abort()
             logger.info(f"Required DB extension '{extension}' ok.")
@@ -94,9 +94,9 @@ def setup() -> None:
             $$ LANGUAGE SQL;
         """
         )
-        cur.execute("""SELECT COUNT(*) FROM pg_proc WHERE proname = 'generate_ulid';""")
+        cur.execute("""SELECT 1 FROM pg_proc WHERE proname = 'generate_ulid';""")
         if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
-            logger.error("Required function 'generate_ulid' not found after creating.")
+            logger.error("Required function 'generate_ulid' not found after attempting to create.")
             print("No. Required function 'generate_ulid' not found.")
             raise typer.Abort()
         logger.info("Required DB function 'generate_ulid' ok.")
