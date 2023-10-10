@@ -49,6 +49,8 @@ class TestCliDBSetup:
         assert "Required DB extension 'postgis' ok." in caplog.text
         assert "Required DB extension 'pgcrypto' ok." in caplog.text
         assert "Required DB function 'generate_ulid' ok." in caplog.text
+        assert "Required DB function 'geom_as_ddm' ok." in caplog.text
+        assert "Required DB data type 'ddm_point' ok." in caplog.text
         assert "Database setup complete." in caplog.text
 
         assert result.exit_code == 0

@@ -108,10 +108,13 @@ are officially supported in this project.
 
 ### Database
 
-[PostgreSQL](https://www.postgresql.org) is used as the database used for storing datasets.
+[PostgreSQL](https://www.postgresql.org) is used for storing datasets. It uses the [PostGIS](https://postgis.net) extension for storing spatial information
+along with custom functions and data types for:
 
-It uses the [PostGIS](https://postgis.net) extension for storing spatial information and the
-[pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension for generating ULID identifiers internally.
+- creating [ULIDs](https://github.com/ulid/spec) (stored as a UUID data-type)
+  - [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension, `generate_ulid` function
+- formatting latitude and longitude values in the Degrees, Decimal Minutes format (DDM)
+  - using the `geom_as_ddm` function and `ddm_point` data type
 
 ### QGIS
 

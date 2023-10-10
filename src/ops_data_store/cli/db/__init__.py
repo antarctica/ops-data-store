@@ -56,12 +56,31 @@ def setup() -> None:
             logger.info(f"Setting up required DB extension {extension}.")
             # exempting SQL injection check as extension names are effectively fixed
             cur.execute(f"CREATE EXTENSION IF NOT EXISTS {extension}")
-            cur.execute(f"SELECT COUNT(name) FROM pg_available_extensions WHERE name='{extension}'")  # noqa: S608
+            cur.execute(f"SELECT 1 FROM pg_available_extensions WHERE name='{extension}'")  # noqa: S608
             if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
-                logger.error(f"Required extension '{extension}' not found after creating.")
+                logger.error(f"Required extension '{extension}' not found after attempting to create.")
                 print(f"No. Required extension '{extension}' not found.")
                 raise typer.Abort()
             logger.info(f"Required DB extension '{extension}' ok.")
+
+        logger.info("Setting up required DB data type 'ddm_point'.")
+        cur.execute(
+            """
+            DO $$
+            BEGIN
+                IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ddm_point') THEN
+                   CREATE TYPE ddm_point AS (x TEXT, y TEXT);
+                END IF;
+                --more types here...
+            END$$;
+        """
+        )
+        cur.execute("""SELECT 1 FROM pg_type WHERE typname = 'ddm_point';""")
+        if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
+            logger.error("Required data type 'ddm_point' not found after attempting to create.")
+            print("No. Required data type 'ddm_point' not found.")
+            raise typer.Abort()
+        logger.info("Required DB data type 'ddm_point' ok.")
 
         logger.info("Setting up required DB function 'generate_ulid'.")
         cur.execute(
@@ -75,12 +94,68 @@ def setup() -> None:
             $$ LANGUAGE SQL;
         """
         )
-        cur.execute("""SELECT COUNT(*) FROM pg_proc WHERE proname = 'generate_ulid';""")
+        cur.execute("""SELECT 1 FROM pg_proc WHERE proname = 'generate_ulid';""")
         if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
-            logger.error("Required function 'generate_ulid' not found after creating.")
+            logger.error("Required function 'generate_ulid' not found after attempting to create.")
             print("No. Required function 'generate_ulid' not found.")
             raise typer.Abort()
         logger.info("Required DB function 'generate_ulid' ok.")
+
+        logger.info("Setting up required DB function 'geom_as_ddm'.")
+        cur.execute(
+            """
+        CREATE OR REPLACE FUNCTION geom_as_ddm(geom GEOMETRY)
+            RETURNS ddm_point
+            IMMUTABLE
+            PARALLEL SAFE
+        AS $$
+        DECLARE
+            lon FLOAT;
+            lat FLOAT;
+            lon_degree FLOAT;
+            lon_minutes FLOAT;
+            lon_sign TEXT;
+            lat_degree FLOAT;
+            lat_minutes FLOAT;
+            lat_sign TEXT;
+            x TEXT;
+            y TEXT;
+        BEGIN
+            lon := ST_X(geom);
+            lat := ST_Y(geom);
+
+            SELECT FLOOR(ABS(lon)), FLOOR(ABS(lat))
+            INTO lon_degree, lat_degree;
+
+            SELECT ((ABS(lon) - lon_degree) * 60.0), ((ABS(lat) - lat_degree) * 60.0)
+            INTO lon_minutes, lat_minutes;
+
+            IF lon >= 0 THEN
+                lon_sign := 'E';
+            ELSE
+                lon_sign := 'W';
+            END IF;
+
+            IF lat >= 0 THEN
+                lat_sign := 'N';
+            ELSE
+                lat_sign := 'S';
+            END IF;
+
+            x := CONCAT(CAST(lon_degree AS TEXT), '° ', TO_CHAR(lon_minutes, 'FM999999.999999'), ''' ', lon_sign);
+            y := CONCAT(CAST(lat_degree AS TEXT), '° ', TO_CHAR(lat_minutes, 'FM999999.999999'), ''' ', lat_sign);
+
+            RETURN (x, y);
+        END;
+        $$ LANGUAGE plpgsql;
+        """
+        )
+        cur.execute("""SELECT 1 FROM pg_proc WHERE proname = 'geom_as_ddm';""")
+        if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
+            logger.error("Required function 'geom_as_ddm' not found after creating.")
+            print("No. Required function 'geom_as_ddm' not found.")
+            raise typer.Abort()
+        logger.info("Required DB function 'geom_as_ddm' ok.")
 
     logger.info("Database setup complete.")
     print("Complete.")
