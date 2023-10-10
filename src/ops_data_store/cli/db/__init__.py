@@ -52,7 +52,7 @@ def setup() -> None:
     )
 
     with psycopg.connect(config.DB_DSN) as conn, conn.cursor() as cur:
-        for extension in ["postgis", "pgcrypto"]:
+        for extension in ["postgis", "pgcrypto", "fuzzystrmatch"]:
             logger.info(f"Setting up required DB extension {extension}.")
             # exempting SQL injection check as extension names are effectively fixed
             cur.execute(f"CREATE EXTENSION IF NOT EXISTS {extension}")
