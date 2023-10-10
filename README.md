@@ -146,6 +146,7 @@ Required Postgres extensions:
 
 * PostGIS
 * pgcrypto
+- fuzzystrmatch
 
 A single database, and an account with permissions to create, read, update and delete objects within this, is required
 to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`

@@ -16,6 +16,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Postgres function for formatting coordinates in DDM format
   [#46](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/46)
 
+### Fixed
+
+* Adding requirement/checks for 'fuzzystrmatch' Postgres extension
+  [#47](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/47)
+
 ## [0.2.0] - 2023-10-04
 
 ### Added
