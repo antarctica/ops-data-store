@@ -124,6 +124,80 @@ the database client in relation to this project specifically.
 For consistency/compatibility, the QGIS profile and project developed for the wider GIS are used for consistency and
 compatibility.
 
+## Datasets
+
+Datasets hosted in this platform can be classed as either:
+
+- managed: formally agreed and defined datasets that are explicitly checked and verified by this platform
+- unmanaged: any other datasets users may wish to store, which are essentially ignored by this platform
+
+### Managed datasets
+
+Managed datasets are not defined within this project (as it only provides the platform), see these projects instead:
+
+- BAS [Field Operations GIS Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
+- BAS [Air Unit Network Dataset 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
+
+### Managed dataset identifiers
+
+All managed datasets will have two or more identifiers, of which three are conventional and recommended:
+
+| Domain     | Owner    | Audience  | Attribute Name | Data Type | Format/Scheme                         | Required |
+|------------|----------|-----------|----------------|-----------|---------------------------------------|----------|
+| Technology | MAGIC/IT | MAGIC/IT  | `pk`           | Integer   | PostgreSQL Identity                   | Yes      |
+| Platform   | MAGIC    | MAGIC/Ops | `pid`          | UUID      | [ULID](https://github.com/ulid/spec)  | Yes      |
+| Dataset    | Ops      | MAGIC/Ops | `id`           | String    | -                                     | No       |
+
+For example, a dataset of waypoints may be structured as:
+
+| PK  | PID                           | ID      | ... |
+|-----|-------------------------------|---------|-----|
+| `1` | `01H26N7D9Q064B6QQMCPP5NQK0 ` | `ALPHA` | ... |
+| ... | ...                           | ...     | ... |
+| `9` | `01H26N7D9SGG348R24KN6W50GX ` | `INDIA` | ... |
+| ... | ...                           | ...     | ... |
+
+#### Technology identifier
+
+This ID is dictated by whichever technology used to implement this platform. For Postgres, this is a primary key using
+an [Integer identity](https://www.depesz.com/2017/04/10/waiting-for-postgresql-10-identity-columns/) column, as they
+are the easiest to manage.
+
+**WARNING!** This column MUST NOT be relied upon outside each individual database instance, as it MAY NOT be the same
+between instances. If we use a different technology in the future, this MAY use a different concept, necessitating the
+loss of any existing values.
+
+**Note:** This attribute SHOULD NOT be exposed to end-users, either by using database views, or configuring fields in
+layers, to hide the column.
+
+#### Platform identifier
+
+This ID is dictated by us to uniquely and persistently identify features across all datasets hosted in the platform
+and ideally across datasets anywhere (i.e. globally unique). The [ULID](https://github.com/ulid/spec) scheme is used to
+implement these identifiers as they're reasonably compact and naturally sort by time.
+
+Once issued they do not change and SHOULD be used to distinguish features and/or for defining feature relations.
+Crucially this value has no meaning (to us or end-users) and is therefore neutral. This identifier MAY be exposed to
+end-users, though it is assumed they won't use or recognise them directly.
+
+**Note:** `PID` was chosen to avoid using `FID`, as this is typically used, and possibly reserved, in GIS systems.
+
+**Note:** ULIDs are stored in a Postgres UUID data type to improve indexing. This results in a non-standard
+representation which can appear misleading.
+
+#### Dataset identifier
+
+This ID is not required, though it's assumed almost all datasets will have a value that users use to identify features,
+even if only for a time limited period. Values are uncontrolled in terms of needing to be:
+
+- unique
+- applied consistently
+- following a scheme or convention
+- meaningful and/or recognisable by end-users
+- persistent over time
+
+**Note:** These properties are nevertheless recommended in any identifier.
+
 ## Setup
 
 ### Requirements
@@ -253,6 +327,14 @@ It's strongly recommended to set required configuration options using a `.env` f
 
 A `.test.env` file MUST be created as per the [Testing Configuration](#test-config) section.
 
+Setup the database and load the [Test Schemas and Data](#test-schemas-and-data):
+
+```
+$ poetry run ops-ctl db setup
+$ poetry run ops-ctl db run --input-path tests/resources/test-schemas.sql
+$ poetry run ops-ctl db run --input-path tests/resources/test-data.sql
+```
+
 The QGIS profile used for testing needs [downloading 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/)
 from GitLab package registry (as it's too large to sensibly store in Git).
 
@@ -358,6 +440,17 @@ def test_foo():
 
 An additional [`.test.env`](/.test.env) file is used to override some application config properties, such as the
 database. This file requires creating from the [`.example.env`](/.example.env) reference file.
+
+### Test schemas and data
+
+A set of static datasets are defined for testing. These datasets are based on real [Datasets](#datasets) but sanitised
+to remove any sensitive information. To support repeatable testing these datasets do not change.
+
+See [`test-schemas.sql`](tests/resources/test-schemas.sql) for the structure of each dataset and
+[`test-data.sql`](tests/resources/test-data.sql) for related seed data (4 features for each).
+
+**Note:** This data is not yet representative. For details see
+[https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48).
 
 #### Running tests
 

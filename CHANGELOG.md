@@ -15,6 +15,10 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#33](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/33)
 * Postgres function for formatting coordinates in DDM format
   [#46](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/46)
+* Documentation on required/expected dataset identifiers
+  [#36](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/36)
+* Placeholder schemas and seed data for depot and instrument managed datasets
+  [#34](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/34)
 
 ### Fixed
 
