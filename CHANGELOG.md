@@ -24,6 +24,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Adding requirement/checks for 'fuzzystrmatch' Postgres extension
   [#47](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/47)
+* Documenting how the dotenv module searches for `.env` files
+  [#57](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/57)
 
 ## [0.2.0] - 2023-10-04
 

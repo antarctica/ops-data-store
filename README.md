@@ -253,15 +253,25 @@ $ source /path/to/venv/bin/activate
 $ ods-ctl --version
 0.1.0
 
+```
+
+Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables.
+
+**Note:** If using an `.env` file, the application will look in parent directory of where the application is installed
+(i.e. the virtual environment) and it's parents, up to the root directory (i.e. `/`). Common directories for
+configuration files such as `/etc/` and `~/.config/` are not checked.
+
+To check the application configuration is as expected:
+
+```
+$ ods-ctl config show
+```
+
+To check the application database is available, and then configure it for use:
+
+```
 $ ods-ctl db check
 Ok. DB connection successful.
-```
-
-To configure the application database for use run the `db setup` command:
-
-```
-# if installed in a virtual environment
-$ source /path/to/venv/bin/activate
 
 $ ods-ctl db setup
 Setting up database for first time use.
