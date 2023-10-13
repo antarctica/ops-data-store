@@ -40,7 +40,13 @@ class TestCliConfigCheck:
 class TestCliConfigShow:
     """Tests for `config show` CLI command."""
 
-    def test_ok(self, fx_cli_runner: CliRunner, fx_test_package_version: str, fx_test_db_dsn: str) -> None:
+    def test_ok(
+        self,
+        caplog: pytest.LogCaptureFixture,
+        fx_cli_runner: CliRunner,
+        fx_test_package_version: str,
+        fx_test_db_dsn: str,
+    ) -> None:
         """Returns app config."""
         result = fx_cli_runner.invoke(app=cli, args=["config", "show"])
 
@@ -48,6 +54,10 @@ class TestCliConfigShow:
         output = StringIO()
         pprint({"VERSION": fx_test_package_version, "DB_DSN": fx_test_db_dsn}, stream=output)
         expected = output.getvalue()
+
+        assert "Checking app config." in caplog.text
+        assert "App config ok." in caplog.text
+        assert "Dumping app config." in caplog.text
 
         assert result.exit_code == 0
         assert expected in result.output
