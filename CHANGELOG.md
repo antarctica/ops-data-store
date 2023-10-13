@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.3.0] - 2023-10-13
+
 ### Added
 
 * `db setup` CLI command
