@@ -308,6 +308,30 @@ Note: If this command fails, please either create an issue in the 'Ops Data Stor
 Ok. Database setup complete.
 ```
 
+### Upgrading [WIP]
+
+To upgrade the Python application, upgrade the Python package version using Pip:
+
+```
+# if installed in a virtual environment
+$ source /path/to/venv/bin/activate
+pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+```
+
+Check the version is as expected:
+
+```
+$ ods-ctl --version
+0.2.0
+```
+
+Check the application configuration is still valid:
+
+```
+$ ods-ctl config check
+Ok. Configuration valid.
+```
+
 ## Project Setup [WIP]
 
 **Note:** This section is a work in progress and may be restructured.
