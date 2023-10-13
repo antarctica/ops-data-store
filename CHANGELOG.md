@@ -19,6 +19,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#36](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/36)
 * Placeholder schemas and seed data for depot and instrument managed datasets
   [#34](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/34)
+* `config check` CLI command
+  [#56](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/56)
 
 ### Fixed
 

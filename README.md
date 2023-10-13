@@ -68,6 +68,7 @@ Currently, all log entries, at debug level, are displayed alongside programme ou
 
 #### Control CLI `config` commands
 
+- `ods-ctl config check`: checks required configuration options have been set
 - `ods-ctl config show`: displays the current application configuration
 
 #### Control CLI `db` commands
