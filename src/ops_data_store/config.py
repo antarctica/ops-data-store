@@ -1,17 +1,6 @@
 from importlib.metadata import version
-from os import environ
 
-from dotenv import load_dotenv
-
-
-def _get_env(env: str) -> str:
-    """
-    Get value from environment variables.
-
-    Util method to corrects for double wrapped (e.g. '"Foo"') values and/or values with leading or trailing whitespace.
-    Needed due to the way we override settings using an additional .env file for testing.
-    """
-    return environ.get(env).replace('"', "").strip()
+from environs import Env, EnvError
 
 
 class Config:
@@ -19,7 +8,16 @@ class Config:
 
     def __init__(self) -> None:
         """Create Config instance and load options from dotenv file."""
-        load_dotenv()
+        self.env = Env()
+        self.env.read_env()
+
+    def validate(self) -> None:
+        """Validate required configuration options have valid values."""
+        try:
+            self.env.str("APP_ODS_DB_DSN")
+        except EnvError as e:
+            msg = "Required config option `DB_DSN` not set."
+            raise RuntimeError(msg) from e
 
     def dump(self) -> dict:
         """Return application configuration as a dictionary."""
@@ -33,4 +31,4 @@ class Config:
     @property
     def DB_DSN(self) -> str:
         """DB connection string."""
-        return _get_env("APP_ODS_DB_DSN")
+        return self.env.str("APP_ODS_DB_DSN")
