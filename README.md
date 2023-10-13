@@ -377,6 +377,7 @@ For consistency is strongly recommended to configure your IDE or other editor to
 - use `Path.resolve()` if displaying or logging file/directory paths in Python
 - Python dependencies are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`
 - configuration options should be defined in the common [`Config`](/src/ops_data_store/config.py) class and this README
+- configuration options should be read using the relevant [environs](https://github.com/sloria/environs) helper method
 - use logging to record how actions progress, using the `app` logger (e.g. `logger = logging.getLogger('app')`)
 
 ### Python dependency vulnerability checks
