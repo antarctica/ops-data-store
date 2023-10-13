@@ -40,8 +40,8 @@ As an alpha project, all, or parts, of this service:
 This project is limited to the technical and operational aspects of providing a platform for hosting datasets. Other
 projects focus on these datasets and other aspects of a providing a wider Geographic Information System (GIS).
 
-* [BAS Field Operations Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
-* [BAS Air Unit Network Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
+- [BAS Field Operations Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
+- [BAS Air Unit Network Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
 
 This project is an evolution of an earlier [Experiment 🛡](https://gitlab.data.bas.ac.uk/felnne/ops-data-store-exp).
 
@@ -55,16 +55,25 @@ specific project is not aimed at end-users directly.
 
 ### Control CLI
 
-A command line interface is available for performing administrative tasks. Calling this CLI typically requires
-connecting to a specific instance/environment and activating the relevant Python virtual environment
+**Note:** This CLI is intended for use by MAGIC team members, not end-users.
+
+A command line interface is available for performing administrative tasks.
+
+Then call the `ods-ctl` command line application:
 
 ```
-$ ssh [instance]
-$ source [venv/bin/activate]
 $ ods-ctl --help
 ```
 
-Currently, all log entries, at debug level, are displayed alongside programme output.
+**Note:** Calling the CLI without any command will not return any output. This is expected.
+
+**Note:** Currently all log entries down to debug level are displayed alongside programme output. This includes a debug
+message from the `psycopg` Postgres database module that can be safely ignored:
+
+```
+YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implementation: No module named 'psycopg_c'
+0.2.0
+```
 
 #### Control CLI `config` commands
 
@@ -79,13 +88,20 @@ Currently, all log entries, at debug level, are displayed alongside programme ou
 
 ### QGIS project
 
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
 The included QGIS project, developed as part of the wider Field Operations and Air Unit GIS, can be used for testing
 editing workflows and verifying expected behaviour.
 
-1. start QGIS LTR with the *ops-data-store* profile selected:
-    - macOS: `open -a QGIS-LTR.app --args --profile ops-data-store`
-    - windows: `C:\Program Files\QGIS 3.28.7\bin\qgis-bin.exe --profile ops-data-store`
+1. start QGIS LTR with the `ops-data-store` profile selected:
 1. open the included QGIS project file [`qgis-project.qgz`](/qgis/qgis-project.qgz)
+
+If needed, shortcuts can be created to start QGIS with a specific profile:
+
+- on macOS: `open -a QGIS-LTR.app --args --profile {profile}`
+- on Windows: `C:\Program Files\QGIS 3.28.7\bin\qgis-bin.exe --profile {profile}`
+
+**Note:** To start QGIS normally use the `default` profile.
 
 ## Implementation
 
@@ -97,20 +113,20 @@ editing workflows and verifying expected behaviour.
 
 The [control CLI](#command-line-interface) uses a [`Config`](src/ops_data_store/config.py) class for all settings. Some
 settings are read-only, such as the application version, others are write-only, such as database connection details,
-and must be defined by the user using an appropriate environment variable, or `.env` file.
+and must be defined by the user, either using appropriate environment variables, or an `.env` file. If using the
+latter, an example [`.example.env`](.example.env) is available as a guide.
 
 | Config Property | Environment Variable | Required | Type   | Description                                     | Example                          |
 |-----------------|----------------------|----------|--------|-------------------------------------------------|----------------------------------|
 | `VERSION`       | -                    | No       | String | Application version, read from package metadata | '0.1.0'                          |
 | `DB_DSN`        | `APP_ODS_DB_DSN`     | Yes      | String | Application database connection string          | 'postgresql://user:pass@host/db' |
 
-The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string. Only Postgres databases
-are officially supported in this project.
+The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string.
 
 ### Database
 
-[PostgreSQL](https://www.postgresql.org) is used for storing datasets. It uses the [PostGIS](https://postgis.net) extension for storing spatial information
-along with custom functions and data types for:
+[PostgreSQL](https://www.postgresql.org) is used for storing datasets. It uses the [PostGIS](https://postgis.net)
+extension for storing spatial information along with custom functions and data types for:
 
 - creating [ULIDs](https://github.com/ulid/spec) (stored as a UUID data-type)
   - [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension, `generate_ulid` function
@@ -205,33 +221,33 @@ even if only for a time limited period. Values are uncontrolled in terms of need
 
 Required infrastructure:
 
-* a service or server for running [Python](https://www.python.org) applications
-* a service or server for running [Postgres](https://www.postgresql.org) databases
+- a service or server for running [Python](https://www.python.org) applications
+- a service or server for running [Postgres](https://www.postgresql.org) databases
 
 Required OS packages for Python app server:
 
-* Python 3.9+
-* GDAL 3.4
-* libxml (including the `xmllint` binary)
-* libpq
+- Python 3.9+
+- GDAL 3.4 (including development headers and the `gdal-config` binary)
+- libxml (including the `xmllint` binary)
+- libpq
 
 **Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `3.4`.
 
 Required Postgres extensions:
 
-* PostGIS
-* pgcrypto
+- PostGIS
+- pgcrypto
 - fuzzystrmatch
 
 A single database, and an account with permissions to create, read, update and delete objects within this, is required
 to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`
-are recommended as conventional defaults.
+respectively are recommended as conventional defaults.
 
 ### Installation
 
 For the Python application, it is strongly recommended to install this project into a virtual environment:
 
-```shell
+```
 $ python -m venv /path/to/venv
 $ source /path/to/venv/bin/activate
 $ pip install --upgrade pip
@@ -241,13 +257,13 @@ The Python Package for this project (see [Deployment](#deployment) section) requ
 registry provided by the BAS GitLab instance. This registry requires authentication, however as this project is
 available publicly, and has been open sourced, the generic deployment token below can be used by anyone to access it.
 
-```shell
+```
 pip install ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
 ```
 
 The control CLI can be used to check the application has been installed correctly and is the expected version:
 
-```shell
+```
 # if installed in a virtual environment
 $ source /path/to/venv/bin/activate
 
@@ -303,7 +319,7 @@ Ok. Database setup complete.
 
 Check out project:
 
-```shell
+```
 $ git clone https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store.git
 $ cd ops-data-store
 ```
@@ -315,7 +331,7 @@ $ cd ops-data-store
 [pyenv](https://github.com/pyenv/pyenv) is strongly recommended to ensure the Python version is the same as the one
 used in externally provisioned environments. This is currently *3.9.18*.
 
-```shell
+```
 $ pyenv install 3.9.18
 $ pyenv local 3.9.18
 $ poetry install
@@ -326,11 +342,11 @@ extensions available are required (one for local development and one for testing
 
 For example, if a Postgres instance is running locally with trust based authentication for the local user:
 
-```shell
-psql -d postgres -c "CREATE DATABASE ops_data_store_dev;"
-psql -d postgres -c "COMMENT ON DATABASE ops_data_store_dev IS 'Ops Data Store local development DB'";
-psql -d postgres -c "CREATE DATABASE ops_data_store_test;"
-psql -d postgres -c "COMMENT ON DATABASE ops_data_store_test IS 'Ops Data Store local development testing DB'"
+```
+$ psql -d postgres -c "CREATE DATABASE ops_data_store_dev;"
+$ psql -d postgres -c "COMMENT ON DATABASE ops_data_store_dev IS 'Ops Data Store local development DB'";
+$ psql -d postgres -c "CREATE DATABASE ops_data_store_test;"
+$ psql -d postgres -c "COMMENT ON DATABASE ops_data_store_test IS 'Ops Data Store local development testing DB'"
 ```
 
 It's strongly recommended to set required configuration options using a `.env` file based off the
@@ -351,12 +367,12 @@ from GitLab package registry (as it's too large to sensibly store in Git).
 
 Once downloaded, extract and rename to `ops-data-store`. Then copy to the relevant QGIS profile directory:
 
-* macOS: `~/Library/Application\ Support/QGIS/QGIS3/profiles/`
-* Windows: `%APPDATA%\Roaming\QGIS\QGIS3\profiles/`
+- macOS: `~/Library/Application\ Support/QGIS/QGIS3/profiles/`
+- Windows: `%APPDATA%\Roaming\QGIS\QGIS3\profiles/`
 
 ### Running control CLI locally
 
-```shell
+```
 $ poetry run ods-ctl [COMMAND] [ARGS]
 ```
 
@@ -374,7 +390,7 @@ For consistency is strongly recommended to configure your IDE or other editor to
 
 ### Conventions
 
-- except for tests, all Python code should be contained in the [`ops_data_store`](/src/ops_data_store/) package.
+- except for tests, all Python code should be contained in the [`ops_data_store`](/src/ops_data_store) package.
 - use `Path.resolve()` if displaying or logging file/directory paths in Python
 - Python dependencies are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`
 - configuration options should be defined in the common [`Config`](/src/ops_data_store/config.py) class and this README
@@ -390,7 +406,7 @@ In particular this is using the free vulnerability database, which is updated le
 
 Checks are run automatically in [Continuous Integration](#continuous-integration). To check locally:
 
-```shell
+```
 $ poetry run safety check --full-report
 ```
 
@@ -407,7 +423,7 @@ In particular this tool can't check for issues that are only be detectable when 
 `pyproject.toml`. Linting checks are run automatically in [Continuous Integration](#continuous-integration). To check
 locally:
 
-```shell
+```
 $ poetry run ruff src/
 ```
 
@@ -415,10 +431,10 @@ $ poetry run ruff src/
 
 ### Python tests
 
-All 1st party Python code in the [`ops_data_store`](/src/ops_data_store/) package must be covered by tests, defined in
-the [`ops_data_store_tests`](/tests/ops_data_store_tests/) package.
+All 1st party Python code in the [`ops_data_store`](/src/ops_data_store) package must be covered by tests, defined in
+the [`ops_data_store_tests`](/tests/ops_data_store_tests) package.
 
-[`pytest`](https://pytest.org) is used as the test framework, configured in [`pyproject.toml`](pyproject.toml).
+[`pytest`](https://pytest.org) is used as the test framework, configured in [`pyproject.toml`](/pyproject.toml).
 
 #### Python test fixtures
 
@@ -469,9 +485,11 @@ See [`test-schemas.sql`](tests/resources/test-schemas.sql) for the structure of 
 Tests and coverage checks are run automatically in [Continuous Integration](#continuous-integration). To check
 locally:
 
-```shell
+```
 poetry run dotenv -f .test.env run -- pytest --strict-markers --random-order --cov --cov-report=html tests
 ```
+
+**Note:** If testing using PyCharm, set environment variables within the run/text config to match the `.test.env` file.
 
 ### Continuous Integration
 
@@ -496,7 +514,7 @@ $ poetry build
 
 If the QGIS profile used for testing needs updating, the generic package stored in GitLab can be updated:
 
-```shell
+```
 $ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/[version]/qgis-profile.zip
 ```
 
@@ -505,7 +523,7 @@ would become `2023-04-12.0`. A second release that day would be `2023-04-12.1` e
 
 For example:
 
-```shell
+```
 $ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/2023-04-12.0/qgis-profile.zip
 ```
 
