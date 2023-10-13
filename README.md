@@ -269,7 +269,16 @@ $ source /path/to/venv/bin/activate
 
 $ ods-ctl --version
 0.1.0
+```
 
+Optionally, the `ods-ctl` command can be added to the PATH or symlinked to a location already in the PATH (such as
+`~/bin/`) to make it easier to call:
+
+```
+$ mkdir ~/bin
+$ cd ~/bin
+$ ln -s /path/to/venv/bin/ ods-ctl
+$ cd ~
 ```
 
 Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables.
@@ -278,9 +287,12 @@ Optionally, create a `.env` file to set [Configuration](#configuration) options 
 (i.e. the virtual environment) and it's parents, up to the root directory (i.e. `/`). Common directories for
 configuration files such as `/etc/` and `~/.config/` are not checked.
 
-To check the application configuration is as expected:
+To check the application configuration is valid and as expected:
 
 ```
+$ ods-ctl config check
+Ok. Configuration valid.
+
 $ ods-ctl config show
 ```
 
