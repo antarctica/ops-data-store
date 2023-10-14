@@ -199,6 +199,8 @@ extension for storing spatial information along with custom functions and data t
   - [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension, `generate_ulid` function
 - formatting latitude and longitude values in the Degrees, Decimal Minutes format (DDM)
   - using the `geom_as_ddm` function and `ddm_point` data type
+- recording when and by who rows in managed datasets are changed
+  - using the `set_updated_at` and `set_updated_by` functions
 
 ### QGIS
 
@@ -553,7 +555,7 @@ To upgrade the Python application, upgrade the Python package version using Pip:
 ```
 # if installed in a virtual environment
 $ source /path/to/venv/bin/activate
-pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+$ pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
 ```
 
 Check the version is as expected:
