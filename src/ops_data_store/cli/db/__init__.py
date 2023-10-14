@@ -71,7 +71,6 @@ def setup() -> None:
                 IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ddm_point') THEN
                    CREATE TYPE ddm_point AS (x TEXT, y TEXT);
                 END IF;
-                --more types here...
             END$$;
         """
         )
@@ -156,6 +155,44 @@ def setup() -> None:
             print("No. Required function 'geom_as_ddm' not found.")
             raise typer.Abort()
         logger.info("Required DB function 'geom_as_ddm' ok.")
+
+        logger.info("Setting up required DB function 'set_updated_at'.")
+        cur.execute(
+            """
+        CREATE OR REPLACE FUNCTION set_updated_at()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_at = NOW();
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """
+        )
+        cur.execute("""SELECT 1 FROM pg_proc WHERE proname = 'set_updated_at';""")
+        if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
+            logger.error("Required function 'set_updated_at' not found after creating.")
+            print("No. Required function 'set_updated_at' not found.")
+            raise typer.Abort()
+        logger.info("Required DB function 'set_updated_at' ok.")
+
+        logger.info("Setting up required DB function 'set_updated_by'.")
+        cur.execute(
+            """
+        CREATE OR REPLACE FUNCTION set_updated_by()
+        RETURNS TRIGGER AS $$
+        BEGIN
+            NEW.updated_by = current_user;
+            RETURN NEW;
+        END;
+        $$ LANGUAGE plpgsql;
+        """
+        )
+        cur.execute("""SELECT 1 FROM pg_proc WHERE proname = 'set_updated_by';""")
+        if cur.fetchone()[0] != 1:  # pragma: no cover - see MAGIC/ops-data-store#43
+            logger.error("Required function 'set_updated_by' not found after creating.")
+            print("No. Required function 'set_updated_by' not found.")
+            raise typer.Abort()
+        logger.info("Required DB function 'set_updated_by' ok.")
 
     logger.info("Database setup complete.")
     print("Complete.")

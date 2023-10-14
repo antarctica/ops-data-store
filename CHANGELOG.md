@@ -9,6 +9,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Added
+
+* `updated_at`, `updated_by` fields to managed datasets
+  [#59](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/59)
+
 ## [0.3.0] - 2023-10-13
 
 ### Added
