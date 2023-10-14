@@ -13,8 +13,16 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * `updated_at`, `updated_by` fields to managed datasets
   [#59](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/59)
+* Instructions for adding new managed datasets
+  [#62](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/62)
+* Documentation for etags
+  [#61](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/61)
+* Documentation for layer styles
+  [#58](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/58)
 * Documentation on Cambridge staging instance
   [#26](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/26)
+* Real implementations for Depot and Instrument datasets
+  [#48](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48)
 
 ## [0.3.0] - 2023-10-13
 

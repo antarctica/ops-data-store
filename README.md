@@ -104,6 +104,72 @@ If needed, shortcuts can be created to start QGIS with a specific profile:
 
 **Note:** To start QGIS normally use the `default` profile.
 
+#### Adding DB connection
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+Replace `{placeholder}` values wth settings from the relevant database listed in the [Infrastructure](#infrastructure)
+section, except for `{username}` and `{password}` which should be the users BAS LDAP credentials.
+
+1. open QGIS with the relevant profile active
+2. from *Browser* pane -> *PostgreSQL* -> *New Connection*:
+   - *(ignore or use default values for options not specified)*
+    - Name: `Ops Data Store ({location})`
+    - Host: `{host}`
+    - Database: `{database}`
+    - Authentication -> Configurations -> *Create a new authentication configuration*:
+        - *(create or enter master password)*
+          - *(if a single user computer (i.e. not shared) users MAY use their NERC or login password for this)*
+        - *(ignore or use default values for options not specified)*
+        - Name: `BAS LDAP ({location})`
+        - Type: *Basic Authentication*
+        - Username: `{username}`
+          - *(users MUST NOT use their email address - e.g. 'conwat' not 'conwat@bas.ac.uk')*
+        - Password: `{password}`
+        - *Save*
+    * *Test Connection*
+    * *OK*
+
+Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
+[2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
+
+#### Adding DB Layer
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+**Note:** These instructions depend on the [Adding DB connection](#adding-db-connection) workflow.
+
+1. open QGIS with the relevant profile and project active
+1. from the *Browser* pane -> *PostgreSQL* -> *Ops Data Store*
+    - *(the user may have multiple *Ops Data Store* entries they'll need to pick from based on their current location)*
+1. select relevant layer -> *Add Layer to Project*
+
+To configure a layer for the first time:
+
+1. from the *Layers* pane -> (added layer) -> *Properties* -> *Attribute Form*:
+    - *pk* and *pid*:
+      - *General* -> *Editable*: *Uncheck*
+      - *Widget Type*: *Hidden*
+      - *Constraints* -> *Enforce not null constraint*: *Uncheck*
+      - *Constraints* -> *Enforce unique constraint*: *Uncheck* (for *pk* field)
+    - *id*:
+      - *Constraints* -> *Enforce not null constraint*: *Check* (if desired)
+    - *updated_at*, *updated_by*, *etag*, *lat_dd*, *lon_dd*, *lat_ddm* and *lon_ddm*:
+      - *General* -> *Editable*: *Uncheck*
+      - *Widget Type*: *Hidden*
+1. set other layer properties (symbology, labelling, etc.) as needed
+1. *Style* -> *Save as Default* -> *Datasource Database* -> *Ok*
+
+**Note:** The first layer style saved to the database will automatically create a `layer_styles` table.
+
+#### Editing features in DB layer
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+**Note:** These instructions depend on the [Adding DB layer](#adding-db-layer) workflow.
+
+Layers can be edited as normal, the add feature form should already be configured to hide generated or platform fields.
+
 ## Implementation
 
 ### Command line interface
@@ -146,27 +212,43 @@ compatibility.
 
 Datasets hosted in this platform can be classed as either:
 
-- managed: formally agreed and defined datasets that are explicitly checked and verified by this platform
-- unmanaged: any other datasets users may wish to store, which are essentially ignored by this platform
+- *managed*: formally defined datasets, where changes to structure of the dataset (i.e. new, changed or removed fields)
+   must be agreed between data owners (Ops) and platform operators (MAGIC)
+- *unmanaged*: any other datasets users may wish to store, which are essentially ignored by this platform
 
 ### Managed datasets
 
-Managed datasets are not defined within this project (as it only provides the platform), see these projects instead:
+This platform defines base requirements for managed datasets, such that they provide minimally agreed functionality. In
+practical terms this means all managed datasets using the same base table structure, with additional fields and
+functionality extending from this.
+
+This base schema comprises:
+
+- a set of [Identifier](#managed-dataset-identifiers) fields
+- a pair of [Last Update](#managed-dataset-last-update-fields) fields
+- an [Entity Tag](#managed-dataset-etag) field
+- a set of [Geospatial](#managed-dataset-geometry-fields) fields
+
+Any additional fields are determined in these other projects:
 
 - BAS [Field Operations GIS Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - BAS [Air Unit Network Dataset 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
 
+Complete schemas for managed datasets are defined in [`dataset-schemas.sql`](resources/data/dataset-schemas.sql).
+
+See the relevant sub-section for adding to, amending or removing from these schemas.
+
 ### Managed dataset identifiers
 
-All managed datasets will have two or more identifiers, of which three are conventional and recommended:
+All managed datasets have at least two identifiers, though most will have three as defined below:
 
-| Domain     | Owner    | Audience  | Attribute Name | Data Type | Format/Scheme                         | Required |
-|------------|----------|-----------|----------------|-----------|---------------------------------------|----------|
-| Technology | MAGIC/IT | MAGIC/IT  | `pk`           | Integer   | PostgreSQL Identity                   | Yes      |
-| Platform   | MAGIC    | MAGIC/Ops | `pid`          | UUID      | [ULID](https://github.com/ulid/spec)  | Yes      |
-| Dataset    | Ops      | MAGIC/Ops | `id`           | String    | -                                     | No       |
+| Domain     | Owner    | Audience  | Column Name | Data Type | Format/Scheme                        | Required |
+|------------|----------|-----------|-------------|-----------|--------------------------------------|----------|
+| Technology | MAGIC/IT | MAGIC/IT  | `pk`        | Integer   | PostgreSQL Identity                  | Yes      |
+| Platform   | MAGIC    | MAGIC/Ops | `pid`       | UUID      | [ULID](https://github.com/ulid/spec) | Yes      |
+| Dataset    | Ops      | MAGIC/Ops | `id`        | String    | -                                    | No       |
 
-For example, a dataset of waypoints may be structured as:
+For example:
 
 | PK  | PID                           | ID      | ... |
 |-----|-------------------------------|---------|-----|
@@ -235,6 +317,134 @@ For example:
 | ... | ...                           | ...                                 | ...        | ... |
 | `9` | `01H26N7D9SGG348R24KN6W50GX ` | `2023-10-14 09:46:23.237912 +00:00` | `conwat`   | ... |
 | ... | ...                           | ...                                 | ...        | ... |
+
+### Managed dataset etag
+
+All managed datasets have an `etag` column which is value derived from one or more significant fields in each dataset.
+
+This column can be thought of as a fingerprint for each feature that can be used to detect where a feature has changed.
+It can also be thought of as a version number but that is based on fields in the feature, rather 1, 2, 3, etc.
+
+For example, a simple dataset may consist of a name and colour property, with an etag based on the combination of these
+fields:
+
+| Name   | Colour | Etag        |
+|--------|--------|-------------|
+| Alice  | Red    | AliceRed    |
+| Bob    | Blue   | BobBlue     |
+| Connie | Green  | ConnieGreen |
+
+If the colour for Alice changes the etag will change as well, allowing both versions of Alice to be distinguished based
+on the etag alone (AliceRed != AliceOrange). This value can therefore be used to refer to a feature as it's properties
+change (i.e. AliceOrange is the version of Alice when it's colour was Orange and not any other colour).
+
+For managed datasets in this platform, etags are usually based on a combination of the geometry and a number of other
+significant fields. A mathematical function is used to create uniform length values using variable inputs.
+
+Formally, this column is [generated](https://www.postgresql.org/docs/16/ddl-generated-columns.html) using an
+[MD5 hash](https://en.wikipedia.org/wiki/MD5) using the Postgres `md5()` function to form an
+[HTTP entity tag](https://en.wikipedia.org/wiki/HTTP_ETag).
+
+The data used to create the MD5 hash will vary between datasets as defined in the relevant table schema but typically
+includes the `geom` column (encoded as extended Well Known Text) and the `id` column if used.
+
+For example:
+
+| PK  | PID                           | Etag                               | ... |
+|-----|-------------------------------|------------------------------------|-----|
+| `1` | `01H26N7D9Q064B6QQMCPP5NQK0 ` | `1812fad6021286fc01beddf5449bb0cb` | ... |
+| ... | ...                           | ...                                | ... |
+| `9` | `01H26N7D9SGG348R24KN6W50GX ` | `1a91f3e95054e11e77d395a6a0856869` | ... |
+| ... | ...                           | ...                                | ... |
+
+### Managed dataset geometry fields
+
+All managed datasets have a PostGIS EPSG:4326 point geometry column named `geom`.
+
+Managed datasets also have a set of derived fields to format the coordinates of this geometry in both:
+
+- decimal degrees (DD):
+  - derived using the PostGIS `st_y()` and `st_x()` functions respectively
+  - held in the `lat_dd` and `lon_dd` columns
+- degrees decimal minutes (DDM):
+  - derived using the custom `geom_as_ddm` function
+  - held in the `lat_ddm` and `lon_ddm` columns
+
+These derived columns are [generated](https://www.postgresql.org/docs/16/ddl-generated-columns.html), meaning they are
+computed from other table columns (in this case `geom`) and will always be sync. These columns are inherently read
+only and are cast or returned as text.
+
+Values for DDM formatted coordinates use a fixed number of decimal places (6) to match the default used for DD
+formatted coordinates.
+
+For example:
+
+| PK  | PID                           | Geom                                                 | Lat (DD)                 | Lon (DD)             | Lat (DDM)          | Lon (DDM)         | ... |
+|-----|-------------------------------|------------------------------------------------------|--------------------------|----------------------|--------------------|-------------------|-----|
+| `1` | `01H26N7D9Q064B6QQMCPP5NQK0 ` | `0101000020E6100000F049670B7E804FC0F983F2C579D850C0` | `-67.38243244822651`     | `-63.00384657424354` | `67° 22.945947' S` | `63° .230794' W`  | ... |
+| ... | ...                           | ...                                                  | ...                      | ...                  | ...                | ...               | ... |
+| `9` | `01H26N7D9SGG348R24KN6W50GX ` | `0101000020E6100000B685DCAFBB7752C06F6E39F206B852C0` | `-74.87542396172078`     | `-73.8708305028475`  | `74° 52.525438' S` | `73° 52.24983' W` | ... |
+| ... | ...                           | ...                                                  | ...                      | ...                  | ...                | ...               | ... |
+
+### Adding a new managed dataset
+
+**Note:** This section is a work in progress and may be incomplete.
+
+Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) with the template below replacing:
+
+1. `NEW_DATASET` with the singular, lower case, name of the new dataset (e.g. 'cave' not 'CAVES')
+    - for multi-word names use underscores as a separator (e.g. 'moon_base' not 'moon-base')
+1. adding additional fields as needed
+    - use `TEXT` for string fields rather than `VARCHAR`
+1. update the definition of the `etag` column to set which columns should be used to calculate it
+    - if there aren't significant fields, use the `geom` (as EWKT) and the `update_at` columns
+
+```sql
+-- NEW_DATASET
+
+create table if not exists public.NEW_DATASET
+(
+  pk         INTEGER GENERATED ALWAYS AS IDENTITY
+    CONSTRAINT NEW_DATASET_pk PRIMARY KEY,
+  pid        UUID                     NOT NULL DEFAULT generate_ulid(),
+  id         TEXT                     NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_by TEXT                     NOT NULL DEFAULT 'unknown',
+  etag       TEXT GENERATED ALWAYS AS (md5(id || '__' || st_asewkt(geom, 10))) STORED,
+  geom       GEOMETRY(Point, 4326),
+  lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
+  lon_dd     TEXT GENERATED ALWAYS AS (st_x(geom)::text) STORED,
+  lat_ddm    TEXT GENERATED ALWAYS AS ((geom_as_ddm(geom)).y) STORED,
+  lon_ddm    TEXT GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
+);
+
+create index if not exists NEW_DATASET_geom_idx
+  on public.NEW_DATASET using gist (geom);
+
+create trigger NEW_DATASET_updated_at_trigger
+  before update
+  on NEW_DATASET
+  for each row
+execute function set_updated_at();
+
+create trigger NEW_DATASET_updated_by_trigger
+  before update
+  on NEW_DATASET
+  for each row
+execute function set_updated_by();
+```
+
+### Amending an existing managed dataset [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+...
+
+### Removing a managed dataset [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+...
 
 ## Setup
 
@@ -327,6 +537,13 @@ $ ods-ctl db setup
 Setting up database for first time use.
 Note: If this command fails, please either create an issue in the 'Ops Data Store' project in GitLab, or contact MAGIC at magic@bas.ac.uk with the output of this command.
 Ok. Database setup complete.
+```
+
+Create the schemas for managed datasets by running the contents of the
+[`dataset-schemas.sql`](resources/data/dataset-schemas.sql) file against the database.
+
+```
+$ ods-ctl db run --input-path dataset-schemas.sql
 ```
 
 ### Upgrading [WIP]
