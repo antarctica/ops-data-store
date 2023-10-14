@@ -95,7 +95,7 @@ The included QGIS project, developed as part of the wider Field Operations and A
 editing workflows and verifying expected behaviour.
 
 1. start QGIS LTR with the `ops-data-store` profile selected:
-1. open the included QGIS project file [`qgis-project.qgz`](/qgis/qgis-project.qgz)
+1. open the included QGIS project file [`qgis-project.qgz`](/resources/qgis/qgis-project.qgz)
 
 If needed, shortcuts can be created to start QGIS with a specific profile:
 
@@ -806,7 +806,7 @@ $ poetry build
 If the QGIS profile used for testing needs updating, the generic package stored in GitLab can be updated:
 
 ```
-$ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/[version]/qgis-profile.zip
+$ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file resources/qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/[version]/qgis-profile.zip
 ```
 
 Where `[version]` is replaced with a calendar based version `YYYY-MM-DD.N`, e.g. the first release on April 12th 2024
@@ -815,7 +815,7 @@ would become `2023-04-12.0`. A second release that day would be `2023-04-12.1` e
 For example:
 
 ```
-$ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/2023-04-12.0/qgis-profile.zip
+$ curl --header "PRIVATE-TOKEN: $BAS_GITLAB_TOKEN" --upload-file resources/qgis/qgis-profile.zip https://gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/generic/qgis-profile/2023-04-12.0/qgis-profile.zip
 ```
 
 ### Continuous Deployment
