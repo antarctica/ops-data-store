@@ -215,6 +215,26 @@ even if only for a time limited period. Values are uncontrolled in terms of need
 
 **Note:** These properties are nevertheless recommended in any identifier.
 
+### Managed dataset last update fields
+
+All managed datasets have two last update columns:
+
+- `updated_at`: timestamp of when a row was last changed
+- `updated_by`: identity of who last changed a row
+
+Both fields are updated when any data in a given row changes via a Postgres trigger on each table calling a simple
+functions (`NOW()` and `current_user` respectively). The value of `current_user` should correspond to a NERC username,
+and therefore an end-user (e.g. `conwat` -> *Connie Watson*).
+
+For example:
+
+| PK  | PID                           | Updated At                          | Updated By | ... |
+|-----|-------------------------------|-------------------------------------|------------|-----|
+| `1` | `01H26N7D9Q064B6QQMCPP5NQK0 ` | `2023-08-24 15:23:01.583312 +00:00` | `conwat`   | ... |
+| ... | ...                           | ...                                 | ...        | ... |
+| `9` | `01H26N7D9SGG348R24KN6W50GX ` | `2023-10-14 09:46:23.237912 +00:00` | `conwat`   | ... |
+| ... | ...                           | ...                                 | ...        | ... |
+
 ## Setup
 
 ### Requirements
