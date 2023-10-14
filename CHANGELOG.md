@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.4.0] - 2023-10-14
+
 ### Added
 
 * `updated_at`, `updated_by` fields to managed datasets
