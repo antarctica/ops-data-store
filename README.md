@@ -57,13 +57,14 @@ specific project is not aimed at end-users directly.
 
 **Note:** This CLI is intended for use by MAGIC team members, not end-users.
 
-A command line interface is available for performing administrative tasks.
-
-Then call the `ods-ctl` command line application:
+A command line interface, `ods-ctl`, is available for performing administrative tasks.
 
 ```
+$ ssh [user]@[host]
 $ ods-ctl --help
 ```
+
+See the [Infrastructure](#infrastructure) section for connection details (specifically the relevant app server).
 
 **Note:** Calling the CLI without any command will not return any output. This is expected.
 
@@ -368,6 +369,23 @@ Ok. Configuration valid.
 
 - contact IT to request an application server for running Python applications
 - contact IT to request a Postgres database with required extensions
+
+## Infrastructure
+
+### Staging (Cambridge)
+
+Used for pre-release testing and experimentation.
+
+- [app server 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
+- [database 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+
+See [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup.
+
+### Reference VM
+
+Used to simulate a GIS workstation used by Operations and act as a known working example for debugging and testing.
+
+- [Windows VM 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=mb2mfbk66zrowd4kcj3kjc5tdy&h=magic.1password.eu)
 
 ## Development
 
