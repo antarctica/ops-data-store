@@ -9,6 +9,10 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Fixed
+
+* ensuring default value for `updated_by` column is real user
+
 ## [0.4.0] - 2023-10-14
 
 ### Added

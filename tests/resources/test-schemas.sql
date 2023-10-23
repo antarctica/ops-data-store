@@ -7,7 +7,7 @@ create table if not exists public.circus
   pid        UUID                     NOT NULL DEFAULT generate_ulid(),
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_by TEXT                     NOT NULL DEFAULT 'unknown',
+  updated_by TEXT                     NOT NULL DEFAULT current_user,
   etag       TEXT GENERATED ALWAYS AS (md5(id || '__' || st_asewkt(geom, 10))) STORED,
   geom       GEOMETRY(Point, 4326),
   lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
