@@ -404,14 +404,14 @@ Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) with the temp
 ```sql
 -- NEW_DATASET
 
-create table if not exists public.NEW_DATASET
+CREATE TABLE IF NOT EXISTS public.NEW_DATASET
 (
   pk         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT NEW_DATASET_pk PRIMARY KEY,
   pid        UUID                     NOT NULL DEFAULT generate_ulid(),
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_by TEXT                     NOT NULL DEFAULT current_user,
+  updated_by TEXT                     NOT NULL DEFAULT 'unknown',
   etag       TEXT GENERATED ALWAYS AS (md5(pid || '__' || updated_at || '__' || st_asewkt(geom, 10))) STORED,
   geom       GEOMETRY(Point, 4326),
   lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
@@ -420,20 +420,20 @@ create table if not exists public.NEW_DATASET
   lon_ddm    TEXT GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
 );
 
-create index if not exists NEW_DATASET_geom_idx
-  on public.NEW_DATASET using gist (geom);
+CREATE INDEX IF NOT EXISTS NEW_DATASET_geom_idx
+  ON public.NEW_DATASET USING gist (geom);
 
-create trigger NEW_DATASET_updated_at_trigger
-  before update
-  on NEW_DATASET
-  for each row
-execute function set_updated_at();
+CREATE TRIGGER NEW_DATASET_updated_at_trigger
+  BEFORE INSERT OR UPDATE
+  ON NEW_DATASET
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
 
-create trigger NEW_DATASET_updated_by_trigger
-  before update
-  on NEW_DATASET
-  for each row
-execute function set_updated_by();
+CREATE TRIGGER NEW_DATASET_updated_by_trigger
+  BEFORE INSERT OR UPDATE
+  ON NEW_DATASET
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_by();
 ```
 
 ### Amending an existing managed dataset [WIP]
