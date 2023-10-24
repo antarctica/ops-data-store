@@ -8,7 +8,6 @@ CREATE TABLE IF NOT EXISTS public.circus
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by TEXT                     NOT NULL DEFAULT 'unknown',
-  etag       TEXT GENERATED ALWAYS AS (md5(id || '__' || st_asewkt(geom, 10))) STORED,
   geom       GEOMETRY(Point, 4326),
   lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
   lon_dd     TEXT GENERATED ALWAYS AS (st_x(geom)::text) STORED,

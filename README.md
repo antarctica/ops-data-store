@@ -154,7 +154,7 @@ To configure a layer for the first time:
       - *Constraints* -> *Enforce unique constraint*: *Uncheck* (for *pk* field)
     - *id*:
       - *Constraints* -> *Enforce not null constraint*: *Check* (if desired)
-    - *updated_at*, *updated_by*, *etag*, *lat_dd*, *lon_dd*, *lat_ddm* and *lon_ddm*:
+    - *pk*, *pid*, *updated_at*, *updated_by*, *lat_dd*, *lon_dd*, *lat_ddm* and *lon_ddm*:
       - *General* -> *Editable*: *Uncheck*
       - *Widget Type*: *Hidden*
 1. set other layer properties (symbology, labelling, etc.) as needed
@@ -228,7 +228,6 @@ This base schema comprises:
 
 - a set of [Identifier](#managed-dataset-identifiers) fields
 - a pair of [Last Update](#managed-dataset-last-update-fields) fields
-- an [Entity Tag](#managed-dataset-etag) field
 - a set of [Geospatial](#managed-dataset-geometry-fields) fields
 
 Any additional fields are determined in these other projects:
@@ -320,45 +319,6 @@ For example:
 | `9` | `01H26N7D9SGG348R24KN6W50GX ` | `2023-10-14 09:46:23.237912 +00:00` | `conwat`   | ... |
 | ... | ...                           | ...                                 | ...        | ... |
 
-### Managed dataset etag
-
-All managed datasets have an `etag` column which is value derived from one or more significant fields in each dataset.
-
-This column can be thought of as a fingerprint for each feature that can be used to detect where a feature has changed.
-It can also be thought of as a version number but that is based on fields in the feature, rather 1, 2, 3, etc.
-
-For example, a simple dataset may consist of a name and colour property, with an etag based on the combination of these
-fields:
-
-| Name   | Colour | Etag        |
-|--------|--------|-------------|
-| Alice  | Red    | AliceRed    |
-| Bob    | Blue   | BobBlue     |
-| Connie | Green  | ConnieGreen |
-
-If the colour for Alice changes the etag will change as well, allowing both versions of Alice to be distinguished based
-on the etag alone (AliceRed != AliceOrange). This value can therefore be used to refer to a feature as it's properties
-change (i.e. AliceOrange is the version of Alice when it's colour was Orange and not any other colour).
-
-For managed datasets in this platform, etags are usually based on a combination of the geometry and a number of other
-significant fields. A mathematical function is used to create uniform length values using variable inputs.
-
-Formally, this column is [generated](https://www.postgresql.org/docs/16/ddl-generated-columns.html) using an
-[MD5 hash](https://en.wikipedia.org/wiki/MD5) using the Postgres `md5()` function to form an
-[HTTP entity tag](https://en.wikipedia.org/wiki/HTTP_ETag).
-
-The data used to create the MD5 hash will vary between datasets as defined in the relevant table schema but typically
-includes the `geom` column (encoded as extended Well Known Text) and the `id` column if used.
-
-For example:
-
-| PK  | PID                           | Etag                               | ... |
-|-----|-------------------------------|------------------------------------|-----|
-| `1` | `01H26N7D9Q064B6QQMCPP5NQK0 ` | `1812fad6021286fc01beddf5449bb0cb` | ... |
-| ... | ...                           | ...                                | ... |
-| `9` | `01H26N7D9SGG348R24KN6W50GX ` | `1a91f3e95054e11e77d395a6a0856869` | ... |
-| ... | ...                           | ...                                | ... |
-
 ### Managed dataset geometry fields
 
 All managed datasets have a PostGIS EPSG:4326 point geometry column named `geom`.
@@ -398,8 +358,6 @@ Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) with the temp
     - for multi-word names use underscores as a separator (e.g. 'moon_base' not 'moon-base')
 1. adding additional fields as needed
     - use `TEXT` for string fields rather than `VARCHAR`
-1. update the definition of the `etag` column to set which columns should be used to calculate it
-    - if there aren't significant fields, use the `geom` (as EWKT) and the `update_at` columns
 
 ```sql
 -- NEW_DATASET
@@ -412,7 +370,6 @@ CREATE TABLE IF NOT EXISTS public.NEW_DATASET
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by TEXT                     NOT NULL DEFAULT 'unknown',
-  etag       TEXT GENERATED ALWAYS AS (md5(pid || '__' || updated_at || '__' || st_asewkt(geom, 10))) STORED,
   geom       GEOMETRY(Point, 4326),
   lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
   lon_dd     TEXT GENERATED ALWAYS AS (st_x(geom)::text) STORED,
