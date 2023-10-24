@@ -1,6 +1,6 @@
 -- CIRCUS
 
-create table if not exists public.circus
+CREATE TABLE IF NOT EXISTS public.circus
 (
   pk         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT circus_pk PRIMARY KEY,
@@ -16,17 +16,17 @@ create table if not exists public.circus
   lon_ddm    TEXT GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
 );
 
-create index if not exists circus_geom_idx
+CREATE INDEX IF NOT EXISTS circus_geom_idx
   on public.circus using gist (geom);
 
-create trigger circus_updated_at_trigger
-  on circus
-  for each row
-execute function set_updated_at();
+CREATE TRIGGER circus_updated_at_trigger
   BEFORE INSERT OR UPDATE
+  ON circus
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
 
-create trigger circus_updated_by_trigger
-  on circus
-  for each row
-execute function set_updated_by();
+CREATE TRIGGER circus_updated_by_trigger
   BEFORE INSERT OR UPDATE
+  ON circus
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_by();

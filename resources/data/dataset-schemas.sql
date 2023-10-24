@@ -1,6 +1,6 @@
 -- DEPOT
 
-create table if not exists public.depot
+CREATE TABLE IF NOT EXISTS public.depot
 (
   pk                         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT depot_pk PRIMARY KEY,
@@ -42,24 +42,24 @@ create table if not exists public.depot
   info_cambridge             TEXT
 );
 
-create index if not exists depot_geom_idx
+CREATE INDEX IF NOT EXISTS depot_geom_idx
   on public.depot using gist (geom);
 
-create trigger depot_updated_at_trigger
-  on depot
-  for each row
-execute function set_updated_at();
+CREATE TRIGGER depot_updated_at_trigger
   BEFORE INSERT OR UPDATE
+  ON depot
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
 
-create trigger depot_updated_by_trigger
-  on depot
-  for each row
-execute function set_updated_by();
+CREATE TRIGGER depot_updated_by_trigger
   BEFORE INSERT OR UPDATE
+  ON depot
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_by();
 
 -- INSTRUMENT
 
-create table if not exists public.instrument
+CREATE TABLE IF NOT EXISTS public.instrument
 (
   pk                         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT instrument_pk PRIMARY KEY,
@@ -99,17 +99,17 @@ create table if not exists public.instrument
   info_cambridge             TEXT
 );
 
-create index if not exists instrument_geom_idx
+CREATE INDEX IF NOT EXISTS instrument_geom_idx
   on public.instrument using gist (geom);
 
-create trigger instrument_updated_at_trigger
-  on instrument
-  for each row
-execute function set_updated_at();
+CREATE TRIGGER instrument_updated_at_trigger
   BEFORE INSERT OR UPDATE
+  ON instrument
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
 
-create trigger instrument_updated_by_trigger
-  on instrument
-  for each row
-execute function set_updated_by();
+CREATE TRIGGER instrument_updated_by_trigger
   BEFORE INSERT OR UPDATE
+  ON instrument
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_by();
