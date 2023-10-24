@@ -8,7 +8,7 @@ create table if not exists public.depot
   id                         TEXT                     NOT NULL,
   updated_at                 TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   etag                       TEXT GENERATED ALWAYS AS (md5(id || '__' || st_asewkt(geom, 10))) STORED,
-  updated_by                 TEXT                     NOT NULL DEFAULT current_user,
+  updated_by                 TEXT                     NOT NULL DEFAULT 'unknown',
   geom                       GEOMETRY(Point, 4326),
   lat_dd                     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
   lon_dd                     TEXT GENERATED ALWAYS AS (st_x(geom)::text) STORED,
@@ -46,16 +46,16 @@ create index if not exists depot_geom_idx
   on public.depot using gist (geom);
 
 create trigger depot_updated_at_trigger
-  before update
   on depot
   for each row
 execute function set_updated_at();
+  BEFORE INSERT OR UPDATE
 
 create trigger depot_updated_by_trigger
-  before update
   on depot
   for each row
 execute function set_updated_by();
+  BEFORE INSERT OR UPDATE
 
 -- INSTRUMENT
 
@@ -67,7 +67,7 @@ create table if not exists public.instrument
   id                         TEXT                     NOT NULL,
   updated_at                 TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   etag                       TEXT GENERATED ALWAYS AS (md5(id || '__' || st_asewkt(geom, 10))) STORED,
-  updated_by                 TEXT                     NOT NULL DEFAULT current_user,
+  updated_by                 TEXT                     NOT NULL DEFAULT 'unknown',
   geom                       GEOMETRY(Point, 4326),
   lat_dd                     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
   lon_dd                     TEXT GENERATED ALWAYS AS (st_x(geom)::text) STORED,
@@ -103,13 +103,13 @@ create index if not exists instrument_geom_idx
   on public.instrument using gist (geom);
 
 create trigger instrument_updated_at_trigger
-  before update
   on instrument
   for each row
 execute function set_updated_at();
+  BEFORE INSERT OR UPDATE
 
 create trigger instrument_updated_by_trigger
-  before update
   on instrument
   for each row
 execute function set_updated_by();
+  BEFORE INSERT OR UPDATE

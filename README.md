@@ -411,7 +411,7 @@ create table if not exists public.NEW_DATASET
   pid        UUID                     NOT NULL DEFAULT generate_ulid(),
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_by TEXT                     NOT NULL DEFAULT current_user,
+  updated_by TEXT                     NOT NULL DEFAULT 'unknown',
   etag       TEXT GENERATED ALWAYS AS (md5(pid || '__' || updated_at || '__' || st_asewkt(geom, 10))) STORED,
   geom       GEOMETRY(Point, 4326),
   lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
@@ -424,16 +424,16 @@ create index if not exists NEW_DATASET_geom_idx
   on public.NEW_DATASET using gist (geom);
 
 create trigger NEW_DATASET_updated_at_trigger
-  before update
   on NEW_DATASET
   for each row
 execute function set_updated_at();
+  BEFORE INSERT OR UPDATE
 
 create trigger NEW_DATASET_updated_by_trigger
-  before update
   on NEW_DATASET
   for each row
 execute function set_updated_by();
+  BEFORE INSERT OR UPDATE
 ```
 
 ### Amending an existing managed dataset [WIP]
