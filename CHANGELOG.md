@@ -13,6 +13,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * ensuring default value for `updated_by` column is real user
 
+### Changed
+
+* improving config handling for overriding values when testing
+  [#73](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/73)
+
 ### Removed
 
 * flawed/il-defined entity tags concept

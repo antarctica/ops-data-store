@@ -7,9 +7,16 @@ class Config:
     """Application configuration."""
 
     def __init__(self) -> None:
-        """Create Config instance and load options from dotenv file."""
+        """
+        Create Config instance and load options from possible dotenv file.
+
+        To support application tests which may need to manipulate options, such as the application database, variables
+        loaded from a possible `.env` file, or that are set as environment variables directly, will be overriden by any
+        variables set in a possible `.test.env` file.
+        """
         self.env = Env()
         self.env.read_env()
+        self.env.read_env(".test.env", override=True)
 
     def validate(self) -> None:
         """Validate required configuration options have valid values."""

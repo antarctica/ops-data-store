@@ -743,10 +743,8 @@ Tests and coverage checks are run automatically in [Continuous Integration](#con
 locally:
 
 ```
-poetry run dotenv -f .test.env run -- pytest --strict-markers --random-order --cov --cov-report=html tests
+poetry run pytest --strict-markers --random-order --cov --cov-report=html tests
 ```
-
-**Note:** If testing using PyCharm, set environment variables within the run/text config to match the `.test.env` file.
 
 ### Continuous Integration
 
