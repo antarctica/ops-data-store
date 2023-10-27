@@ -18,6 +18,17 @@ variables:
   POSTGRES_PASSWORD: password
   APP_ODS_DB_DSN: "postgresql://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST/$POSTGRES_DB"
 
+  # AUTH config
+  APP_ODS_AUTH_AZURE_AUTHORITY: "https://login.microsoftonline.com/example"
+  APP_ODS_AUTH_AZURE_CLIENT_ID: "test"
+  APP_ODS_AUTH_AZURE_CLIENT_SECRET: "xxx"
+  APP_ODS_AUTH_LDAP_URL: "ldap://ldap.example.com:389"
+  APP_ODS_AUTH_LDAP_BASE_DN: "dc=example,dc=com"
+  APP_ODS_AUTH_LDAP_BIND_DN: "cn=test,dc=example,dc=com"
+  APP_ODS_AUTH_LDAP_BIND_PASSWORD: "xxx"
+  APP_ODS_AUTH_LDAP_OU_USERS: "users"
+  APP_ODS_AUTH_LDAP_OU_GROUPS: "groups"
+
 cache:
   paths:
     - .cache/pip  # for pipx/pip
@@ -36,7 +47,7 @@ stages:
     - apt-get update
     - apt-get install -y software-properties-common
     - add-apt-repository -y ppa:deadsnakes/ppa
-    - apt-get install -y tree libxml2-utils python3-pip python3-venv python3.9 python3.9-venv python3.9-dev
+    - apt-get install -y tree libxml2-utils libldap2-dev libsasl2-dev python3-pip python3-venv python3.9 python3.9-venv python3.9-dev
     - python3.9 --version
     - python3.9 -m pip install --upgrade pip
     - python3.9 -m pip install pipx
