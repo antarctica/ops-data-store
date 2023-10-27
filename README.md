@@ -76,9 +76,13 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 0.2.0
 ```
 
+#### Control CLI `auth` commands
+
+- `ods-ctl auth check`: verifies authentication/authorisation services are available
+
 #### Control CLI `config` commands
 
-- `ods-ctl config check`: checks required configuration options have been set
+- `ods-ctl config check`: verifies required configuration options have been set
 - `ods-ctl config show`: displays the current application configuration
 
 #### Control CLI `db` commands
@@ -178,17 +182,32 @@ Layers can be edited as normal, the add feature form should already be configure
 
 ### Configuration
 
-The [control CLI](#command-line-interface) uses a [`Config`](src/ops_data_store/config.py) class for all settings. Some
-settings are read-only, such as the application version, others are write-only, such as database connection details,
-and must be defined by the user, either using appropriate environment variables, or an `.env` file. If using the
-latter, an example [`.example.env`](.example.env) is available as a guide.
+The [control CLI](#command-line-interface) uses a series of settings for connecting to external services and reporting internal information.
+Some settings are read-only, such as the application version, others are write-only, such as database connection
+details, and must be defined by the user, using either appropriate environment variables, or an `.env` file.
 
-| Config Property | Environment Variable | Required | Type   | Description                                     | Example                          |
-|-----------------|----------------------|----------|--------|-------------------------------------------------|----------------------------------|
-| `VERSION`       | -                    | No       | String | Application version, read from package metadata | '0.1.0'                          |
-| `DB_DSN`        | `APP_ODS_DB_DSN`     | Yes      | String | Application database connection string          | 'postgresql://user:pass@host/db' |
+**Note:** If using an `.env` file, an example [`.example.env`](.example.env) is available as a guide.
 
-The `DB_DSN` config option must be a valid [psycopg](https://www.psycopg.org) connection string.
+| Config Property            | Environment Variable               | Required | Sensitive | Read Only | Type            | Description                                             | Example                                                                  |
+|----------------------------|------------------------------------|----------|-----------|-----------|-----------------|---------------------------------------------------------|--------------------------------------------------------------------------|
+| `VERSION`                  | -                                  | No       | No        | Yes       | String          | Application version, read from package metadata         | '0.1.0'                                                                  |
+| `DB_DSN`                   | `APP_ODS_DB_DSN`                   | Yes      | Yes       | No        | String          | Application database connection string [1]              | 'postgresql://user:pass@host/db'                                         |
+| `AUTH_AZURE_AUTHORITY`     | `APP_ODS_AUTH_AZURE_AUTHORITY`     | No [2]   | No        | No        | String          | Endpoint used for authenticating against Azure          | 'https://login.microsoftonline.com/b311db95-32ad-438f-a101-7ba061712a4e' |
+| `AUTH_AZURE_CLIENT_ID`     | `APP_ODS_AUTH_AZURE_CLIENT_ID`     | No [2]   | No        | No        | String          | Identifier used for authenticating against Azure        | '3b2c5acf-728a-4b78-85f0-9560a6aad701'                                   |
+| `AUTH_AZURE_CLIENT_SECRET` | `APP_ODS_AUTH_AZURE_CLIENT_SECRET` | No [2]   | Yes       | No        | String          | Secret used for authenticating against Azure            | 'xxx'                                                                    |
+| `AUTH_AZURE_SCOPES`        | -                                  | No [2]   | No        | Yes       | List of Strings | Permissions requested when authenticating against Azure | ['https://graph.microsoft.com/.default']                                 |
+| `AUTH_MS_GRAPH_ENDPOINT`   | -                                  | No [2]   | No        | Yes       | String          | Endpoint used for the Microsoft Graph API               | 'https://graph.microsoft.com/v1.0'                                       |
+| `AUTH_LDAP_URL`            | `APP_ODS_AUTH_LDAP_URL`            | No [2]   | No        | No        | String          | Endpoint used for authenticating against LDAP server    | 'ldap://ldap.example.com:389'                                            |
+| `AUTH_LDAP_BASE_DN`        | `APP_ODS_AUTH_LDAP_BASE_DN`        | No [2]   | No        | No        | String          | Base scope to apply to all LDAP queries                 | 'dc=example,dc=com'                                                      |
+| `AUTH_LDAP_BIND_DN`        | `APP_ODS_AUTH_LDAP_BIND_DN`        | No [2]   | No        | No        | String          | Identifier used for authenticating against LDAP server  | 'cn=app,ou=apps,dc=example,dc=com'                                       |
+| `AUTH_LDAP_BIND_PASSWORD`  | `APP_ODS_AUTH_LDAP_BIND_PASSWORD`  | No [2]   | Yes       | No        | String          | Secret used for authenticating against LDAP server      | 'xxx'                                                                    |
+| `AUTH_LDAP_OU_USERS`       | `APP_ODS_AUTH_LDAP_OU_USERS`       | No [2]   | No        | No        | String          | Scope for user related objects in LDAP server           | 'users'                                                                  |
+| `AUTH_LDAP_OU_GROUPS`      | `APP_ODS_AUTH_LDAP_OU_GROUPS`      | No [2]   | No        | No        | String          | Scope for group related objects in LDAP server          | 'groups'                                                                 |
+
+**Note:**
+
+[1] The `DB_DSN` config option MUST be a valid [psycopg](https://www.psycopg.org) connection string
+[2] `AUTH_*` config options are required if managing authentication/authorisation aspects of the Data Store
 
 ### Database
 
@@ -209,6 +228,37 @@ the database client in relation to this project specifically.
 
 For consistency/compatibility, the QGIS profile and project developed for the wider GIS are used for consistency and
 compatibility.
+
+### Azure
+
+Azure Entra (Active Directory) is the Identity Provider (IDP) used by NERC, within which BAS sits. An application
+registration represents this project within Azure and is used to grant permission to resources within the Microsoft
+Graph API.
+
+### Microsoft Graph
+
+The Microsoft Graph API provides programmatic access to Microsoft Team member listings (represented as Office 365
+Groups). These membership listings are replicated to LDAP groups as part of the Data Store's
+[Permissions](#permissions) system.
+
+### LDAP
+
+LDAP is the Identity Provider (IDP) used by BAS IT, specifically for unix systems including [Postgres](#database) and
+[Apache](#web-server). It is used for both authentication and authorisation through a number of application controlled
+groups. The members of these groups are synced from one or more Microsoft Azure groups as part of the Data Store's
+[Permissions](#permissions) system.
+
+### Web Server [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+...
+
+### Permissions [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+...
 
 ## Datasets
 
@@ -405,14 +455,15 @@ CREATE TRIGGER NEW_DATASET_updated_by_trigger
 
 ...
 
-## Setup
-
-### Requirements
+## Requirements
 
 Required infrastructure:
 
 - a service or server for running [Python](https://www.python.org) applications
 - a service or server for running [Postgres](https://www.postgresql.org) databases
+- an Azure Entra (Active Directory) app registration
+
+### Application server requirements
 
 Required OS packages for Python app server:
 
@@ -422,6 +473,8 @@ Required OS packages for Python app server:
 - libpq
 
 **Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `3.4`.
+
+### Database requirements
 
 Required Postgres extensions:
 
@@ -433,7 +486,16 @@ A single database, and an account with permissions to create, read, update and d
 to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`
 respectively are recommended as conventional defaults.
 
-### Installation
+### Azure Entra requirements
+
+Required Azure app registration permissions (application assigned):
+
+- `https://graph.microsoft.com/GroupMember.Read.All`
+- `https://graph.microsoft.com/User.Read.All`
+
+This app registration will need to be registered within the tenancy that group/team members will be synced from.
+
+## Installation
 
 For the Python application, it is strongly recommended to install this project into a virtual environment:
 
@@ -533,6 +595,12 @@ Ok. Configuration valid.
 
 **Note:** This section is a work in progress and may be restructured.
 
+### Microsoft Azure
+
+- create app registration with the required permissions
+- request NERC DDaT to approve required permissions
+- optionally configure branding name, logo and internal note referencing this README
+
 ### GitLab
 
 - create project with package registry and CI/CD enabled
@@ -543,8 +611,11 @@ Ok. Configuration valid.
 
 ### BAS IT
 
-- contact IT to request an application server for running Python applications
-- contact IT to request a Postgres database with required extensions
+- request an application server for running Python applications
+- request a Postgres database with required extensions
+- request a Windows VM (configured as a BAS workstation) with QGIS LTS installed to act as a reference VM
+- request a LDAP entity to use for managing application LDAP groups
+- request LDAP groups as needed for implementing application permissions
 
 ## Infrastructure
 
@@ -556,6 +627,10 @@ Used for pre-release testing and experimentation.
 - [database 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
 
 See [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup.
+
+### Azure App Registrations
+
+- [BAS Operations Data Store 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
 
 ### Reference VM
 

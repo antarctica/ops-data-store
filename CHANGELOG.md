@@ -9,6 +9,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Added
+
+* `auth check` CLI command
+  [#38](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/38)
+
 ### Fixed
 
 * ensuring default value for `updated_by` column is real user
