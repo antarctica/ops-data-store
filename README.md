@@ -199,7 +199,7 @@ details, and must be defined by the user, using either appropriate environment v
 | `AUTH_MS_GRAPH_ENDPOINT`   | -                                  | No [2]   | No        | Yes       | String          | Endpoint used for the Microsoft Graph API               | 'https://graph.microsoft.com/v1.0'                                       |
 | `AUTH_LDAP_URL`            | `APP_ODS_AUTH_LDAP_URL`            | No [2]   | No        | No        | String          | Endpoint used for authenticating against LDAP server    | 'ldap://ldap.example.com:389'                                            |
 | `AUTH_LDAP_BASE_DN`        | `APP_ODS_AUTH_LDAP_BASE_DN`        | No [2]   | No        | No        | String          | Base scope to apply to all LDAP queries                 | 'dc=example,dc=com'                                                      |
-| `AUTH_LDAP_BIND_DN`        | `APP_ODS_AUTH_LDAP_BIND_DN`        | No [2]   | No        | No        | String          | Identifier used for authenticating against LDAP server  | 'cn=app,ou=apps,dc=example,dc=com'                                       |
+| `AUTH_LDAP_BIND_DN`        | `APP_ODS_AUTH_LDAP_BIND_DN`        | No [2]   | No        | No        | String          | Identifier used for authenticating against LDAP server  | 'cn=app,ou=apps,dc=example,dc=com' [3]                                   |
 | `AUTH_LDAP_BIND_PASSWORD`  | `APP_ODS_AUTH_LDAP_BIND_PASSWORD`  | No [2]   | Yes       | No        | String          | Secret used for authenticating against LDAP server      | 'xxx'                                                                    |
 | `AUTH_LDAP_OU_USERS`       | `APP_ODS_AUTH_LDAP_OU_USERS`       | No [2]   | No        | No        | String          | Scope for user related objects in LDAP server           | 'users'                                                                  |
 | `AUTH_LDAP_OU_GROUPS`      | `APP_ODS_AUTH_LDAP_OU_GROUPS`      | No [2]   | No        | No        | String          | Scope for group related objects in LDAP server          | 'groups'                                                                 |
@@ -207,7 +207,10 @@ details, and must be defined by the user, using either appropriate environment v
 **Note:**
 
 [1] The `DB_DSN` config option MUST be a valid [psycopg](https://www.psycopg.org) connection string
+
 [2] `AUTH_*` config options are required if managing authentication/authorisation aspects of the Data Store
+
+[3] Make sure to use the correct naming context prefix for the LDAP server, e.g. `cn=conwat` vs. `uid=conwat`.
 
 ### Database
 
@@ -631,6 +634,11 @@ See [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-
 ### Azure App Registrations
 
 - [BAS Operations Data Store 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
+
+
+### LDAP servers
+
+- [BAS Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
 
 ### Reference VM
 
