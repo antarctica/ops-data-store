@@ -125,3 +125,34 @@ class LDAPClient:
             raise RuntimeError(error_msg) from e
         finally:
             self.client.unbind_s()
+
+    def check_users(self, user_ids: list[str]) -> list[str]:
+        """
+        Check users exist.
+
+        Searches for users in the configured user/people OU. Any users that are not found are returned.
+
+        :type user_ids: list[str]
+        :param user_ids: One or more user IDs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
+        :rtype list[str]
+        :return: One or more user IDs not found in the LDAP server
+        """
+        ldap_base = f"ou={self.config.AUTH_LDAP_OU_USERS},{self.config.AUTH_LDAP_BASE_DN}"
+        ldap_filter = f"(|{''.join([f'({user_id})' for user_id in user_ids])})"
+
+        self.logger.info("Attempting to bind to LDAP server.")
+        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
+        self.logger.info("LDAP bind successful.")
+
+        self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
+        results = self.client.search_s(base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["dn"])
+        self.client.unbind_s()
+        self.logger.debug("Results: %s", results)
+
+        dns_searched = [f"{user_id},{ldap_base}" for user_id in user_ids]
+        dns_found = [result[0] for result in results]
+        dns_missing = list(set(dns_searched) - set(dns_found))
+        self.logger.info("Distinguished names found: %s", dns_found)
+        self.logger.info("Distinguished names missing: %s", dns_missing)
+
+        return [dn.split(",")[0] for dn in dns_missing]

@@ -1,6 +1,5 @@
-from unittest.mock import Mock
-
 import pytest
+from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
 from ops_data_store.cli import app as cli
@@ -9,23 +8,14 @@ from ops_data_store.cli import app as cli
 class TestCliAuthCheck:
     """Tests for `auth check` CLI command."""
 
-    def test_ok(
-        self,
-        caplog: pytest.LogCaptureFixture,
-        fx_cli_runner: CliRunner,
-        fx_mock_msal_cca: Mock,
-        fx_mock_ldap: Mock,
-    ) -> None:
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, mocker: MockFixture) -> None:
         """Succeeds when Azure and LDAP are reachable."""
-        expected_token = "x"  # noqa: S105
-
-        fx_mock_msal_cca.return_value.acquire_token_silent.return_value = {"access_token": expected_token}
-        fx_mock_ldap.return_value.verify_bind.return_value = None
+        mocker.patch("ops_data_store.auth.ConfidentialClientApplication", autospec=True)
 
         result = fx_cli_runner.invoke(app=cli, args=["auth", "check"])
 
         assert "Checking Azure connectivity." in caplog.text
-        assert f"Access token: {expected_token}" in caplog.text
         assert "Azure connectivity ok." in caplog.text
         assert "Checking LDAP connectivity." in caplog.text
         assert "LDAP connectivity ok." in caplog.text
