@@ -212,3 +212,22 @@ class LDAPClient:
         self.logger.debug("Results: %s", results)
 
         return [member.decode() for member in results[0][1]["member"]]
+
+    def add_to_group(self, group_dn: str, user_dns: list[str]) -> None:
+        """
+        Add users to group as members.
+
+        The group and all members to be added should be specified using their Distinguished Names (DNs).
+
+        :type group_dn: str
+        :param group_dn: Group DN, with correct naming context prefix for the LDAP server, e.g. `cn=admins`
+        :type user_dns: list[str]
+        :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
+        """
+        self.logger.info("Attempting to bind to LDAP server.")
+        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
+        self.logger.info("LDAP bind successful.")
+
+        self.logger.info("Group to add to: %s.", group_dn)
+        self.logger.info("Users to add: %s.", user_dns)
+        self.client.modify_s(dn=group_dn, modlist=[(ldap.MOD_ADD, "member", [member.encode() for member in user_dns])])

@@ -198,3 +198,22 @@ class TestLDAPClient:
         assert f"Searching in: {base} with filter: ({name})" in caplog.text
 
         assert members == expected
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_add_to_group(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+        """Can add users to group."""
+        base = "ou=groups,dc=example,dc=com"
+        name = "cn=admin"
+        group_dn = f"{name},{base}"
+        user_dns = ["cn=foo,ou=users,dc=example,dc=com", "cn=bar,ou=users,dc=example,dc=com"]
+        result = (103, [], 2, [])
+
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "modify_s", return_value=result)
+
+        client = LDAPClient()
+        client.add_to_group(group_dn=group_dn, user_dns=user_dns)
+
+        assert "Attempting to bind to LDAP server." in caplog.text
+        assert "LDAP bind successful." in caplog.text
+        assert f"Group to add to: {group_dn}" in caplog.text
+        assert f"Users to add: {user_dns}" in caplog.text
