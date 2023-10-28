@@ -13,15 +13,13 @@ class TestCliAuthCheck:
         self,
         caplog: pytest.LogCaptureFixture,
         fx_cli_runner: CliRunner,
-        fx_mock_msal_confidential_client_application: Mock,
+        fx_mock_msal_cca: Mock,
         fx_mock_ldap: Mock,
     ) -> None:
         """Succeeds when Azure and LDAP are reachable."""
         expected_token = "x"  # noqa: S105
 
-        fx_mock_msal_confidential_client_application.return_value.acquire_token_silent.return_value = {
-            "access_token": expected_token
-        }
+        fx_mock_msal_cca.return_value.acquire_token_silent.return_value = {"access_token": expected_token}
         fx_mock_ldap.return_value.verify_bind.return_value = None
 
         result = fx_cli_runner.invoke(app=cli, args=["auth", "check"])
