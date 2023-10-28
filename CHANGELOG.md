@@ -17,6 +17,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 ### Fixed
 
 * ensuring default value for `updated_by` column is real user
+* Issue connecting to BAS production LDAP server
+  [#75](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/75)
 
 ### Changed
 

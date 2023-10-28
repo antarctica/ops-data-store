@@ -119,7 +119,6 @@ class LDAPClient:
             self.logger.info("Attempting to bind to LDAP server.")
             self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
             self.logger.info("LDAP bind successful.")
-            self.logger.info("Bind result: %s", self.client.result["description"])
         except ldap.LDAPError as e:
             self.logger.error(e, exc_info=True)
             error_msg = "Failed to connect to LDAP server."
