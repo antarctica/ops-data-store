@@ -217,3 +217,20 @@ class TestLDAPClient:
         assert "LDAP bind successful." in caplog.text
         assert f"Group to add to: {group_dn}" in caplog.text
         assert f"Users to add: {user_dns}" in caplog.text
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_remove_from_group(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+        """Can remove users from group."""
+        base = "ou=groups,dc=example,dc=com"
+        name = "cn=admin"
+        group_dn = f"{name},{base}"
+        user_dns = ["cn=bar,ou=users,dc=example,dc=com"]
+        result = (103, [], 2, [])
+
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "modify_s", return_value=result)
+
+        client = LDAPClient()
+        client.remove_from_group(
+            group_dn=group_dn,
+            user_dns=user_dns,
+        )
