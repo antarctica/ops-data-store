@@ -14,6 +14,12 @@ logger = logging.getLogger("app")
 @app.command(help="Check auth (Azure/LDAP) connectivity.")
 def check() -> None:
     """Check Auth connection."""
+    print("Note: If this command fails, please check the configured credentials and external connectivity.")
+    print(
+        "If problem persists, create an issue in the 'Ops Data Store' project in GitLab, or contact MAGIC at "
+        "magic@bas.ac.uk with the output of this command."
+    )
+
     azure_client = AzureClient()
     ldap_client = LDAPClient()
 
