@@ -145,8 +145,9 @@ class TestLDAPClient:
     def test_check_users(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
         """Can find missing users."""
         search = ["cn=foo", "cn=bar", "cn=unknown"]
-        expected = ["cn=unknown"]
-        results = [(f"{user},ou=users,dc=example,dc=com", {}) for user in search[:-1]]
+        base = "ou=users,dc=example,dc=com"
+        expected = [search[-1]]
+        results = [(f"{user},{base}", {}) for user in search[:-1]]
 
         mocker.patch.object(ldap.ldapobject.LDAPObject, "search_s", return_value=results)
 
@@ -154,5 +155,26 @@ class TestLDAPClient:
         missing_users = client.check_users(user_ids=search)
 
         assert "Attempting to bind to LDAP server." in caplog.text
+        assert "LDAP bind successful." in caplog.text
+        assert f"Searching in: {base} with filter: (|{''.join([f'({user})' for user in search])})" in caplog.text
 
         assert missing_users == expected
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_check_groups(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
+        """Can find missing groups."""
+        search = ["cn=admin", "cn=guest", "cn=unknown"]
+        base = "ou=groups,dc=example,dc=com"
+        expected = [search[-1]]
+        results = [(f"{group},{base}", {}) for group in search[:-1]]
+
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "search_s", return_value=results)
+
+        client = LDAPClient()
+        missing_groups = client.check_groups(group_ids=search)
+
+        assert "Attempting to bind to LDAP server." in caplog.text
+        assert "LDAP bind successful." in caplog.text
+        assert f"Searching in: {base} with filter: (|{''.join([f'({group})' for group in search])})" in caplog.text
+
+        assert missing_groups == expected
