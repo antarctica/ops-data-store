@@ -87,6 +87,26 @@ class TestAzureClient:
 
             assert members == expected
 
+    @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
+    def test_get_group_name_ok(self, caplog: pytest.LogCaptureFixture, fx_azure_client: AzureClient) -> None:
+        """Can get group name."""
+        group_id = "123"
+        expected = "foo"
+
+        mock_response = {
+            "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#groups/$entity",
+            "displayName": expected,
+        }
+        with requests_mock.Mocker() as m:
+            m.get(f"https://graph.microsoft.com/v1.0/groups/{group_id}", json=mock_response)
+
+            name = fx_azure_client.get_group_name(group_id)
+
+            assert f"Getting display name of group ID: {group_id} from MS Graph API." in caplog.text
+            assert f"displayName: {expected}" in caplog.text
+
+            assert name == expected
+
 
 class TestLDAPClient:
     """Tests for app LDAP client."""
