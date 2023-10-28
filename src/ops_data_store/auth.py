@@ -249,5 +249,7 @@ class LDAPClient:
 
         self.logger.info("Group to remove from: %s.", group_dn)
         self.logger.info("Users to remove: %s.", user_dns)
-        result = self.client.modify_s(dn=group_dn, modlist=[(ldap.MOD_DELETE, "member", [member.encode() for member in user_dns])])
+        result = self.client.modify_s(
+            dn=group_dn, modlist=[(ldap.MOD_DELETE, "member", [member.encode() for member in user_dns])]
+        )
         print(result)
