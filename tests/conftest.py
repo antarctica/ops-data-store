@@ -7,6 +7,7 @@ from environs import Env
 from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
+from ops_data_store.auth import AzureClient
 from ops_data_store.config import Config
 
 
@@ -144,8 +145,8 @@ def fx_cli_runner() -> CliRunner:
 
 
 @pytest.fixture()
-def fx_mock_msal_confidential_client_application(mocker: MockFixture) -> Mock:
-    """Mock `msal.ConfidentialClientApplication`."""
+def fx_mock_msal_cca(mocker: MockFixture) -> Mock:
+    """Mock MSAL ConfidentialClientApplication."""
     return mocker.patch("ops_data_store.auth.ConfidentialClientApplication", autospec=True)
 
 
@@ -159,3 +160,15 @@ def fx_mock_ldap(mocker: MockFixture) -> Mock:
 def fx_mock_ldap_object(mocker: MockFixture) -> ldap.ldapobject.LDAPObject:
     """Mock LDAP client."""
     return mocker.Mock(spec=ldap.ldapobject.LDAPObject)
+
+
+@pytest.fixture()
+def fx_azure_client(fx_mock_msal_cca: Mock) -> AzureClient:
+    """App Azure client."""
+    return AzureClient()
+
+
+@pytest.fixture()
+def _fx_mock_azure_client_get_token(mocker: MockFixture) -> None:
+    """Mock app Azure client to avoid requesting real access tokens."""
+    mocker.patch.object(AzureClient, "get_token", return_value="x")

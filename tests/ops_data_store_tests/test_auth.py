@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import ldap
 import pytest
+import requests_mock
 
 from ops_data_store.auth import AzureClient, LDAPClient
 
@@ -9,7 +10,7 @@ from ops_data_store.auth import AzureClient, LDAPClient
 class TestAzureClient:
     """Tests for app Azure client class."""
 
-    def test_init(self, caplog: pytest.LogCaptureFixture, fx_mock_msal_confidential_client_application: Mock) -> None:
+    def test_init(self, caplog: pytest.LogCaptureFixture, fx_mock_msal_cca: Mock) -> None:
         """AzureClient can be initialised."""
         client = AzureClient()
 
@@ -17,14 +18,10 @@ class TestAzureClient:
 
         assert isinstance(client, AzureClient)
 
-    def test_get_token_silent_ok(
-        self, caplog: pytest.LogCaptureFixture, fx_mock_msal_confidential_client_application: Mock
-    ) -> None:
+    def test_get_token_silent_ok(self, caplog: pytest.LogCaptureFixture, fx_mock_msal_cca: Mock) -> None:
         """Can acquire access token using valid cache."""
         expected = "x"
-        fx_mock_msal_confidential_client_application.return_value.acquire_token_silent.return_value = {
-            "access_token": expected
-        }
+        fx_mock_msal_cca.return_value.acquire_token_silent.return_value = {"access_token": expected}
 
         client = AzureClient()
         token = client.get_token()
@@ -34,15 +31,11 @@ class TestAzureClient:
 
         assert token == expected
 
-    def test_get_token_fresh_ok(
-        self, caplog: pytest.LogCaptureFixture, fx_mock_msal_confidential_client_application: Mock
-    ) -> None:
+    def test_get_token_fresh_ok(self, caplog: pytest.LogCaptureFixture, fx_mock_msal_cca: Mock) -> None:
         """Can acquire access token where cache empty."""
         expected = "x"
-        fx_mock_msal_confidential_client_application.return_value.acquire_token_silent.return_value = None
-        fx_mock_msal_confidential_client_application.return_value.acquire_token_for_client.return_value = {
-            "access_token": expected
-        }
+        fx_mock_msal_cca.return_value.acquire_token_silent.return_value = None
+        fx_mock_msal_cca.return_value.acquire_token_for_client.return_value = {"access_token": expected}
 
         client = AzureClient()
         token = client.get_token()
@@ -53,12 +46,10 @@ class TestAzureClient:
 
         assert token == expected
 
-    def test_get_token_error(
-        self, caplog: pytest.LogCaptureFixture, fx_mock_msal_confidential_client_application: Mock
-    ) -> None:
+    def test_get_token_error(self, caplog: pytest.LogCaptureFixture, fx_mock_msal_cca: Mock) -> None:
         """Can acquire access token where cache empty."""
         expected = {"error": "x", "error_description": "y", "correlation_id": "z"}
-        fx_mock_msal_confidential_client_application.return_value.acquire_token_silent.return_value = expected
+        fx_mock_msal_cca.return_value.acquire_token_silent.return_value = expected
 
         client = AzureClient()
         with pytest.raises(RuntimeError) as e:
@@ -69,6 +60,32 @@ class TestAzureClient:
         assert f"Correlation ID: {expected['correlation_id']}" in caplog.text
 
         assert str(e.value) == "Failed to acquire Azure token."
+
+    @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
+    def test_get_token_mocked(self, fx_azure_client: AzureClient) -> None:
+        """Can mock get token method."""
+        expected = "x"
+        assert fx_azure_client.get_token() == expected
+
+    @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
+    def test_get_group_members_ok(self, caplog: pytest.LogCaptureFixture, fx_azure_client: AzureClient) -> None:
+        """Can get group members."""
+        group_id = "123"
+        expected = ["foo@example.com", "bar@example.com"]
+
+        mock_response = {
+            "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#directoryObjects",
+            "value": [{"@odata.type": "#microsoft.graph.user", "userPrincipalName": member} for member in expected],
+        }
+        with requests_mock.Mocker() as m:
+            m.get(f"https://graph.microsoft.com/v1.0/groups/{group_id}/members", json=mock_response)
+
+            members = fx_azure_client.get_group_members(group_id)
+
+            assert f"Getting members of group ID: {group_id} from MS Graph API." in caplog.text
+            assert f"Members ({len(expected)}): {', '.join(expected)}" in caplog.text
+
+            assert members == expected
 
 
 class TestLDAPClient:

@@ -1,6 +1,7 @@
 import logging
 
 import ldap
+import requests
 from msal import ConfidentialClientApplication
 
 from ops_data_store.config import Config
@@ -50,6 +51,29 @@ class AzureClient:
 
             error_msg = "Failed to acquire Azure token."
             raise RuntimeError(error_msg) from e
+
+    def get_group_members(self, group_id: str) -> list[str]:
+        """
+        Get User Principal Name's (UPNs) of members of an Azure group.
+
+        In Azure the UPN is the user's email address (e.g. conwat@bas.ac.uk).
+
+        :type group_id: str
+        :param group_id: Azure AD group ID
+        :rtype List of dict
+        :return: List of group member UPNs
+        """
+        self.logger.info("Getting members of group ID: %s from MS Graph API.", group_id)
+        r = requests.get(
+            url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}/members",
+            headers={"Authorization": f"Bearer {self.get_token()}"},
+            timeout=10,
+        )
+        r.raise_for_status()
+
+        upns = [member["userPrincipalName"] for member in r.json()["value"]]
+        self.logger.debug("Members (%s): %s", len(upns), ", ".join(upns))
+        return upns
 
 
 class LDAPClient:
