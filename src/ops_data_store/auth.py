@@ -187,3 +187,28 @@ class LDAPClient:
         self.logger.info("Distinguished names missing: %s", dns_missing)
 
         return [dn.split(",")[0] for dn in dns_missing]
+
+    def get_group_members(self, group_dn: str) -> list[str]:
+        """
+        Get Distinguished Names (DNs) of members of a group.
+
+        :type group_dn: str
+        :param group_dn: Group DN, with correct naming context prefix for the LDAP server, e.g. `cn=admins`
+        :rtype list[str]
+        :return: List of member DNs
+        """
+        ldap_filter = f"({group_dn.split(',')[0]})"
+        ldap_base = ",".join(group_dn.split(",")[1:])
+
+        self.logger.info("Attempting to bind to LDAP server.")
+        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
+        self.logger.info("LDAP bind successful.")
+
+        self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
+        results = self.client.search_s(
+            base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["member"]
+        )
+        self.client.unbind_s()
+        self.logger.debug("Results: %s", results)
+
+        return [member.decode() for member in results[0][1]["member"]]

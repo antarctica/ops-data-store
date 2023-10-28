@@ -178,3 +178,23 @@ class TestLDAPClient:
         assert f"Searching in: {base} with filter: (|{''.join([f'({group})' for group in search])})" in caplog.text
 
         assert missing_groups == expected
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_get_group_members(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
+        """Can get group members."""
+        base = "ou=groups,dc=example,dc=com"
+        name = "cn=admin"
+        search = f"{name},{base}"
+        expected = ["cn=foo,ou=users,dc=example,dc=com", "cn=bar,ou=users,dc=example,dc=com"]
+        results = [(f"{search}", {"member": [member.encode() for member in expected]})]
+
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "search_s", return_value=results)
+
+        client = LDAPClient()
+        members = client.get_group_members(group_dn=search)
+
+        assert "Attempting to bind to LDAP server." in caplog.text
+        assert "LDAP bind successful." in caplog.text
+        assert f"Searching in: {base} with filter: ({name})" in caplog.text
+
+        assert members == expected
