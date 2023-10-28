@@ -75,6 +75,27 @@ class AzureClient:
         self.logger.debug("Members (%s): %s", len(upns), ", ".join(upns))
         return upns
 
+    def get_group_name(self, group_id: str) -> str:
+        """
+        Get display name of Azure group.
+
+        :type group_id: str
+        :param group_id: Azure AD group ID
+        :rtype str
+        :return: Group display name
+        """
+        self.logger.info("Getting display name of group ID: %s from MS Graph API.", group_id)
+        r = requests.get(
+            url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}",
+            headers={"Authorization": f"Bearer {self.get_token()}"},
+            timeout=10,
+        )
+        r.raise_for_status()
+
+        self.logger.debug("displayName: %s", r.json()["displayName"])
+
+        return r.json()["displayName"]
+
 
 class LDAPClient:
     """
