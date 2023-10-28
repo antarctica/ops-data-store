@@ -231,3 +231,25 @@ class LDAPClient:
         self.logger.info("Group to add to: %s.", group_dn)
         self.logger.info("Users to add: %s.", user_dns)
         self.client.modify_s(dn=group_dn, modlist=[(ldap.MOD_ADD, "member", [member.encode() for member in user_dns])])
+
+    def remove_from_group(self, group_dn: str, user_dns: list[str]) -> None:
+        """
+        Remove members from group.
+
+        The group and all members to be removed should be specified using their Distinguished Names (DNs).
+
+        :type group_dn: str
+        :param group_dn: Group DN, with correct naming context prefix for the LDAP server, e.g. `cn=admins`
+        :type user_dns: list[str]
+        :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
+        """
+        self.logger.info("Attempting to bind to LDAP server.")
+        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
+        self.logger.info("LDAP bind successful.")
+
+        self.logger.info("Group to remove from: %s.", group_dn)
+        self.logger.info("Users to remove: %s.", user_dns)
+        result = self.client.modify_s(
+            dn=group_dn, modlist=[(ldap.MOD_DELETE, "member", [member.encode() for member in user_dns])]
+        )
+        print(result)
