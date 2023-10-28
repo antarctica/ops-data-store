@@ -156,3 +156,34 @@ class LDAPClient:
         self.logger.info("Distinguished names missing: %s", dns_missing)
 
         return [dn.split(",")[0] for dn in dns_missing]
+
+    def check_groups(self, group_ids: list[str]) -> list[str]:
+        """
+        Check groups exist.
+
+        Searches for groups in the configured groups OU. Any groups that are not found are returned.
+
+        :type group_ids: list[str]
+        :param group_ids: One or more group IDs with correct naming context prefix for the LDAP server, e.g. `cn=admins`
+        :rtype list[str]
+        :return: One or more group IDs not found in the LDAP server
+        """
+        ldap_base = f"ou={self.config.AUTH_LDAP_OU_GROUPS},{self.config.AUTH_LDAP_BASE_DN}"
+        ldap_filter = f"(|{''.join([f'({group_id})' for group_id in group_ids])})"
+
+        self.logger.info("Attempting to bind to LDAP server.")
+        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
+        self.logger.info("LDAP bind successful.")
+
+        self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
+        results = self.client.search_s(base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["dn"])
+        self.client.unbind_s()
+        self.logger.debug("Results: %s", results)
+
+        dns_searched = [f"{group_id},{ldap_base}" for group_id in group_ids]
+        dns_found = [result[0] for result in results]
+        dns_missing = list(set(dns_searched) - set(dns_found))
+        self.logger.info("Distinguished names found: %s", dns_found)
+        self.logger.info("Distinguished names missing: %s", dns_missing)
+
+        return [dn.split(",")[0] for dn in dns_missing]
