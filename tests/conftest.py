@@ -151,18 +151,6 @@ def fx_mock_msal_cca(mocker: MockFixture) -> Mock:
 
 
 @pytest.fixture()
-def fx_mock_ldap(mocker: MockFixture) -> Mock:
-    """Mock LDAP client."""
-    return mocker.patch("ops_data_store.auth.ldap", autospec=True)
-
-
-@pytest.fixture()
-def fx_mock_ldap_object(mocker: MockFixture) -> ldap.ldapobject.LDAPObject:
-    """Mock LDAP client."""
-    return mocker.Mock(spec=ldap.ldapobject.LDAPObject)
-
-
-@pytest.fixture()
 def fx_azure_client(fx_mock_msal_cca: Mock) -> AzureClient:
     """App Azure client."""
     return AzureClient()
@@ -172,3 +160,9 @@ def fx_azure_client(fx_mock_msal_cca: Mock) -> AzureClient:
 def _fx_mock_azure_client_get_token(mocker: MockFixture) -> None:
     """Mock app Azure client to avoid requesting real access tokens."""
     mocker.patch.object(AzureClient, "get_token", return_value="x")
+
+
+@pytest.fixture()
+def _fx_mock_ldap_object(mocker: MockFixture) -> None:
+    """Mock LDAP object to avoid binding."""
+    mocker.patch.object(ldap.ldapobject.LDAPObject, "simple_bind_s", autospec=True)

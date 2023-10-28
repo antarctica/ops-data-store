@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import ldap
 import pytest
 import requests_mock
+from pytest_mock import MockFixture
 
 from ops_data_store.auth import AzureClient, LDAPClient
 
@@ -119,21 +120,18 @@ class TestLDAPClient:
 
         assert isinstance(client, LDAPClient)
 
-    def test_verify_bind_ok(self, caplog: pytest.LogCaptureFixture, fx_mock_ldap: Mock) -> None:
-        """Bind ok."""
-        fx_mock_ldap.return_value.simple_bind_s.return_value = None
-
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_verify_bind_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Can bind."""
         client = LDAPClient()
         client.verify_bind()
 
         assert "Attempting to bind to LDAP server." in caplog.text
         assert "LDAP bind successful." in caplog.text
 
-    def test_verify_bind_server_down(
-        self, caplog: pytest.LogCaptureFixture, fx_mock_ldap_object: ldap.ldapobject.LDAPObject
-    ) -> None:
-        """Bind fails when server down."""
-        fx_mock_ldap_object.simple_bind_s.side_effect = ldap.LDAPError()
+    def test_verify_bind_server_down(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+        """Cannot bind when server down."""
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "simple_bind_s", side_effect=ldap.LDAPError())
 
         client = LDAPClient()
         with pytest.raises(RuntimeError) as e:
@@ -142,3 +140,19 @@ class TestLDAPClient:
         assert "Attempting to bind to LDAP server." in caplog.text
 
         assert str(e.value) == "Failed to connect to LDAP server."
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_check_users(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
+        """Can find missing users."""
+        search = ["cn=foo", "cn=bar", "cn=unknown"]
+        expected = ["cn=unknown"]
+        results = [(f"{user},ou=users,dc=example,dc=com", {}) for user in search[:-1]]
+
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "search_s", return_value=results)
+
+        client = LDAPClient()
+        missing_users = client.check_users(user_ids=search)
+
+        assert "Attempting to bind to LDAP server." in caplog.text
+
+        assert missing_users == expected
