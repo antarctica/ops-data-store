@@ -53,10 +53,13 @@ class AzureClient:
             raise RuntimeError(error_msg) from e
 
     def get_group_members(self, group_id: str) -> list[str]:
+    def check_group(self, group_id: str) -> None:
         """
         Get User Principal Name's (UPNs) of members of an Azure group.
+        Check Azure group exists.
 
         In Azure the UPN is the user's email address (e.g. conwat@bas.ac.uk).
+        Raises a ValueError if the specified group does not exist
 
         :type group_id: str
         :param group_id: Azure AD group ID
@@ -64,8 +67,11 @@ class AzureClient:
         :return: List of group member UPNs
         """
         self.logger.info("Getting members of group ID: %s from MS Graph API.", group_id)
+        self.logger.info("Checking group ID: %s exists.", group_id)
+
         r = requests.get(
             url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}/members",
+            url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}",
             headers={"Authorization": f"Bearer {self.get_token()}"},
             timeout=10,
         )
@@ -74,6 +80,17 @@ class AzureClient:
         upns = [member["userPrincipalName"] for member in r.json()["value"]]
         self.logger.debug("Members (%s): %s", len(upns), ", ".join(upns))
         return upns
+        if (
+            r.status_code == 400
+            and "error" in r.json()
+            and "message" in r.json()["error"]
+            and "Invalid object identifier" in r.json()["error"]["message"]
+        ):
+            msg = f"Group ID: {group_id} does not exist."
+            self.logger.error(msg)
+            raise ValueError(msg) from None
+
+        self.logger.info("Group ID: %s exists.", group_id)
 
     def get_group_name(self, group_id: str) -> str:
         """

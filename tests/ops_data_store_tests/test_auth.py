@@ -69,6 +69,38 @@ class TestAzureClient:
         assert fx_azure_client.get_token() == expected
 
     @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
+    def test_check_group_ok(self, caplog: pytest.LogCaptureFixture, fx_azure_client: AzureClient) -> None:
+        """Can get group."""
+        group_id = "123"
+
+        mock_response = {
+            "@odata.context": "https://graph.microsoft.com/v1.0/$metadata#groups/$entity",
+            "id": group_id,
+        }
+        with requests_mock.Mocker() as m:
+            m.get(f"https://graph.microsoft.com/v1.0/groups/{group_id}", json=mock_response)
+
+            fx_azure_client.check_group(group_id)
+
+            assert f"Checking group ID: {group_id} exists." in caplog.text
+            assert f"Group ID: {group_id} exists." in caplog.text
+
+    @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
+    def test_check_group_unknown(self, caplog: pytest.LogCaptureFixture, fx_azure_client: AzureClient) -> None:
+        """Cannot get unknown group."""
+        group_id = "unknown"
+
+        mock_response = {"error": {"message": f"Invalid object identifier '{group_id}'."}}
+        with requests_mock.Mocker() as m:
+            m.get(f"https://graph.microsoft.com/v1.0/groups/{group_id}", json=mock_response, status_code=400)
+
+            with pytest.raises(ValueError, match=f"Group ID: {group_id} does not exist."):
+                fx_azure_client.check_group(group_id)
+
+            assert f"Checking group ID: {group_id} exists." in caplog.text
+            assert f"Group ID: {group_id} does not exist." in caplog.text
+
+    @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
     def test_get_group_members_ok(self, caplog: pytest.LogCaptureFixture, fx_azure_client: AzureClient) -> None:
         """Can get group members."""
         group_id = "123"
