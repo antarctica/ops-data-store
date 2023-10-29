@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from typing import Optional
 
 import ldap
 import requests
@@ -131,6 +134,9 @@ class LDAPClient:
     Application client for LDAP.
 
     Used for managing resources within an LDAP directory.
+
+    This client will maintain bound to the LDAP server until the class instance is destroyed. It will bind automatically
+    when first needed.
     """
 
     def __init__(self) -> None:
@@ -141,6 +147,40 @@ class LDAPClient:
         self.logger.info("Creating LDAP client.")
 
         self.client = ldap.initialize(self.config.AUTH_LDAP_URL)
+        self._is_bound = False
+
+    def __del__(self) -> None:
+        """Destroy instance."""
+        self._unbind()
+
+    def _bind(self) -> None:
+        """Bind to LDAP server."""
+        self.logger.info("Attempting to bind to LDAP server.")
+
+        if self._is_bound:
+            self.logger.info("Skipping as already bound.")
+            return
+
+        try:
+            self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
+            self.logger.info("LDAP bind successful.")
+            self._is_bound = True
+        except ldap.LDAPError as e:
+            self.logger.error(e, exc_info=True)
+            error_msg = "Failed to connect to LDAP server."
+            raise RuntimeError(error_msg) from e
+
+    def _unbind(self) -> None:
+        """Unbind from LDAP server."""
+        self.logger.info("Attempting to unbind from LDAP server.")
+
+        if not self._is_bound:
+            self.logger.info("Skipping as already unbound.")
+            return
+
+        self.client.unbind_s()
+        self.logger.info("LDAP unbind successful.")
+        self._is_bound = False
 
     def _search_objects(self, base: str, object_ids: list[str], attributes: list[str]) -> list[str]:
         """
@@ -164,13 +204,11 @@ class LDAPClient:
         ldap_filter = f"(|{''.join([f'({object_id})' for object_id in object_ids])})"
         dns_searched = [f"{object_id},{base}" for object_id in object_ids]
 
-        self.logger.info("Attempting to bind to LDAP server.")
-        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
-        self.logger.info("LDAP bind successful.")
+        if not self._is_bound:
+            self._bind()
 
         self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
         results = self.client.search_s(base=base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=attributes)
-        self.client.unbind_s()
         self.logger.debug("Results: %s", results)
 
         dns_found = [result[0] for result in results]
@@ -182,16 +220,8 @@ class LDAPClient:
 
     def verify_bind(self) -> None:
         """Check credentials allow LDAP bind."""
-        try:
-            self.logger.info("Attempting to bind to LDAP server.")
-            self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
-            self.logger.info("LDAP bind successful.")
-        except ldap.LDAPError as e:
-            self.logger.error(e, exc_info=True)
-            error_msg = "Failed to connect to LDAP server."
-            raise RuntimeError(error_msg) from e
-        finally:
-            self.client.unbind_s()
+        if not self._is_bound:
+            self._bind()
 
     def check_users(self, user_ids: list[str]) -> list[str]:
         """
@@ -241,15 +271,13 @@ class LDAPClient:
         ldap_filter = f"({group_dn.split(',')[0]})"
         ldap_base = ",".join(group_dn.split(",")[1:])
 
-        self.logger.info("Attempting to bind to LDAP server.")
-        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
-        self.logger.info("LDAP bind successful.")
+        if not self._is_bound:
+            self._bind()
 
         self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
         results = self.client.search_s(
             base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["member"]
         )
-        self.client.unbind_s()
         self.logger.debug("Results: %s", results)
 
         return [member.decode() for member in results[0][1]["member"]]
@@ -265,9 +293,8 @@ class LDAPClient:
         :type user_dns: list[str]
         :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
         """
-        self.logger.info("Attempting to bind to LDAP server.")
-        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
-        self.logger.info("LDAP bind successful.")
+        if not self._is_bound:
+            self._bind()
 
         self.logger.info("Group to add to: %s.", group_dn)
         self.logger.info("Users to add: %s.", user_dns)
@@ -284,9 +311,8 @@ class LDAPClient:
         :type user_dns: list[str]
         :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
         """
-        self.logger.info("Attempting to bind to LDAP server.")
-        self.client.simple_bind_s(who=self.config.AUTH_LDAP_BIND_DN, cred=self.config.AUTH_LDAP_BIND_PASSWORD)
-        self.logger.info("LDAP bind successful.")
+        if not self._is_bound:
+            self._bind()
 
         self.logger.info("Group to remove from: %s.", group_dn)
         self.logger.info("Users to remove: %s.", user_dns)
