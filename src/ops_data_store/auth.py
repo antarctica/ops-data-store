@@ -90,7 +90,7 @@ class AzureClient:
         :rtype str
         :return: Group display name
         """
-        self.logger.info("Getting display name of group ID: %s from MS Graph API.", group_id)
+        self.logger.info("Getting display name of group ID: %s.", group_id)
         r = requests.get(
             url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}",
             headers={"Authorization": f"Bearer {self.get_token()}"},
@@ -98,7 +98,7 @@ class AzureClient:
         )
         r.raise_for_status()
 
-        self.logger.debug("displayName: %s", r.json()["displayName"])
+        self.logger.debug("group ID: %s DisplayName is: %s", group_id, r.json()["displayName"])
 
         return r.json()["displayName"]
 

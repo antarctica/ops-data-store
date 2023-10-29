@@ -135,8 +135,8 @@ class TestAzureClient:
 
             name = fx_azure_client.get_group_name(group_id)
 
-            assert f"Getting display name of group ID: {group_id} from MS Graph API." in caplog.text
-            assert f"displayName: {expected}" in caplog.text
+            assert f"Getting display name of group ID: {group_id}." in caplog.text
+            assert f"group ID: {group_id} DisplayName is: {expected}" in caplog.text
 
             assert name == expected
 
