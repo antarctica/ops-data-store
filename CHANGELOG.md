@@ -27,18 +27,19 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ### Fixed
 
-* ensuring default value for `updated_by` column is real user
+* Ensuring default value for `updated_by` column is real user
+  [#65](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/65)
 * Issue connecting to BAS production LDAP server
   [#75](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/75)
 
 ### Changed
 
-* improving config handling for overriding values when testing
+* Improving config handling for overriding values when testing
   [#73](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/73)
 
 ### Removed
 
-* flawed/il-defined entity tags concept
+* Flawed/il-defined entity tags concept
   [#66](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/66)
 
 ## [0.4.0] - 2023-10-14

@@ -10,7 +10,7 @@ from ops_data_store.config import Config
 
 
 class TestCliConfigCheck:
-    """Tests for `config check` CLI command."""
+    """Tests for `config check`."""
 
     def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
         """Returns ok message."""
@@ -38,7 +38,7 @@ class TestCliConfigCheck:
 
 
 class TestCliConfigShow:
-    """Tests for `config show` CLI command."""
+    """Tests for `config show`."""
 
     def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, fx_test_config_dict: dict) -> None:
         """Returns app config."""

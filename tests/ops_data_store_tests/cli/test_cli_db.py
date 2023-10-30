@@ -11,7 +11,7 @@ from ops_data_store.config import Config
 
 
 class TestCliDBCheck:
-    """Tests for `db check` CLI command."""
+    """Tests for `db check`."""
 
     def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
         """Succeeds when DB is reachable."""
@@ -40,7 +40,7 @@ class TestCliDBCheck:
 
 
 class TestCliDBSetup:
-    """Tests for `db setup` CLI command."""
+    """Tests for `db setup`."""
 
     def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner):
         """Creates any missing DB extensions or functions."""
@@ -62,7 +62,7 @@ class TestCliDBSetup:
 
 
 class TestCliDBRun:
-    """Tests for `db run` CLI command."""
+    """Tests for `db run`."""
 
     def test_input_file_not_exist(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
         """Aborts when input file does not exist."""

@@ -10,10 +10,10 @@ from ops_data_store.auth import AzureClient, LDAPClient, SimpleSyncClient
 
 
 class TestAzureClient:
-    """Tests for app Azure client class."""
+    """Tests for app Azure client."""
 
     def test_init(self, caplog: pytest.LogCaptureFixture, fx_mock_msal_cca: Mock) -> None:
-        """AzureClient can be initialised."""
+        """Can be initialised."""
         client = AzureClient()
 
         assert "Creating Azure client." in caplog.text
@@ -146,7 +146,7 @@ class TestLDAPClient:
     """Tests for app LDAP client."""
 
     def test_init(self, caplog: pytest.LogCaptureFixture) -> None:
-        """LDAPClient can be initialised."""
+        """Can be initialised."""
         client = LDAPClient()
 
         assert "Creating LDAP client." in caplog.text
@@ -247,7 +247,7 @@ class TestLDAPClient:
         assert missing_groups == expected
 
     @pytest.mark.usefixtures("_fx_mock_ldap_object")
-    def test_get_group_members(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
+    def test_get_group_members(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
         """Can get group members."""
         base = "ou=groups,dc=example,dc=com"
         name = "cn=admin"

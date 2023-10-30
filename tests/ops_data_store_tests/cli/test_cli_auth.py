@@ -8,7 +8,7 @@ from ops_data_store.cli import app as cli
 
 
 class TestCliAuthCheck:
-    """Tests for `auth check` CLI command."""
+    """Tests for `auth check`."""
 
     def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, mocker: MockFixture) -> None:
         """Succeeds when Azure and LDAP are reachable."""

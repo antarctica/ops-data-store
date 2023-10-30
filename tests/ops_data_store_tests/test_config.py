@@ -7,10 +7,10 @@ from ops_data_store.config import Config
 
 
 class TestConfig:
-    """Tests for app config base class and methods."""
+    """Tests for app config."""
 
-    def test_type(self, fx_test_config: Config) -> None:
-        """Type check."""
+    def test_init(self, fx_test_config: Config) -> None:
+        """Can be initialised."""
         assert isinstance(fx_test_config, Config)
 
     def test_dump(self, fx_test_config: Config, fx_test_config_dict: dict) -> None:
