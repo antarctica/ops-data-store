@@ -13,6 +13,17 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * `auth check` CLI command
   [#38](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/38)
+* `auth sync` CLI command
+  [#76](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/76)
+  [#77](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/77)
+  [#78](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/78)
+  [#83](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/83)
+  [#84](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/84)
+  [#85](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/85)
+  [#86](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/86)
+  [#87](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/87)
+  [#88](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/88)
+  [#89](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/89)
 
 ### Fixed
 
