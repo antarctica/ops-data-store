@@ -153,29 +153,57 @@ class TestLDAPClient:
         assert isinstance(client, LDAPClient)
 
     @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_bind_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Can bind to server."""
+        client = LDAPClient()
+
+        assert client._is_bound is False
+
+        client._bind()
+
+        assert "Attempting to bind to LDAP server." in caplog.text
+        assert "LDAP bind successful." in caplog.text
+
+        assert client._is_bound is True
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
+    def test_bind_when_bound(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Skips bind if already bound."""
+        client = LDAPClient()
+        client._bind()
+
+        assert client._is_bound is True
+
+        client._bind()
+
+        assert "Skipping as already bound." in caplog.text
+
+        assert client._is_bound is True
+
+    def test_bind_error(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+        """Cannot bind when error occurs."""
+        mocker.patch.object(ldap.ldapobject.LDAPObject, "simple_bind_s", side_effect=ldap.LDAPError())
+
+        client = LDAPClient()
+        with pytest.raises(RuntimeError) as e:
+            client._bind()
+
+        assert "Attempting to bind to LDAP server." in caplog.text
+
+        assert str(e.value) == "Failed to connect to LDAP server."
+        assert client._is_bound is False
+
+    @pytest.mark.usefixtures("_fx_mock_ldap_object")
     def test_verify_bind_ok(self, caplog: pytest.LogCaptureFixture) -> None:
         """Can bind."""
         client = LDAPClient()
         client.verify_bind()
 
-        assert "Attempting to bind to LDAP server." in caplog.text
-        assert "LDAP bind successful." in caplog.text
-
-    def test_verify_bind_server_down(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
-        """Cannot bind when server down."""
-        mocker.patch.object(ldap.ldapobject.LDAPObject, "simple_bind_s", side_effect=ldap.LDAPError())
-
-        client = LDAPClient()
-        with pytest.raises(RuntimeError) as e:
-            client.verify_bind()
-
-        assert "Attempting to bind to LDAP server." in caplog.text
-
-        assert str(e.value) == "Failed to connect to LDAP server."
+        assert True
 
     @pytest.mark.usefixtures("_fx_mock_ldap_object")
-    def test_check_users(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
-        """Can find missing users."""
+    def test_check_users(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+        """Can find matching users."""
         search = ["cn=foo", "cn=bar", "cn=unknown"]
         base = "ou=users,dc=example,dc=com"
         expected = [f"{user},{base}" for user in search[:-1]]
@@ -196,8 +224,8 @@ class TestLDAPClient:
         assert missing_users == expected
 
     @pytest.mark.usefixtures("_fx_mock_ldap_object")
-    def test_check_groups(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture):
-        """Can find missing groups."""
+    def test_check_groups(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+        """Can find matching groups."""
         search = ["cn=admin", "cn=guest", "cn=unknown"]
         base = "ou=groups,dc=example,dc=com"
         expected = [f"{group},{base}" for group in search[:-1]]
@@ -238,7 +266,7 @@ class TestLDAPClient:
         assert members == expected
 
     @pytest.mark.usefixtures("_fx_mock_ldap_object")
-    def test_add_to_group(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
+    def test_add_to_group_ok(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
         """Can add users to group."""
         base = "ou=groups,dc=example,dc=com"
         name = "cn=admin"
@@ -256,6 +284,13 @@ class TestLDAPClient:
         assert f"Group to add to: {group_dn}" in caplog.text
         assert f"Users to add: {user_dns}" in caplog.text
 
+    def test_add_to_group_empty(self, caplog: pytest.LogCaptureFixture):
+        """Skip adding when no users specified."""
+        client = LDAPClient()
+        client.add_to_group(group_dn="x", user_dns=[])
+
+        assert "Skipping as no users specified." in caplog.text
+
     @pytest.mark.usefixtures("_fx_mock_ldap_object")
     def test_remove_from_group(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
         """Can remove users from group."""
@@ -272,3 +307,10 @@ class TestLDAPClient:
             group_dn=group_dn,
             user_dns=user_dns,
         )
+
+    def test_remove_from_group_empty(self, caplog: pytest.LogCaptureFixture):
+        """Skip removing when no users specified."""
+        client = LDAPClient()
+        client.remove_from_group(group_dn="x", user_dns=[])
+
+        assert "Skipping as no users specified." in caplog.text

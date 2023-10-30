@@ -204,9 +204,7 @@ class LDAPClient:
         ldap_filter = f"(|{''.join([f'({object_id})' for object_id in object_ids])})"
         dns_searched = [f"{object_id},{base}" for object_id in object_ids]
 
-        if not self._is_bound:
-            self._bind()
-
+        self._bind()
         self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
         results = self.client.search_s(base=base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=attributes)
         self.logger.debug("Results: %s", results)
@@ -219,9 +217,12 @@ class LDAPClient:
         return dns_found
 
     def verify_bind(self) -> None:
-        """Check credentials allow LDAP bind."""
-        if not self._is_bound:
-            self._bind()
+        """
+        Check credentials allow LDAP bind.
+
+        Raises a LDAPError exception if binding fails.
+        """
+        self._bind()
 
     def check_users(self, user_ids: list[str]) -> list[str]:
         """
@@ -271,9 +272,7 @@ class LDAPClient:
         ldap_filter = f"({group_dn.split(',')[0]})"
         ldap_base = ",".join(group_dn.split(",")[1:])
 
-        if not self._is_bound:
-            self._bind()
-
+        self._bind()
         self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
         results = self.client.search_s(
             base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["member"]
@@ -293,12 +292,20 @@ class LDAPClient:
         :type user_dns: list[str]
         :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
         """
-        if not self._is_bound:
-            self._bind()
+        if len(user_dns) == 0:
+            self.logger.info("Skipping as no users specified.")
+            return
 
-        self.logger.info("Group to add to: %s.", group_dn)
-        self.logger.info("Users to add: %s.", user_dns)
-        self.client.modify_s(dn=group_dn, modlist=[(ldap.MOD_ADD, "member", [member.encode() for member in user_dns])])
+        self._bind()
+
+        # batch changes to 10 users to prevent requests being too large
+        for i in range(0, len(user_dns), 10):
+            user_dns_batch = user_dns[i:i + 10]
+
+            self.logger.info("Batch %s of %s.", i + 1, len(user_dns) // 10 + 1)
+            self.logger.info("Group to add to: %s.", group_dn)
+            self.logger.info("Users to add: %s.", user_dns)
+            self.client.modify_s(dn=group_dn, modlist=[(ldap.MOD_ADD, "member", [member.encode() for member in user_dns_batch])])
 
     def remove_from_group(self, group_dn: str, user_dns: list[str]) -> None:
         """
@@ -311,12 +318,19 @@ class LDAPClient:
         :type user_dns: list[str]
         :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
         """
-        if not self._is_bound:
-            self._bind()
+        if len(user_dns) == 0:
+            self.logger.info("Skipping as no users specified.")
+            return
 
-        self.logger.info("Group to remove from: %s.", group_dn)
-        self.logger.info("Users to remove: %s.", user_dns)
-        result = self.client.modify_s(
-            dn=group_dn, modlist=[(ldap.MOD_DELETE, "member", [member.encode() for member in user_dns])]
-        )
-        print(result)
+        self._bind()
+
+        # batch changes to 10 users to prevent requests being too large
+        for i in range(0, len(user_dns), 10):
+            user_dns_batch = user_dns[i:i + 10]
+
+            self.logger.info("Batch %s of %s.", i + 1, len(user_dns) // 10 + 1)
+            self.logger.info("Group to remove from: %s.", group_dn)
+            self.logger.info("Users to remove: %s.", user_dns)
+            self.client.modify_s(
+                dn=group_dn, modlist=[(ldap.MOD_DELETE, "member", [member.encode() for member in user_dns_batch])]
+            )
