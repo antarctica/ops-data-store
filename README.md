@@ -19,7 +19,7 @@ of use to others with similar or related needs. Some resources, indicated with a
 
 This project is an early alpha. The aim is to provide a robust, useful, live service within the next few field seasons.
 
-The aim for this season is to provide a initial minimal implementation which meets core user needs. This will likely
+The aim for this season is to provide an initial minimal implementation which meets core user needs. This will likely
 change in form and function based on feedback from end-users and our experience of operating the platform.
 
 ### Limitations
@@ -65,7 +65,7 @@ This project is an evolution of an earlier [Experiment 🛡](https://gitlab.data
 
 End-users should consult the documentation developed for the wider
 [Field Operations GIS Platform 🛡](https://app.gitbook.com/o/-MbhSFJ1AEZxhIfX9tgr/s/HmSXoUpviCA3XCta5MDr/), as this
-specific project is not aimed at end-users directly.
+project is not aimed at end-users directly.
 
 ### Control CLI
 
@@ -119,7 +119,7 @@ editing workflows and verifying expected behaviour.
 If needed, shortcuts can be created to start QGIS with a specific profile:
 
 - on macOS: `open -a QGIS-LTR.app --args --profile {profile}`
-- on Windows: `C:\Program Files\QGIS 3.28.7\bin\qgis-bin.exe --profile {profile}`
+- on Windows: `C:\Program Files\QGIS 3.28.7\bin\qgis-lts-bin.exe --profile {profile}`
 
 **Note:** To start QGIS normally use the `default` profile.
 
@@ -166,13 +166,6 @@ Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
 To configure a layer for the first time:
 
 1. from the *Layers* pane -> (added layer) -> *Properties* -> *Attribute Form*:
-    - *pk* and *pid*:
-      - *General* -> *Editable*: *Uncheck*
-      - *Widget Type*: *Hidden*
-      - *Constraints* -> *Enforce not null constraint*: *Uncheck*
-      - *Constraints* -> *Enforce unique constraint*: *Uncheck* (for *pk* field)
-    - *id*:
-      - *Constraints* -> *Enforce not null constraint*: *Check* (if desired)
     - *pk*, *pid*, *updated_at*, *updated_by*, *lat_dd*, *lon_dd*, *lat_ddm* and *lon_ddm*:
       - *General* -> *Editable*: *Uncheck*
       - *Widget Type*: *Hidden*
@@ -252,21 +245,19 @@ compatibility.
 ### Azure
 
 Azure Entra (Active Directory) is the Identity Provider (IDP) used by NERC, within which BAS sits. An application
-registration represents this project within Azure and is used to grant permission to resources within the Microsoft
-Graph API.
+registration represents this project within Azure, used to grant permission to resources within the Microsoft Graph API.
 
 ### Microsoft Graph
 
-The Microsoft Graph API provides programmatic access to Microsoft Team member listings (represented as Office 365
-Groups). These membership listings are replicated to LDAP groups as part of the Data Store's
-[Permissions](#permissions) system.
+The Microsoft Graph API provides programmatic access to Microsoft 365 resources. This API is used to list members of
+specified Microsoft Teams (which are represented as Azure Groups). These memberships are synced to LDAP groups as part
+of the Data Store's [Permissions](#permissions) system.
 
 ### LDAP
 
 LDAP is the Identity Provider (IDP) used by BAS IT, specifically for unix systems including [Postgres](#database) and
 [Apache](#web-server). It is used for both authentication and authorisation through a number of application controlled
-groups. The members of these groups are synced from one or more Microsoft Azure groups as part of the Data Store's
-[Permissions](#permissions) system.
+groups. Group members are synced from Azure groups as part of the Data Store's [Permissions](#permissions) system.
 
 ### Web Server [WIP]
 
@@ -275,8 +266,6 @@ groups. The members of these groups are synced from one or more Microsoft Azure 
 ...
 
 ### Permissions
-
-**Note:** This section is a work in progress and may be incomplete.
 
 Datasets hosted in this platform are typically restricted as to who can read and/or edit from them. The platform
 includes a simple permissions system to enforce these restrictions. This system includes three roles which can be
@@ -299,7 +288,7 @@ E.g. For a dataset for field instruments owned by the BAS Field Operations team:
 - BAS Field Operations team members can change this dataset
 - BAS Air Unit team members cannot change this dataset, as though they hold the *owners* role, they are a different team
 - *admin* role holders can change this dataset, as they can change all information in the platform
-- *viewer* role holders can view but cannot change this dataset, as they can view all information in the platform
+- *viewer* role holders can view but cannot change this dataset, as they can only view all information in the platform
 
 **Note:** It is not currently possible to limit viewing information to a specific team, only who can change it.
 
@@ -359,7 +348,7 @@ Any additional fields are determined in these other projects:
 
 Complete schemas for managed datasets are defined in [`dataset-schemas.sql`](resources/data/dataset-schemas.sql).
 
-See the relevant sub-section for adding to, amending or removing from these schemas.
+See the relevant subsection for adding to, amending or removing from these schemas.
 
 ### Managed dataset identifiers
 
@@ -474,11 +463,12 @@ For example:
 
 **Note:** This section is a work in progress and may be incomplete.
 
-Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) with the template below replacing:
+Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) using the template below with these changes:
 
-1. `NEW_DATASET` with the singular, lower case, name of the new dataset (e.g. 'cave' not 'CAVES')
+1. replace `NEW_DATASET` with the singular, lower case, name of the new dataset (e.g. 'cave' not 'CAVES')
     - for multi-word names use underscores as a separator (e.g. 'moon_base' not 'moon-base')
-1. adding additional fields as needed
+1. if the dataset does not include a [Dataset identifier](#dataset-identifier), remove the `id` column
+1. add dataset specific columns as needed
     - use `TEXT` for string fields rather than `VARCHAR`
 
 ```sql
@@ -605,11 +595,12 @@ $ ln -s /path/to/venv/bin/ ods-ctl
 $ cd ~
 ```
 
-Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables.
+Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables. See the
+[Infrastructure](#infrastructure) section for connection information to use.
 
 **Note:** If using an `.env` file, the application will look in parent directory of where the application is installed
 (i.e. the virtual environment) and it's parents, up to the root directory (i.e. `/`). Common directories for
-configuration files such as `/etc/` and `~/.config/` are not checked.
+configuration files such as `/etc/` and `~/.config/` are NOT checked.
 
 To check the application configuration is valid and as expected:
 
@@ -681,6 +672,8 @@ Ok. Configuration valid.
 
 **Note:** This section is a work in progress and may be restructured.
 
+Connection details for any resources created should be stored in the MAGIC 1Password shared vault.
+
 ### Microsoft Azure
 
 - create app registration with the required permissions
@@ -705,19 +698,39 @@ Ok. Configuration valid.
 
 ## Infrastructure
 
-### Staging (Cambridge)
+There are several instances and environments for this project:
 
-Used for pre-release testing and experimentation.
+Environments:
 
-- [app server 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
-- [database 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+* *Development* - for developing the Data Store (see [Development](#local-development-environment) section)
+* *Staging* - for pre-release testing and experimentation.
+* *Production* - for real use.
 
-See [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup.
+Instances:
+
+* Cambridge (*Staging*) - managed by BAS IT in the wider SDA staging infrastructure
+* Rothera (*Production*) - managed by BAS IT in the on-station infrastructure
+
+Some of the infrastructure used by this project is environment or instance specific. Other elements are shared across
+all instances/environments.
+
+### Application servers
+
+- [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+
+### Databases
+
+- [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
 
 ### Azure App Registrations
 
 - [BAS Operations Data Store 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
 
+Used across all instances/environments. See
+[MAGIC/operations/field-operations-gis-data#50 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data/-/issues/50)
+for initial setup with UKRI.
 
 ### LDAP servers
 
@@ -726,6 +739,7 @@ See [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-
 ### Reference VM
 
 Used to simulate a GIS workstation used by Operations and act as a known working example for debugging and testing.
+Currently configured to use the Cambridge (Staging) instance.
 
 - [Windows VM 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=mb2mfbk66zrowd4kcj3kjc5tdy&h=magic.1password.eu)
 
@@ -770,7 +784,7 @@ It's strongly recommended to set required configuration options using a `.env` f
 
 A `.test.env` file MUST be created as per the [Testing Configuration](#test-config) section.
 
-Setup the database and load the [Test Schemas and Data](#test-schemas-and-data):
+Set up the database and load the [Test Schemas and Data](#test-schemas-and-data):
 
 ```
 $ poetry run ops-ctl db setup
@@ -843,7 +857,7 @@ locally:
 $ poetry run ruff src/
 ```
 
-### Database
+### Development database
 
 If using a local Postgres database installed through homebrew (where `@14` is the version installed):
 
@@ -957,7 +971,7 @@ Tagged commits will trigger Continuous Deployment using GitLab's CI/CD platform,
 - [all releases 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/releases)
 - [latest release 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/releases/permalink/latest)
 
-To create a release, create an issue using the *release* issue template and follow it's steps.
+To create a release, create an issue using the *release* issue template and follow the included checklist.
 
 ## Feedback
 
