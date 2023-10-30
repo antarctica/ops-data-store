@@ -50,6 +50,8 @@ class Config:
             "AUTH_LDAP_BIND_PASSWORD": self.AUTH_LDAP_BIND_PASSWORD,
             "AUTH_LDAP_OU_USERS": self.AUTH_LDAP_OU_USERS,
             "AUTH_LDAP_OU_GROUPS": self.AUTH_LDAP_OU_GROUPS,
+            "AUTH_LDAP_NAME_CONTEXT_USERS": self.AUTH_LDAP_NAME_CONTEXT_USERS,
+            "AUTH_LDAP_NAME_CONTEXT_GROUPS": self.AUTH_LDAP_NAME_CONTEXT_GROUPS,
         }
 
     @property
@@ -146,3 +148,21 @@ class Config:
     def AUTH_LDAP_OU_GROUPS(self) -> Optional[str]:
         """Organisational Unit (OU) containing groups."""
         return self.env.str("APP_ODS_AUTH_LDAP_OU_GROUPS", default=None)
+
+    @property
+    def AUTH_LDAP_NAME_CONTEXT_USERS(self) -> str:
+        """
+        LDAP naming context prefix used to identify users (individuals).
+
+        Typically, either `cn` or `uid`.
+        """
+        return self.env.str("APP_ODS_AUTH_LDAP_CXT_USERS", default=None)
+
+    @property
+    def AUTH_LDAP_NAME_CONTEXT_GROUPS(self) -> str:
+        """
+        LDAP naming context prefix used to identify groups.
+
+        Typically, `cn`.
+        """
+        return self.env.str("APP_ODS_AUTH_LDAP_CXT_GROUPS", default=None)

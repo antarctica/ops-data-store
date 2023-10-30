@@ -99,6 +99,18 @@ def fx_test_auth_ldap_ou_groups(fx_test_env: Env) -> str:
 
 
 @pytest.fixture()
+def fx_test_auth_ldap_name_context_users(fx_test_env: Env) -> str:
+    """LDAP users name context."""
+    return fx_test_env.str("APP_ODS_AUTH_LDAP_CXT_USERS")
+
+
+@pytest.fixture()
+def fx_test_auth_ldap_name_context_groups(fx_test_env: Env) -> str:
+    """LDAP groups name context."""
+    return fx_test_env.str("APP_ODS_AUTH_LDAP_CXT_GROUPS")
+
+
+@pytest.fixture()
 def fx_test_config() -> Config:
     """Provide access to app configuration."""
     return Config()
@@ -119,6 +131,8 @@ def fx_test_config_dict(
     fx_test_auth_ldap_bind_password: str,
     fx_test_auth_ldap_ou_users: str,
     fx_test_auth_ldap_ou_groups: str,
+    fx_test_auth_ldap_name_context_users: str,
+    fx_test_auth_ldap_name_context_groups: str,
 ) -> dict:
     """Config as dict."""
     return {
@@ -135,6 +149,8 @@ def fx_test_config_dict(
         "AUTH_LDAP_BIND_PASSWORD": fx_test_auth_ldap_bind_password,
         "AUTH_LDAP_OU_USERS": fx_test_auth_ldap_ou_users,
         "AUTH_LDAP_OU_GROUPS": fx_test_auth_ldap_ou_groups,
+        "AUTH_LDAP_NAME_CONTEXT_USERS": fx_test_auth_ldap_name_context_users,
+        "AUTH_LDAP_NAME_CONTEXT_GROUPS": fx_test_auth_ldap_name_context_groups,
     }
 
 

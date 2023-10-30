@@ -203,6 +203,8 @@ details, and must be defined by the user, using either appropriate environment v
 | `AUTH_LDAP_BIND_PASSWORD`  | `APP_ODS_AUTH_LDAP_BIND_PASSWORD`  | No [2]   | Yes       | No        | String          | Secret used for authenticating against LDAP server      | 'xxx'                                                                    |
 | `AUTH_LDAP_OU_USERS`       | `APP_ODS_AUTH_LDAP_OU_USERS`       | No [2]   | No        | No        | String          | Scope for user related objects in LDAP server           | 'users'                                                                  |
 | `AUTH_LDAP_OU_GROUPS`      | `APP_ODS_AUTH_LDAP_OU_GROUPS`      | No [2]   | No        | No        | String          | Scope for group related objects in LDAP server          | 'groups'                                                                 |
+| `AUTH_LDAP_CXT_USERS`      | `APP_ODS_AUTH_LDAP_CXT_USERS`      | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify users       | 'cn' [3]                                                                 |
+| `AUTH_LDAP_CXT_GROUPS`     | `APP_ODS_AUTH_LDAP_CXT_GROUPS`     | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify groups      | 'cn' [3]                                                                 |
 
 **Note:**
 
