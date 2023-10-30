@@ -28,6 +28,8 @@ variables:
   APP_ODS_AUTH_LDAP_BIND_PASSWORD: "xxx"
   APP_ODS_AUTH_LDAP_OU_USERS: "users"
   APP_ODS_AUTH_LDAP_OU_GROUPS: "groups"
+  APP_ODS_AUTH_LDAP_CXT_USERS: "cn"
+  APP_ODS_AUTH_LDAP_CXT_GROUPS: "cn"
 
 cache:
   paths:

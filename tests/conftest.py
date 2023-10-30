@@ -1,4 +1,5 @@
 from importlib.metadata import version
+from typing import Callable
 from unittest.mock import Mock
 
 import ldap
@@ -7,8 +8,9 @@ from environs import Env
 from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
-from ops_data_store.auth import AzureClient
+from ops_data_store.auth import AzureClient, SimpleSyncClient
 from ops_data_store.config import Config
+from tests.mocks import test_check_target_users__ldap_check_users
 
 
 @pytest.fixture()
@@ -99,6 +101,18 @@ def fx_test_auth_ldap_ou_groups(fx_test_env: Env) -> str:
 
 
 @pytest.fixture()
+def fx_test_auth_ldap_name_context_users(fx_test_env: Env) -> str:
+    """LDAP users name context."""
+    return fx_test_env.str("APP_ODS_AUTH_LDAP_CXT_USERS")
+
+
+@pytest.fixture()
+def fx_test_auth_ldap_name_context_groups(fx_test_env: Env) -> str:
+    """LDAP groups name context."""
+    return fx_test_env.str("APP_ODS_AUTH_LDAP_CXT_GROUPS")
+
+
+@pytest.fixture()
 def fx_test_config() -> Config:
     """Provide access to app configuration."""
     return Config()
@@ -119,6 +133,8 @@ def fx_test_config_dict(
     fx_test_auth_ldap_bind_password: str,
     fx_test_auth_ldap_ou_users: str,
     fx_test_auth_ldap_ou_groups: str,
+    fx_test_auth_ldap_name_context_users: str,
+    fx_test_auth_ldap_name_context_groups: str,
 ) -> dict:
     """Config as dict."""
     return {
@@ -135,6 +151,8 @@ def fx_test_config_dict(
         "AUTH_LDAP_BIND_PASSWORD": fx_test_auth_ldap_bind_password,
         "AUTH_LDAP_OU_USERS": fx_test_auth_ldap_ou_users,
         "AUTH_LDAP_OU_GROUPS": fx_test_auth_ldap_ou_groups,
+        "AUTH_LDAP_NAME_CONTEXT_USERS": fx_test_auth_ldap_name_context_users,
+        "AUTH_LDAP_NAME_CONTEXT_GROUPS": fx_test_auth_ldap_name_context_groups,
     }
 
 
@@ -166,3 +184,45 @@ def _fx_mock_azure_client_get_token(mocker: MockFixture) -> None:
 def _fx_mock_ldap_object(mocker: MockFixture) -> None:
     """Mock LDAP object to avoid binding."""
     mocker.patch.object(ldap.ldapobject.LDAPObject, "simple_bind_s", autospec=True)
+
+
+@pytest.fixture()
+def fx_mock_ssc_azure_group_id() -> str:
+    """Mock Azure group ID."""
+    return "123"
+
+
+@pytest.fixture()
+def fx_mock_ssc_ldap_group_id() -> str:
+    """Mock LDAP group ID."""
+    return "abc"
+
+
+@pytest.fixture()
+def fx_mock_ssc_eval_result() -> dict[str, list[str]]:
+    """Mock result of Simple Sync Client evaluation."""
+    return {
+        "source": ["alice", "bob", "connie"],
+        "target": ["alice", "darren"],
+        "present": ["alice"],
+        "missing": ["bob"],
+        "unknown": ["connie"],
+        "remove": ["darren"],
+    }
+
+
+@pytest.fixture()
+def fx_mock_ssc(
+    mocker: MockFixture, fx_mock_ssc_azure_group_id: str, fx_mock_ssc_ldap_group_id: str
+) -> SimpleSyncClient:
+    """Mock Simple Sync Client to avoid calling real Azure and LDAP clients."""
+    mocker.patch("ops_data_store.auth.AzureClient", autospec=True)
+    mocker.patch("ops_data_store.auth.LDAPClient", autospec=True)
+
+    return SimpleSyncClient(azure_group_id=fx_mock_ssc_azure_group_id, ldap_group_id=fx_mock_ssc_ldap_group_id)
+
+
+@pytest.fixture()
+def fx_se_mock_ldap_check_users() -> Callable:
+    """Side effect for `LDAPClient.check_users()` used in the `TestAuth.test_check_target_users`."""
+    return test_check_target_users__ldap_check_users

@@ -232,3 +232,37 @@ class TestConfigAuthLdapOuGroups:
         assert fx_test_config.AUTH_LDAP_OU_GROUPS is None
 
         environ["APP_ODS_AUTH_LDAP_OU_GROUPS"] = ldap_ou_groups
+
+
+class TestConfigAuthLdapNameContextUsers:
+    """Tests for `AUTH_LDAP_NAME_CONTEXT_USERS` property."""
+
+    def test_ok(self, fx_test_config: Config, fx_test_auth_ldap_name_context_users: str) -> None:
+        """Property check."""
+        assert fx_test_auth_ldap_name_context_users == fx_test_config.AUTH_LDAP_NAME_CONTEXT_USERS
+
+    def test_missing(self, fx_test_config: Config) -> None:
+        """Missing property uses None as default."""
+        ldap_name_context_users = environ["APP_ODS_AUTH_LDAP_CXT_USERS"]
+        del environ["APP_ODS_AUTH_LDAP_CXT_USERS"]
+
+        assert fx_test_config.AUTH_LDAP_NAME_CONTEXT_USERS is None
+
+        environ["APP_ODS_AUTH_LDAP_CXT_USERS"] = ldap_name_context_users
+
+
+class TestConfigAuthLdapNameContextGroups:
+    """Tests for `AUTH_LDAP_NAME_CONTEXT_GROUPS` property."""
+
+    def test_ok(self, fx_test_config: Config, fx_test_auth_ldap_name_context_groups: str) -> None:
+        """Property check."""
+        assert fx_test_auth_ldap_name_context_groups == fx_test_config.AUTH_LDAP_NAME_CONTEXT_GROUPS
+
+    def test_missing(self, fx_test_config: Config) -> None:
+        """Missing property uses None as default."""
+        ldap_name_context_groups = environ["APP_ODS_AUTH_LDAP_CXT_GROUPS"]
+        del environ["APP_ODS_AUTH_LDAP_CXT_GROUPS"]
+
+        assert fx_test_config.AUTH_LDAP_NAME_CONTEXT_GROUPS is None
+
+        environ["APP_ODS_AUTH_LDAP_CXT_GROUPS"] = ldap_name_context_groups
