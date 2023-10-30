@@ -300,12 +300,14 @@ class LDAPClient:
 
         # batch changes to 10 users to prevent requests being too large
         for i in range(0, len(user_dns), 10):
-            user_dns_batch = user_dns[i:i + 10]
+            user_dns_batch = user_dns[i : i + 10]
 
             self.logger.info("Batch %s of %s.", i + 1, len(user_dns) // 10 + 1)
             self.logger.info("Group to add to: %s.", group_dn)
             self.logger.info("Users to add: %s.", user_dns)
-            self.client.modify_s(dn=group_dn, modlist=[(ldap.MOD_ADD, "member", [member.encode() for member in user_dns_batch])])
+            self.client.modify_s(
+                dn=group_dn, modlist=[(ldap.MOD_ADD, "member", [member.encode() for member in user_dns_batch])]
+            )
 
     def remove_from_group(self, group_dn: str, user_dns: list[str]) -> None:
         """
@@ -326,7 +328,7 @@ class LDAPClient:
 
         # batch changes to 10 users to prevent requests being too large
         for i in range(0, len(user_dns), 10):
-            user_dns_batch = user_dns[i:i + 10]
+            user_dns_batch = user_dns[i : i + 10]
 
             self.logger.info("Batch %s of %s.", i + 1, len(user_dns) // 10 + 1)
             self.logger.info("Group to remove from: %s.", group_dn)

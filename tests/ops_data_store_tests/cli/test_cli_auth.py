@@ -5,16 +5,15 @@ from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
 from ops_data_store.cli import app as cli
-from ops_data_store.auth import SimpleSyncClient
 
 
 class TestCliAuthCheck:
     """Tests for `auth check` CLI command."""
 
-    @pytest.mark.usefixtures("_fx_mock_ldap_object")
     def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, mocker: MockFixture) -> None:
         """Succeeds when Azure and LDAP are reachable."""
-        mocker.patch("ops_data_store.auth.ConfidentialClientApplication", autospec=True)
+        mocker.patch("ops_data_store.cli.auth.AzureClient", autospec=True)
+        mocker.patch("ops_data_store.cli.auth.LDAPClient", autospec=True)
 
         result = fx_cli_runner.invoke(app=cli, args=["auth", "check"])
 
@@ -99,10 +98,3 @@ class TestCliAuthSync:
 
         assert result.exit_code == 1
         assert "No. Sync Error. Sync aborted" in result.output
-
-    def test_x(self, fx_cli_runner: CliRunner):
-        fx_cli_runner.invoke(
-            app=cli,
-            args=["auth", "sync", "-ag", "75ec55c1-7e92-45e3-9746-e50bd71fcfef", "-lg", "apps_magic_ods_write_fo"],
-            input="n",
-        )
