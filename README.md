@@ -35,6 +35,20 @@ As an alpha project, all, or parts, of this service:
 
 **WARNING:** Outputs from this project should not be relied upon for operational use without through scrutiny.
 
+In relation to operations that can performed by end-users vs. platform operators (MAGIC):
+
+- end-users cannot define new datasets (tables) themselves
+  - due to needing database permissions we can't yet assign safely
+- end-users cannot add, change or remove dataset fields (table columns) themselves
+  - due to schemas being defined within this project and risking inconsistencies due to ad-hoc, per-instance changes
+
+In all these cases, end-users will need to request changes are made by contacting someone from MAGIC.
+
+In relation to dataset [Permissions](#permissions), support for the following are not yet available:
+
+- creating and synchronising LDAP members to the database as postgres roles and users
+- running the Azure to LDAP group sync from a hosted environment (depends on a central LDAP user)
+
 ### Related projects
 
 This project is limited to the technical and operational aspects of providing a platform for hosting datasets. Other
@@ -79,6 +93,7 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 #### Control CLI `auth` commands
 
 - `ods-ctl auth check`: verifies authentication/authorisation services are available
+- `ods-ctl auth sync --azure-group [group-id] --ldap-group [group-id]`: syncs members of an Azure group to an LDAP group
 
 #### Control CLI `config` commands
 
@@ -259,11 +274,63 @@ groups. The members of these groups are synced from one or more Microsoft Azure 
 
 ...
 
-### Permissions [WIP]
+### Permissions
 
 **Note:** This section is a work in progress and may be incomplete.
 
-...
+Datasets hosted in this platform are typically restricted as to who can read and/or edit from them. The platform
+includes a simple permissions system to enforce these restrictions. This system includes three roles which can be
+assigned to individual users:
+
+- *admins*: can view and change any information to manage and administer the platform (inc. members of MAGIC and BAS IT)
+- *owners*: can change and view information
+- *viewers*: can read information only
+
+Individuals can hold multiple roles at the same time (i.e. a user can hold the *owner* and *viewer* roles).
+
+The *admin* and *viewers* roles are global (applies to all datasets). The *owner* role is scoped to datasets owned by
+particular team. Team members can only change datasets within their team. These teams are currently:
+
+- BAS Field Operations
+- BAS Air Unit
+
+E.g. For a dataset for field instruments owned by the BAS Field Operations team:
+
+- BAS Field Operations team members can change this dataset
+- BAS Air Unit team members cannot change this dataset, as though they hold the *owners* role, they are a different team
+- *admin* role holders can change this dataset, as they can change all information in the platform
+- *viewer* role holders can view but cannot change this dataset, as they can view all information in the platform
+
+**Note:** It is not currently possible to limit viewing information to a specific team, only who can change it.
+
+These roles are implemented in the [Database](#database) using roles and users:
+
+- roles are represented as postgres roles, which are granted permissions to read or change information in all or
+  specific tables
+- individuals are represented as postgres users, which are assigned (inherit) one or more postgres roles
+
+Users are assigned to roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP
+group 'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#azure) groups
+representing Microsoft Teams. These Microsoft Teams are used by teams generally and not specific to this project or
+platform (for example the Microsoft Team used by the BAS Air Unit generally is used for `app_magic_ods_write_au` group).
+
+Membership information moves in one direction: from Azure (MS Teams) to LDAP, then to Postgres. Users must exist in the
+relevant LDAP server before they can be added to LDAP groups. LDAP users and groups may be synced between environments,
+or may require adding in each. See the notes in the [Infrastructure](#infrastructure) section for more information.
+
+Mappings for roles, teams, the database and LDAP:
+
+| Role     | Team                 | Postgres Role               | LDAP Group                   |
+|----------|----------------------|-----------------------------|------------------------------|
+| Admins   | -                    | `app_magic_ods_write_admin` | `apps_magic_ods_write_admin` |
+| Owners   | BAS Field Operations | `app_magic_ods_write_fo`    | `apps_magic_ods_write_fo`    |
+| Owners   | BAS Air Unit         | `app_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
+| Viewers  | -                    | `app_magic_ods_read`        | `apps_magic_ods_read`        |
+
+**Note:** There is currently an inconsistency between Postgres role names and LDAP group names (`app` vs `apps`).
+
+The [Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
+command group can be used to synchronise users between these systems.
 
 ## Datasets
 
@@ -571,6 +638,20 @@ Create the schemas for managed datasets by running the contents of the
 ```
 $ ods-ctl db run --input-path dataset-schemas.sql
 ```
+
+If using an instance for syncing users and assigning dataset permissions, check Azure and LDAP are available:
+
+```
+$ ods-ctl auth check
+Note: If this command fails, please check the configured credentials and external connectivity.
+If problem persists, create an issue in the 'Ops Data Store' project in GitLab, or contact MAGIC at magic@bas.ac.uk with the output of this command.
+Ok. Auth connection successful.
+```
+
+Then sync Azure groups to LDAP using the script from `auth sync` command.
+
+**Note:** See [1Password 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=i7gk2ohhoaalmnwcwhmco4rnzm&h=magic.1password.eu)
+for a script with the specific group identifiers to sync.
 
 ### Upgrading [WIP]
 
