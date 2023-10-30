@@ -904,7 +904,7 @@ def test_foo():
 #### Test config
 
 An additional [`.test.env`](/.test.env) file is used to override some application config properties, such as the
-database. This file requires creating from the [`.example.env`](/.example.env) reference file.
+database. This file can be created from the [`.example.test.env`](/.example.test.env) reference file.
 
 ### Test schemas and data
 
