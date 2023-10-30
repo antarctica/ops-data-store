@@ -334,3 +334,187 @@ class LDAPClient:
             self.client.modify_s(
                 dn=group_dn, modlist=[(ldap.MOD_DELETE, "member", [member.encode() for member in user_dns_batch])]
             )
+
+
+class SimpleSyncClient:
+    """
+    Simple implementation of syncing users from Azure groups to LDAP.
+
+    In this simple client, users from a single (source) Azure group are synced to a single (target) LDAP group. Members
+    in the target group are replaced by those in the source. Any LDAP members not in the Azure group are dropped.
+    """
+
+    def __init__(self, azure_group_id: str, ldap_group_id: str) -> None:
+        """
+        Create instance.
+
+        :type azure_group_id: str
+        :param azure_group_id: Azure group ID
+        :type ldap_group_id: str
+        :param ldap_group_id: LDAP group ID
+        """
+        self.config = Config()
+
+        self.logger = logging.getLogger("app")
+        self.logger.info("Creating sync client.")
+
+        self.azure_client = AzureClient()
+        self.ldap_client = LDAPClient()
+
+        self.logger.info(f"Azure group ID: {azure_group_id}")
+        self.logger.info(f"LDAP group ID: {ldap_group_id}")
+
+        self._source_group_id: str = azure_group_id
+        self._target_group_id: str = ldap_group_id
+        self._target_group_dn: Optional[str] = None
+
+        self._source_user_ids: list[str] = []
+        self._target_user_ids: list[str] = []
+
+        self._user_ids_already_in_target: list[str] = []
+        self._user_ids_missing_in_target: list[str] = []
+        self._user_ids_unknown_in_target: list[str] = []
+        self._user_ids_unknown_in_source: list[str] = []
+
+        self._target_dns_del: list[str] = []
+        self._target_dns_add: list[str] = []
+
+        self._evaluated: bool = False
+
+    def _check_groups_exist(self) -> Optional[str]:
+        """
+        Check Azure and LDAP groups exist.
+
+        Returns Distinguished Name (DN) for LDAP group if it exists.
+
+        :rtype: str
+        :return: LDAP group DN, or None if group does not exist
+        """
+        try:
+            self.azure_client.check_group(group_id=self._source_group_id)
+        except ValueError as e:
+            msg = "Azure group %s does not exist." % self._source_group_id
+            self.logger.error(e, exc_info=True)
+            raise RuntimeError(msg) from e
+
+        ldap_group_uid = f"{self.config.AUTH_LDAP_NAME_CONTEXT_GROUPS}={self._target_group_id}"
+        results = self.ldap_client.check_groups(group_ids=[ldap_group_uid])
+        if len(results) == 1 and self._target_group_id in results[0]:
+            return results[0]
+
+        msg = "LDAP group %s does not exist." % self._target_group_id
+        self.logger.error(msg)
+        raise RuntimeError(msg) from None
+
+    def _check_target_users(self) -> None:
+        """
+        Check users from source not in target exist in target.
+
+        E.g. If:
+        - a source group contains users `alice`, `bob` and `connie`
+        - a target group contains `alice` and `darren`
+        - the target more widely contains `alice`, `bob` and `darren` (but not `connie`)
+        Then:
+        - `alice` is already in the target group and is ignored as by implication they exist in the target
+        - `bob` and `connie` are searched for in the target
+        - `bob` is found and can be added to the target group
+        - `connie` is not found and cannot be added to the target group as they don't exist in the target
+        """
+        # For users not in the target already, convert IDs to UIDs (e.g. `conwat` -> `cn=conwat`)
+        search_ids = list(set(self._source_user_ids) - set(self._target_user_ids))
+        search_uids = [f"{self.config.AUTH_LDAP_NAME_CONTEXT_USERS}={user}" for user in search_ids]
+
+        # Search for users in target, converting DNs to IDs (e.g. `cn=conwat,ou=users,dc=example,dc=com` -> `conwat`)
+        found_dns = self.ldap_client.check_users(user_ids=search_uids)
+        found_ids = [user.split(",")[0].split("=")[1] for user in found_dns]
+
+        # Distinguish between users not in target and those not in target group
+        self._user_ids_unknown_in_target = list(set(search_ids) - set(found_ids))
+        self._user_ids_missing_in_target = found_ids
+
+        # Store DNs for users to be removed and added
+        search_ids = list(set(self._target_user_ids) - set(self._source_user_ids))
+        search_uids = [f"{self.config.AUTH_LDAP_NAME_CONTEXT_USERS}={user}" for user in search_ids]
+        self._target_dns_del = self.ldap_client.check_users(user_ids=search_uids)
+        self._target_dns_add = found_dns
+
+    def _get_source_user_ids(self) -> None:
+        """
+        Store members of source Azure group as usernames.
+
+        Azure group members are identified by their User Principal Name (UPN, an email address). These need converting
+        into generic usernames for comparison with LDAP users. E.g. a user `conwat@bas.ac.uk` becomes `conwat`.
+        """
+        members = self.azure_client.get_group_members(group_id=self._source_group_id)
+        self._source_user_ids = [member.split("@")[0] for member in members]
+
+    def _get_target_user_ids(self) -> None:
+        """
+        Store members of target LDAP group as usernames.
+
+        LDAP group members are identified by their Distinguished Name (DN). These need converting into generic
+        usernames for comparison with Azure users. E.g. a user `cn=conwat,ou=users,dc=example,dc=com` becomes `conwat`.
+        """
+        members = self.ldap_client.get_group_members(group_dn=self._target_group_dn)
+        self._target_user_ids = [member.split(",")[0].split("=")[1] for member in members]
+
+    def evaluate(self) -> dict[str, list[str]]:
+        """
+        Assess syncing users from an Azure group to a LDAP group.
+
+        This method performs no modifications to LDAP. It examines the members of the Azure and LDAP groups
+        (if they exist) and determines which users should be added to or removed from the LDAP group.
+
+        It returns a dictionary of [keys] and lists of users that are:
+        -  [target]: in the source group (for information)
+        -  [source]: in the target group (for information)
+        - [present]: in both the source and target groups (no change needed)
+        - [missing]: in the source group but not the target group (can be added)
+        - [unknown]: not in the target server (cannot be added)
+        -  [remove]: in the target group but not the source group (can be removed)
+        """
+        self.logger.info("Evaluating Azure to LDAP group sync.")
+
+        self._target_group_dn = self._check_groups_exist()
+
+        self._get_source_user_ids()
+        self._get_target_user_ids()
+        self._check_target_users()
+        self._user_ids_already_in_target = list(set(self._source_user_ids) & set(self._target_user_ids))
+        self._user_ids_unknown_in_source = list(set(self._target_user_ids) - set(self._source_user_ids))
+
+        self.logger.info(f" user IDs target: {self._source_user_ids}")
+        self.logger.info(f" user IDs source: {self._target_user_ids}")
+        self.logger.info(f"user IDs present: {self._user_ids_already_in_target}")
+        self.logger.info(f"user IDs missing: {self._user_ids_missing_in_target}")
+        self.logger.info(f"user IDs unknown: {self._user_ids_unknown_in_target}")
+        self.logger.info(f" user IDs remove: {self._user_ids_unknown_in_source}")
+        self.logger.info(f" user DNs to add: {self._target_dns_add}")
+        self.logger.info(f" user DNs to del: {self._target_dns_del}")
+
+        self._evaluated = True
+
+        return {
+            "source": self._source_user_ids,
+            "target": self._target_user_ids,
+            "present": self._user_ids_already_in_target,
+            "missing": self._user_ids_missing_in_target,
+            "unknown": self._user_ids_unknown_in_target,
+            "remove": self._user_ids_unknown_in_source,
+        }
+
+    def sync(self) -> None:
+        """
+        Sync users from an Azure group to a LDAP group.
+
+        This method performs modifications to LDAP! It depends on the `evaluate` method to check source/target groups
+        exist and determine DNs to add/remove.
+        """
+        if not self._evaluated:
+            self.logger.info("Sync not yet evaluated, evaluating first.")
+
+            self.evaluate()
+
+        self.logger.info("Syncing members of Azure group to LDAP.")
+        self.ldap_client.remove_from_group(group_dn=self._target_group_dn, user_dns=self._target_dns_del)
+        self.ldap_client.add_to_group(group_dn=self._target_group_dn, user_dns=self._target_dns_add)
