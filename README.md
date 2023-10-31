@@ -242,22 +242,31 @@ the database client in relation to this project specifically.
 For consistency/compatibility, the QGIS profile and project developed for the wider GIS are used for consistency and
 compatibility.
 
-### Azure
+### Microsoft Entra
 
-Azure Entra (Active Directory) is the Identity Provider (IDP) used by NERC, within which BAS sits. An application
-registration represents this project within Azure, used to grant permission to resources within the Microsoft Graph API.
+[Microsoft Entra](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id)
+(Azure Active Directory) is the Identity Provider (IDP) used by NERC, within which BAS sits. An application
+registration represents this project within Azure, granting it permission to relevant resources within the
+[Microsoft Graph API](#microsoft-graph).
 
 ### Microsoft Graph
 
-The Microsoft Graph API provides programmatic access to Microsoft 365 resources. This API is used to list members of
-specified Microsoft Teams (which are represented as Azure Groups). These memberships are synced to LDAP groups as part
-of the Data Store's [Permissions](#permissions) system.
+The [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/) provides programmatic access to Microsoft 365
+resources. For this project, the members of specified [Microsoft Teams](#microsoft-teams).
+
+### Microsoft Teams
+
+[Microsoft Teams](https://www.microsoft.com/en-gb/microsoft-teams/group-chat-software) is a collaboration tool within
+the Microsoft 365 platform used by a number of BAS departments and projects. Teams use Azure groups to record their
+members, which this project can access via the [Microsoft Graph](#microsoft-graph) API as the basis for the Data
+Store's [Permissions](#permissions) system.
 
 ### LDAP
 
 LDAP is the Identity Provider (IDP) used by BAS IT, specifically for unix systems including [Postgres](#database) and
 [Apache](#web-server). It is used for both authentication and authorisation through a number of application controlled
-groups. Group members are synced from Azure groups as part of the Data Store's [Permissions](#permissions) system.
+groups. Group members are synced from Azure groups representing [Microsoft Teams](#microsoft-teams) as part of the Data
+Store's [Permissions](#permissions) system.
 
 ### Web Server [WIP]
 
@@ -271,24 +280,26 @@ Datasets hosted in this platform are typically restricted as to who can read and
 includes a simple permissions system to enforce these restrictions. This system includes three roles which can be
 assigned to individual users:
 
-- *admins*: can view and change any information to manage and administer the platform (inc. members of MAGIC and BAS IT)
-- *owners*: can change and view information
-- *viewers*: can read information only
+- *admin*: can view and change any information to manage and administer the platform (inc. members of MAGIC and BAS IT)
+- *owner*: can change and view information
+- *viewer*: can read information only
 
 Individuals can hold multiple roles at the same time (i.e. a user can hold the *owner* and *viewer* roles).
 
-The *admin* and *viewers* roles are global (applies to all datasets). The *owner* role is scoped to datasets owned by
-particular team. Team members can only change datasets within their team. These teams are currently:
+The *admin* and *viewer* roles are global (applies to all datasets). The *owner* role is scoped to a particular team.
+with team members only able to change datasets within their team (i.e. that their team owns). These teams are currently:
 
 - BAS Field Operations
 - BAS Air Unit
 
-E.g. For a dataset for field instruments owned by the BAS Field Operations team:
+E.g. For a dataset of field instruments owned by the BAS Field Operations team:
 
-- BAS Field Operations team members can change this dataset
-- BAS Air Unit team members cannot change this dataset, as though they hold the *owners* role, they are a different team
+- BAS Field Operations team members can change this dataset, as their team owns the dataset
+- BAS Air Unit team members cannot change this dataset, as though they hold the *owner* role, they are a different team
 - *admin* role holders can change this dataset, as they can change all information in the platform
 - *viewer* role holders can view but cannot change this dataset, as they can only view all information in the platform
+
+In this example, BAS Air Unit team members could still view the dataset as they would also hold the *viewer* role.
 
 **Note:** It is not currently possible to limit viewing information to a specific team, only who can change it.
 
@@ -300,23 +311,23 @@ These roles are implemented in the [Database](#database) using roles and users:
 
 Users are assigned to roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP
 group 'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#azure) groups
-representing Microsoft Teams. These Microsoft Teams are used by teams generally and not specific to this project or
-platform (for example the Microsoft Team used by the BAS Air Unit generally is used for `app_magic_ods_write_au` group).
+representing Microsoft Teams. These Teams are used by departments day to day outside of this platform and project.
+The intention is to prevent departments needing to maintain a duplicate membership list, which may get out of sync.
 
-Membership information moves in one direction: from Azure (MS Teams) to LDAP, then to Postgres. Users must exist in the
-relevant LDAP server before they can be added to LDAP groups. LDAP users and groups may be synced between environments,
-or may require adding in each. See the notes in the [Infrastructure](#infrastructure) section for more information.
+Membership information moves in one direction: from Azure (MS Teams) to LDAP, then to Postgres.
+
+Users must exist in the LDAP server before they can be added to LDAP groups. Missing users will first need registering,
+at BAS this can be done by contacting the Service Desk. LDAP users and groups may be automatically synced between
+environments, or may require manual action in each. See the notes in the [Infrastructure](#infrastructure) section for details.
 
 Mappings for roles, teams, the database and LDAP:
 
-| Role     | Team                 | Postgres Role               | LDAP Group                   |
-|----------|----------------------|-----------------------------|------------------------------|
-| Admins   | -                    | `app_magic_ods_write_admin` | `apps_magic_ods_write_admin` |
-| Owners   | BAS Field Operations | `app_magic_ods_write_fo`    | `apps_magic_ods_write_fo`    |
-| Owners   | BAS Air Unit         | `app_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
-| Viewers  | -                    | `app_magic_ods_read`        | `apps_magic_ods_read`        |
-
-**Note:** There is currently an inconsistency between Postgres role names and LDAP group names (`app` vs `apps`).
+| Role     | Team                 | Azure Group                            | LDAP Group                   | Postgres Role                |
+|----------|----------------------|----------------------------------------|------------------------------|------------------------------|
+| Admins   | -                    | `34db44b7-4441-4f60-8daa-d0c192d74704` | `apps_magic_ods_write_admin` | `apps_magic_ods_write_admin` |
+| Owners   | BAS Field Operations | `75ec55c1-7e92-45e3-9746-e50bd71fcfef` | `apps_magic_ods_write_fo`    | `apps_magic_ods_write_fo`    |
+| Owners   | BAS Air Unit         | `7b8458b9-dc90-445b-bff8-2442f77d58a9` | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
+| Viewers  | -                    | `906f20ee-7698-48c8-b2ff-75592384af68` | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
 
 The [Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
 command group can be used to synchronise users between these systems.
@@ -349,6 +360,15 @@ Any additional fields are determined in these other projects:
 Complete schemas for managed datasets are defined in [`dataset-schemas.sql`](resources/data/dataset-schemas.sql).
 
 See the relevant subsection for adding to, amending or removing from these schemas.
+
+### Managed dataset owners
+
+Managed datasets are assigned to these teams in relation to [Permissions](#permissions) needed to change information:
+
+| Dataset     | Owner (Team)         |
+|-------------|----------------------|
+| Depots      | BAS Field Operations |
+| Instruments | BAS Field Operations |
 
 ### Managed dataset identifiers
 
@@ -524,6 +544,7 @@ Required infrastructure:
 - a service or server for running [Python](https://www.python.org) applications
 - a service or server for running [Postgres](https://www.postgresql.org) databases
 - an Azure Entra (Active Directory) app registration
+- LDAP groups and application user
 
 ### Application server requirements
 
@@ -548,7 +569,7 @@ A single database, and an account with permissions to create, read, update and d
 to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`
 respectively are recommended as conventional defaults.
 
-### Azure Entra requirements
+### Microsoft Entra requirements
 
 Required Azure app registration permissions (application assigned):
 
@@ -556,6 +577,19 @@ Required Azure app registration permissions (application assigned):
 - `https://graph.microsoft.com/User.Read.All`
 
 This app registration will need to be registered within the tenancy that group/team members will be synced from.
+
+### LDAP requirements
+
+LDAP groups are needed for each role in the [Permissions](#permissions) system, named as per the mapping table.
+
+These groups must:
+
+- be owned by a user representing this platform, conventionally named `apps_magic_ods`
+- all sit within the same OU (e.g. 'OU=groups')
+
+In addition:
+
+- all LDAP users must be contained in a single OU (e.g. 'people' or 'users')
 
 ## Installation
 
@@ -639,10 +673,14 @@ If problem persists, create an issue in the 'Ops Data Store' project in GitLab, 
 Ok. Auth connection successful.
 ```
 
-Then sync Azure groups to LDAP using the script from `auth sync` command.
+Then sync Azure groups to LDAP:
 
-**Note:** See [1Password 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=i7gk2ohhoaalmnwcwhmco4rnzm&h=magic.1password.eu)
-for a script with the specific group identifiers to sync.
+```
+$ ods-ctl auth sync -ag 34db44b7-4441-4f60-8daa-d0c192d74704 -lg apps_magic_ods_admin
+$ ods-ctl auth sync -ag 75ec55c1-7e92-45e3-9746-e50bd71fcfef -lg apps_magic_ods_write_fo
+$ ods-ctl auth sync -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -lg apps_magic_ods_write_au
+$ ods-ctl auth sync -ag 906f20ee-7698-48c8-b2ff-75592384af68 -lg apps_magic_ods_read
+```
 
 ### Upgrading [WIP]
 
