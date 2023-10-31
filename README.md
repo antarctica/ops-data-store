@@ -33,9 +33,9 @@ As an alpha project, all, or parts, of this service:
 
 **Note:** Support for this project is provided on a best efforts / 'as is' basis.
 
-**WARNING:** Outputs from this project should not be relied upon for operational use without through scrutiny.
+**WARNING:** Outputs from this project should not be relied upon for operational use without thorough scrutiny.
 
-In relation to operations that can performed by end-users vs. platform operators (MAGIC):
+In relation to operations that can be performed by end-users vs. platform operators (MAGIC):
 
 - end-users cannot define new datasets (tables) themselves
   - due to needing database permissions we can't yet assign safely
@@ -44,15 +44,16 @@ In relation to operations that can performed by end-users vs. platform operators
 
 In all these cases, end-users will need to request changes are made by contacting someone from MAGIC.
 
-In relation to dataset [Permissions](#permissions), support for the following are not yet available:
+In relation to dataset [Permissions](#permissions), support for the following is not yet available:
 
 - creating and synchronising LDAP members to the database as postgres roles and users
-- running the Azure to LDAP group sync from a hosted environment (depends on a central LDAP user)
+- running the Azure to LDAP group sync from a hosted environment
 
 ### Related projects
 
 This project is limited to the technical and operational aspects of providing a platform for hosting datasets. Other
-projects focus on these datasets and other aspects of a providing a wider Geographic Information System (GIS).
+projects focus on these datasets and other aspects of providing a wider Geographic Information System (GIS) to BAS
+Operations.
 
 - [BAS Field Operations Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - [BAS Air Unit Network Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
@@ -74,11 +75,11 @@ project is not aimed at end-users directly.
 A command line interface, `ods-ctl`, is available for performing administrative tasks.
 
 ```
-$ ssh [user]@[host]
 $ ods-ctl --help
 ```
 
-See the [Infrastructure](#infrastructure) section for connection details (specifically the relevant app server).
+This command will need running from within a deployed instance of this project. See the [Infrastructure](#infrastructure) section
+for connection details (specifically the relevant app server).
 
 **Note:** Calling the CLI without any command will not return any output. This is expected.
 
