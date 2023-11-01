@@ -9,6 +9,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Added
+
+* Deployment issue template
+  [#97](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/97)
+
 ## [0.5.0] - 2023-11-01
 
 ### Added
