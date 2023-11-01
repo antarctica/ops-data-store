@@ -13,6 +13,6 @@
     - associate with relevant tag and milestone
     - add link to [Python package](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages)
     - add link to the README from the relevant tag (to create a version specific link)
-1. [ ] if needed, create a new milestone for the next release
-1. [ ] close milestone for the release
-1. [ ] close this release issue
+1. [ ] create a deployment issue using the `deploy` issue template
+
+See #... for post-release tasks.
