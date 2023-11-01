@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.5.0] - 2023-11-01
+
 ### Added
 
 * `auth check` CLI command
