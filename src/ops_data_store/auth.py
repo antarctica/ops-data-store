@@ -511,6 +511,8 @@ class SimpleSyncClient:
 
         This method performs modifications to LDAP! It depends on the `evaluate` method to check source/target groups
         exist and determine DNs to add/remove.
+
+        Users are added before removing to prevent trying to remove the last member of a group which isn't permitted.
         """
         if not self._evaluated:
             self.logger.info("Sync not yet evaluated, evaluating first.")
@@ -518,5 +520,5 @@ class SimpleSyncClient:
             self.evaluate()
 
         self.logger.info("Syncing members of Azure group to LDAP.")
-        self.ldap_client.remove_from_group(group_dn=self._target_group_dn, user_dns=self._target_dns_del)
         self.ldap_client.add_to_group(group_dn=self._target_group_dn, user_dns=self._target_dns_add)
+        self.ldap_client.remove_from_group(group_dn=self._target_group_dn, user_dns=self._target_dns_del)

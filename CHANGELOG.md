@@ -31,6 +31,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#65](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/65)
 * Issue connecting to BAS production LDAP server
   [#75](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/75)
+* Order or removing and adding members in LDAP groups to prevent leaving groups empty
+  [#94](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/94)
 
 ### Changed
 
