@@ -552,11 +552,16 @@ Required infrastructure:
 Required OS packages for Python app server:
 
 - Python 3.9+
-- GDAL 3.4 (including development headers and the `gdal-config` binary)
+- OpenSSL 1.1.1+ [1]
+- OpenLDAP (including development headers)
+- GDAL 3.4 (including development headers and the `gdal-config` binary, [1])
 - libxml (including the `xmllint` binary)
 - libpq
 
-**Note:** The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `3.4`.
+[1] In exceptional circumstances, the `urllib3` package can be downloaded to use an earlier version of OpenSSL. See
+[Installation](#installation) section for more information.
+
+[2] The GDAL OS and Python packages *MUST* be the same version, and must therefore be version `3.4`.
 
 ### Database requirements
 
@@ -599,7 +604,7 @@ For the Python application, it is strongly recommended to install this project i
 ```
 $ python -m venv /path/to/venv
 $ source /path/to/venv/bin/activate
-$ pip install --upgrade pip
+$ python -m pip install --upgrade pip
 ```
 
 The Python Package for this project (see [Deployment](#deployment) section) requires installing from a private package
@@ -607,7 +612,14 @@ registry provided by the BAS GitLab instance. This registry requires authenticat
 available publicly, and has been open sourced, the generic deployment token below can be used by anyone to access it.
 
 ```
-pip install ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+$ python -m pip install ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+```
+
+**Note:** The `urllib3` dependency must be downgraded if installing on an OS with a version of OpenSSL earlier than
+1.1.1:
+
+```
+$ python -m pip install --upgrade urllib3==1.26.18
 ```
 
 The control CLI can be used to check the application has been installed correctly and is the expected version:
@@ -683,7 +695,9 @@ $ ods-ctl auth sync -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -lg apps_magic_ods_
 $ ods-ctl auth sync -ag 906f20ee-7698-48c8-b2ff-75592384af68 -lg apps_magic_ods_read
 ```
 
-### Upgrading [WIP]
+## Upgrading [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
 
 To upgrade the Python application, upgrade the Python package version using Pip:
 
@@ -700,7 +714,7 @@ $ ods-ctl --version
 0.2.0
 ```
 
-Check the application configuration is still valid:
+Review [Configuration options](#configuration) are set correctly and check the application configuration is still valid:
 
 ```
 $ ods-ctl config check
@@ -773,7 +787,7 @@ for initial setup with UKRI.
 
 ### LDAP servers
 
-- [BAS Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
+- [BAS LDAP (All environments) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
 
 ### Reference VM
 
