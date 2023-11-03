@@ -26,7 +26,7 @@ class TestAzureClient:
         fx_mock_msal_cca.return_value.acquire_token_silent.return_value = {"access_token": expected}
 
         client = AzureClient()
-        token = client.get_token()
+        token = client._get_token()
 
         assert "Attempting to acquire access token silently (from cache)." in caplog.text
         assert f"Access token: {expected}" in caplog.text
@@ -40,7 +40,7 @@ class TestAzureClient:
         fx_mock_msal_cca.return_value.acquire_token_for_client.return_value = {"access_token": expected}
 
         client = AzureClient()
-        token = client.get_token()
+        token = client._get_token()
 
         assert "Attempting to acquire access token silently (from cache)." in caplog.text
         assert "Failed to acquire token silently, attempting to request fresh token." in caplog.text
@@ -55,7 +55,7 @@ class TestAzureClient:
 
         client = AzureClient()
         with pytest.raises(RuntimeError) as e:
-            client.get_token()
+            client._get_token()
 
         assert f"Error: {expected['error']}" in caplog.text
         assert f"Error description: {expected['error_description']}" in caplog.text
@@ -67,7 +67,14 @@ class TestAzureClient:
     def test_get_token_mocked(self, fx_azure_client: AzureClient) -> None:
         """Can mock get token method."""
         expected = "x"
-        assert fx_azure_client.get_token() == expected
+        assert fx_azure_client._get_token() == expected
+
+    @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
+    def test_check_token(self, fx_azure_client: AzureClient) -> None:
+        """Can check token."""
+        fx_azure_client.check_token()
+
+        assert True
 
     @pytest.mark.usefixtures("_fx_mock_azure_client_get_token")
     def test_check_group_ok(self, caplog: pytest.LogCaptureFixture, fx_azure_client: AzureClient) -> None:
@@ -146,7 +153,7 @@ class TestLDAPClient:
     """Tests for app LDAP client."""
 
     def test_init(self, caplog: pytest.LogCaptureFixture) -> None:
-        """Can be initialised."""
+        """Can be initialised/destroyed."""
         client = LDAPClient()
 
         assert "Creating LDAP client." in caplog.text

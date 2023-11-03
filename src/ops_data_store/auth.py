@@ -12,7 +12,7 @@ from ops_data_store.config import Config
 
 class AzureClient:
     """
-    Application client for Azure.
+    Application Azure client.
 
     Used for accessing resources protected by the Microsoft Azure Entra (Active Directory).
     """
@@ -30,12 +30,8 @@ class AzureClient:
             client_credential=self.config.AUTH_AZURE_CLIENT_SECRET,
         )
 
-    def get_token(self) -> str:
-        """
-        Acquire Azure access token.
-
-        The Azure client includes a cache to avoid requesting new tokens unnecessarily.
-        """
+    def _get_token(self) -> str:
+        """Acquire Azure access token."""
         self.logger.info("Attempting to acquire access token silently (from cache).")
         result = self.client.acquire_token_silent(self.config.AUTH_AZURE_SCOPES, account=None)
 
@@ -55,6 +51,14 @@ class AzureClient:
             error_msg = "Failed to acquire Azure token."
             raise RuntimeError(error_msg) from e
 
+    def check_token(self) -> None:
+        """
+        Check token can be requested.
+
+        Raises an exception if binding fails.
+        """
+        self._get_token()
+
     def check_group(self, group_id: str) -> None:
         """
         Check Azure group exists.
@@ -68,7 +72,7 @@ class AzureClient:
 
         r = requests.get(
             url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}",
-            headers={"Authorization": f"Bearer {self.get_token()}"},
+            headers={"Authorization": f"Bearer {self._get_token()}"},
             timeout=10,
         )
 
@@ -96,7 +100,7 @@ class AzureClient:
         self.logger.info("Getting display name of group ID: %s.", group_id)
         r = requests.get(
             url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}",
-            headers={"Authorization": f"Bearer {self.get_token()}"},
+            headers={"Authorization": f"Bearer {self._get_token()}"},
             timeout=10,
         )
         r.raise_for_status()
@@ -119,7 +123,7 @@ class AzureClient:
         self.logger.info("Getting members of group ID: %s from MS Graph API.", group_id)
         r = requests.get(
             url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}/members",
-            headers={"Authorization": f"Bearer {self.get_token()}"},
+            headers={"Authorization": f"Bearer {self._get_token()}"},
             timeout=10,
         )
         r.raise_for_status()

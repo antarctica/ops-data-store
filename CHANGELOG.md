@@ -22,6 +22,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#81](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/81)
 * Refactoring database functions from CLI module to database client class
   [#71](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/71)
+* Minor refactoring of Azure auth client
+  [#109](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/109)
 
 ## [0.5.0] - 2023-11-01
 
