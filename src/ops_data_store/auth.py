@@ -155,10 +155,10 @@ class LDAPClient:
         self.client = ldap.initialize(self.config.AUTH_LDAP_URL)
         self._is_bound = False
 
-        self._finalizer = weakref.finalize(self, self._unbind, self.logger, self.client, self._is_bound)
+        self._finalizer = weakref.finalize(self, self._unbind, self.logger, self.client)
 
     @classmethod
-    def _unbind(cls: LDAPClient, logger: logging.Logger, client: SimpleLDAPObject, is_bound: bool) -> None:
+    def _unbind(cls: LDAPClient, logger: logging.Logger, client: SimpleLDAPObject) -> None:
         """
         Unbind from LDAP server.
 
@@ -169,15 +169,8 @@ class LDAPClient:
         :param logger: App logger instance
         :type client: SimpleLDAPObject
         :param client: LDAP client instance
-        :type is_bound: bool
-        :param is_bound: Whether the client is bound to the LDAP server
         """
         logger.info("Attempting to unbind from LDAP server.")
-
-        if not is_bound:
-            logger.info("Skipping as already unbound.")
-            return
-
         client.unbind_s()
         logger.info("LDAP unbind successful.")
 
