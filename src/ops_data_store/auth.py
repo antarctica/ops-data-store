@@ -135,7 +135,7 @@ class AzureClient:
 
 class LDAPClient:
     """
-    Application client for LDAP.
+    Application LDAP client.
 
     Used for managing resources within an LDAP directory.
 
@@ -220,7 +220,7 @@ class LDAPClient:
 
         return dns_found
 
-    def verify_bind(self) -> None:
+    def check_bind(self) -> None:
         """
         Check credentials allow LDAP bind.
 
@@ -466,7 +466,7 @@ class SimpleSyncClient:
 
     def evaluate(self) -> dict[str, list[str]]:
         """
-        Assess syncing users from an Azure group to a LDAP group.
+        Assess syncing users from an Azure group to an LDAP group.
 
         This method performs no modifications to LDAP. It examines the members of the Azure and LDAP groups
         (if they exist) and determines which users should be added to or removed from the LDAP group.
@@ -511,7 +511,7 @@ class SimpleSyncClient:
 
     def sync(self) -> None:
         """
-        Sync users from an Azure group to a LDAP group.
+        Sync users from an Azure group to an LDAP group.
 
         This method performs modifications to LDAP! It depends on the `evaluate` method to check source/target groups
         exist and determine DNs to add/remove.
