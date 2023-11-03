@@ -186,33 +186,49 @@ class LDAPClient:
         self.logger.info("LDAP unbind successful.")
         self._is_bound = False
 
-    def _search_objects(self, base: str, object_ids: list[str], attributes: list[str]) -> list[str]:
+    def _search_objects(self, base: str, ldap_filter: str, attributes: list[str]) -> dict:
+        """
+        Search for objects.
+
+        Finds one or more objects within the LDAP server.
+
+        :type base: str
+        :param base: Base DN to search in, e.g. `ou=users,dc=example,dc=com`
+        :type ldap_filter: str
+        :param ldap_filter: A pre-formed LDAP search filter
+        :type attributes: list[str]
+        :param attributes: Attributes to return for each object, e.g. `["dn"]`
+        :rtype dict
+        :return: List of tuples containing object DNs and attributes
+        """
+        self._bind()
+        self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
+        results = self.client.search_s(base=base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=attributes)
+        self.logger.debug("Results: %s", results)
+
+        return results
+
+    def _check_objects(self, base: str, object_ids: list[str]) -> list[str]:
         """
         Check objects exist.
 
-        Finds one or more objects within the LDAP server. Any objects that are found are returned as a Distinguished
-        Names (DNs). (E.g. `cn=conwat` will be returned as `cn=conwat,ou=users,dc=example,dc=com`).
+        Any objects that are found are returned as a Distinguished Names (DNs). (E.g. `cn=conwat` will be returned as
+        `cn=conwat,ou=users,dc=example,dc=com`).
 
-        Because objects are searched for in a specific base (typically an OU), object names should be specified as
+        Because objects are searched for in a specific base (typically an OU), object IDs should be specified as
         partial names, not a full DN (E.g. `cn=admins` not `cn=admins,ou=groups,dc=example,dc=com`).
 
         :type base: str
         :param base: Base DN to search in, e.g. `ou=users,dc=example,dc=com`
         :type object_ids: list[str]
         :param object_ids: One or more object IDs with correct prefix for the LDAP server, e.g. `cn=conwat`
-        :type attributes: list[str]
-        :param attributes: Attributes to return for each object, e.g. `["dn"]`
         :rtype list[str]
         :return: DNs for any object IDs found in the LDAP server
         """
         ldap_filter = f"(|{''.join([f'({object_id})' for object_id in object_ids])})"
         dns_searched = [f"{object_id},{base}" for object_id in object_ids]
 
-        self._bind()
-        self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
-        results = self.client.search_s(base=base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=attributes)
-        self.logger.debug("Results: %s", results)
-
+        results = self._search_objects(base=base, ldap_filter=ldap_filter, attributes=["dn"])
         dns_found = [result[0] for result in results]
         dns_missing = list(set(dns_searched) - set(dns_found))
         self.logger.info("Distinguished names found: %s", dns_found)
@@ -244,7 +260,7 @@ class LDAPClient:
         :return: One or more user DNs found in the LDAP server
         """
         ldap_base = f"ou={self.config.AUTH_LDAP_OU_USERS},{self.config.AUTH_LDAP_BASE_DN}"
-        return self._search_objects(base=ldap_base, object_ids=user_ids, attributes=["dn"])
+        return self._check_objects(base=ldap_base, object_ids=user_ids)
 
     def check_groups(self, group_ids: list[str]) -> list[str]:
         """
@@ -262,7 +278,7 @@ class LDAPClient:
         :return: One or more group DNs found in the LDAP server
         """
         ldap_base = f"ou={self.config.AUTH_LDAP_OU_GROUPS},{self.config.AUTH_LDAP_BASE_DN}"
-        return self._search_objects(base=ldap_base, object_ids=group_ids, attributes=["dn"])
+        return self._check_objects(base=ldap_base, object_ids=group_ids)
 
     def get_group_members(self, group_dn: str) -> list[str]:
         """
@@ -276,12 +292,7 @@ class LDAPClient:
         ldap_filter = f"({group_dn.split(',')[0]})"
         ldap_base = ",".join(group_dn.split(",")[1:])
 
-        self._bind()
-        self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
-        results = self.client.search_s(
-            base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["member"]
-        )
-        self.logger.debug("Results: %s", results)
+        results = self._search_objects(base=ldap_base, ldap_filter=ldap_filter, attributes=["member"])
 
         return [member.decode() for member in results[0][1]["member"]]
 

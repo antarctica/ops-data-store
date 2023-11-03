@@ -269,7 +269,7 @@ class TestLDAPClient:
 
         assert "Attempting to bind to LDAP server." in caplog.text
         assert "LDAP bind successful." in caplog.text
-        assert f"Searching in: {base} with filter: ({name})" in caplog.text
+        assert f"Searching for: ['member'] in: {base} with filter: ({name})" in caplog.text
 
         assert members == expected
 
