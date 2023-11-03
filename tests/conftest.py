@@ -177,7 +177,7 @@ def fx_azure_client(fx_mock_msal_cca: Mock) -> AzureClient:
 @pytest.fixture()
 def _fx_mock_azure_client_get_token(mocker: MockFixture) -> None:
     """Mock app Azure client to avoid requesting real access tokens."""
-    mocker.patch.object(AzureClient, "get_token", return_value="x")
+    mocker.patch.object(AzureClient, "_get_token", return_value="x")
 
 
 @pytest.fixture()
