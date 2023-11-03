@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import logging
+import weakref
 from typing import Optional
 
 import ldap
 import requests
+from ldap.ldapobject import SimpleLDAPObject
 from msal import ConfidentialClientApplication
 
 from ops_data_store.config import Config
@@ -135,7 +137,7 @@ class AzureClient:
 
 class LDAPClient:
     """
-    Application client for LDAP.
+    Application LDAP client.
 
     Used for managing resources within an LDAP directory.
 
@@ -153,9 +155,24 @@ class LDAPClient:
         self.client = ldap.initialize(self.config.AUTH_LDAP_URL)
         self._is_bound = False
 
-    def __del__(self) -> None:
-        """Destroy instance."""
-        self._unbind()
+        self._finalizer = weakref.finalize(self, self._unbind, self.logger, self.client)
+
+    @classmethod
+    def _unbind(cls: LDAPClient, logger: logging.Logger, client: SimpleLDAPObject) -> None:
+        """
+        Unbind from LDAP server.
+
+        This method is called as the '_finalizer' when the class instance is destroyed, as such it cannot access any
+        class attributes and is passed the logger, client, etc. as arguments.
+
+        :type logger: Logger
+        :param logger: App logger instance
+        :type client: SimpleLDAPObject
+        :param client: LDAP client instance
+        """
+        logger.info("Attempting to unbind from LDAP server.")
+        client.unbind_s()
+        logger.info("LDAP unbind successful.")
 
     def _bind(self) -> None:
         """Bind to LDAP server."""
@@ -174,45 +191,49 @@ class LDAPClient:
             error_msg = "Failed to connect to LDAP server."
             raise RuntimeError(error_msg) from e
 
-    def _unbind(self) -> None:
-        """Unbind from LDAP server."""
-        self.logger.info("Attempting to unbind from LDAP server.")
+    def _search_objects(self, base: str, ldap_filter: str, attributes: list[str]) -> dict:
+        """
+        Search for objects.
 
-        if not self._is_bound:
-            self.logger.info("Skipping as already unbound.")
-            return
+        Finds one or more objects within the LDAP server.
 
-        self.client.unbind_s()
-        self.logger.info("LDAP unbind successful.")
-        self._is_bound = False
+        :type base: str
+        :param base: Base DN to search in, e.g. `ou=users,dc=example,dc=com`
+        :type ldap_filter: str
+        :param ldap_filter: A pre-formed LDAP search filter
+        :type attributes: list[str]
+        :param attributes: Attributes to return for each object, e.g. `["dn"]`
+        :rtype dict
+        :return: List of tuples containing object DNs and attributes
+        """
+        self._bind()
+        self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
+        results = self.client.search_s(base=base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=attributes)
+        self.logger.debug("Results: %s", results)
 
-    def _search_objects(self, base: str, object_ids: list[str], attributes: list[str]) -> list[str]:
+        return results
+
+    def _check_objects(self, base: str, object_ids: list[str]) -> list[str]:
         """
         Check objects exist.
 
-        Finds one or more objects within the LDAP server. Any objects that are found are returned as a Distinguished
-        Names (DNs). (E.g. `cn=conwat` will be returned as `cn=conwat,ou=users,dc=example,dc=com`).
+        Any objects that are found are returned as a Distinguished Names (DNs). (E.g. `cn=conwat` will be returned as
+        `cn=conwat,ou=users,dc=example,dc=com`).
 
-        Because objects are searched for in a specific base (typically an OU), object names should be specified as
+        Because objects are searched for in a specific base (typically an OU), object IDs should be specified as
         partial names, not a full DN (E.g. `cn=admins` not `cn=admins,ou=groups,dc=example,dc=com`).
 
         :type base: str
         :param base: Base DN to search in, e.g. `ou=users,dc=example,dc=com`
         :type object_ids: list[str]
         :param object_ids: One or more object IDs with correct prefix for the LDAP server, e.g. `cn=conwat`
-        :type attributes: list[str]
-        :param attributes: Attributes to return for each object, e.g. `["dn"]`
         :rtype list[str]
         :return: DNs for any object IDs found in the LDAP server
         """
         ldap_filter = f"(|{''.join([f'({object_id})' for object_id in object_ids])})"
         dns_searched = [f"{object_id},{base}" for object_id in object_ids]
 
-        self._bind()
-        self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
-        results = self.client.search_s(base=base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=attributes)
-        self.logger.debug("Results: %s", results)
-
+        results = self._search_objects(base=base, ldap_filter=ldap_filter, attributes=["dn"])
         dns_found = [result[0] for result in results]
         dns_missing = list(set(dns_searched) - set(dns_found))
         self.logger.info("Distinguished names found: %s", dns_found)
@@ -220,7 +241,7 @@ class LDAPClient:
 
         return dns_found
 
-    def verify_bind(self) -> None:
+    def check_bind(self) -> None:
         """
         Check credentials allow LDAP bind.
 
@@ -244,7 +265,7 @@ class LDAPClient:
         :return: One or more user DNs found in the LDAP server
         """
         ldap_base = f"ou={self.config.AUTH_LDAP_OU_USERS},{self.config.AUTH_LDAP_BASE_DN}"
-        return self._search_objects(base=ldap_base, object_ids=user_ids, attributes=["dn"])
+        return self._check_objects(base=ldap_base, object_ids=user_ids)
 
     def check_groups(self, group_ids: list[str]) -> list[str]:
         """
@@ -262,7 +283,7 @@ class LDAPClient:
         :return: One or more group DNs found in the LDAP server
         """
         ldap_base = f"ou={self.config.AUTH_LDAP_OU_GROUPS},{self.config.AUTH_LDAP_BASE_DN}"
-        return self._search_objects(base=ldap_base, object_ids=group_ids, attributes=["dn"])
+        return self._check_objects(base=ldap_base, object_ids=group_ids)
 
     def get_group_members(self, group_dn: str) -> list[str]:
         """
@@ -276,12 +297,7 @@ class LDAPClient:
         ldap_filter = f"({group_dn.split(',')[0]})"
         ldap_base = ",".join(group_dn.split(",")[1:])
 
-        self._bind()
-        self.logger.info("Searching in: %s with filter: %s.", ldap_base, ldap_filter)
-        results = self.client.search_s(
-            base=ldap_base, scope=ldap.SCOPE_SUBTREE, filterstr=ldap_filter, attrlist=["member"]
-        )
-        self.logger.debug("Results: %s", results)
+        results = self._search_objects(base=ldap_base, ldap_filter=ldap_filter, attributes=["member"])
 
         return [member.decode() for member in results[0][1]["member"]]
 
@@ -466,7 +482,7 @@ class SimpleSyncClient:
 
     def evaluate(self) -> dict[str, list[str]]:
         """
-        Assess syncing users from an Azure group to a LDAP group.
+        Assess syncing users from an Azure group to an LDAP group.
 
         This method performs no modifications to LDAP. It examines the members of the Azure and LDAP groups
         (if they exist) and determines which users should be added to or removed from the LDAP group.
@@ -511,7 +527,7 @@ class SimpleSyncClient:
 
     def sync(self) -> None:
         """
-        Sync users from an Azure group to a LDAP group.
+        Sync users from an Azure group to an LDAP group.
 
         This method performs modifications to LDAP! It depends on the `evaluate` method to check source/target groups
         exist and determine DNs to add/remove.

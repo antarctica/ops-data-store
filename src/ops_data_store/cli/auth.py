@@ -48,7 +48,7 @@ def check() -> None:
     azure_client.check_token()
     logger.info("Azure connectivity ok.")
     logger.info("Checking LDAP connectivity.")
-    ldap_client.verify_bind()
+    ldap_client.check_bind()
     logger.info("LDAP connectivity ok.")
     print("Ok. Auth connection successful.")
 

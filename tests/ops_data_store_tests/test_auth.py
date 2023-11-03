@@ -205,7 +205,7 @@ class TestLDAPClient:
     def test_verify_bind_ok(self, caplog: pytest.LogCaptureFixture) -> None:
         """Can bind."""
         client = LDAPClient()
-        client.verify_bind()
+        client.check_bind()
 
         assert True
 
@@ -269,7 +269,7 @@ class TestLDAPClient:
 
         assert "Attempting to bind to LDAP server." in caplog.text
         assert "LDAP bind successful." in caplog.text
-        assert f"Searching in: {base} with filter: ({name})" in caplog.text
+        assert f"Searching for: ['member'] in: {base} with filter: ({name})" in caplog.text
 
         assert members == expected
 
