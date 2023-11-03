@@ -1,8 +1,8 @@
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
-import psycopg
 import pytest
+from psycopg import ProgrammingError
 from pytest_mock import MockerFixture
 from typer.testing import CliRunner
 
@@ -13,27 +13,18 @@ from ops_data_store.config import Config
 class TestCliDBCheck:
     """Tests for `db check`."""
 
-    def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+    def test_ok(self, fx_cli_runner: CliRunner) -> None:
         """Succeeds when DB is reachable."""
         result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
-
-        assert "Checking DB connectivity." in caplog.text
-        assert "DB connectivity ok." in caplog.text
 
         assert result.exit_code == 0
         assert "Ok. DB connection successful." in result.output
 
-    def test_db_not_reachable(
-        self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, mocker: MockerFixture
-    ) -> None:
+    def test_fail(self, mocker: MockerFixture, fx_cli_runner: CliRunner) -> None:
         """Aborts when DB is not reachable."""
-        mock_db_dsn = mocker.PropertyMock(return_value="invalid")
-        mocker.patch.object(target=Config, attribute="DB_DSN", new_callable=mock_db_dsn)
+        mocker.patch("ops_data_store.cli.db.DBClient.check", side_effect=RuntimeError("Error"))
 
         result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
-
-        assert "Checking DB connectivity." in caplog.text
-        assert 'OperationalError: missing "=" after "invalid" in connection info string' in caplog.text
 
         assert result.exit_code == 1
         assert "No. DB connection failed." in result.output
@@ -42,23 +33,23 @@ class TestCliDBCheck:
 class TestCliDBSetup:
     """Tests for `db setup`."""
 
-    def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner):
-        """Creates any missing DB extensions or functions."""
+    def test_ok(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+        """Succeeds when DB is reachable."""
+        mocker.patch("ops_data_store.cli.db.DBClient.setup", return_value=None)
+
         result = fx_cli_runner.invoke(app=cli, args=["db", "setup"])
 
-        assert "Required DB extension 'postgis' ok." in caplog.text
-        assert "Required DB extension 'pgcrypto' ok." in caplog.text
-        assert "Required DB extension 'fuzzystrmatch' ok." in caplog.text
-        assert "Required DB data type 'ddm_point' ok." in caplog.text
-        assert "Required DB function 'generate_ulid' ok." in caplog.text
-        assert "Required DB function 'geom_as_ddm' ok." in caplog.text
-        assert "Required DB function 'set_updated_at' ok." in caplog.text
-        assert "Required DB function 'set_updated_by' ok." in caplog.text
-        assert "Database setup complete." in caplog.text
-
         assert result.exit_code == 0
-        assert "Setting up database for first time use." in result.output
-        assert "Complete." in result.output
+        assert "Ok. DB setup complete." in result.output
+
+    def test_fail(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+        """Fails when error occurs."""
+        mocker.patch("ops_data_store.cli.db.DBClient.setup", side_effect=RuntimeError("Error"))
+
+        result = fx_cli_runner.invoke(app=cli, args=["db", "setup"])
+
+        assert result.exit_code == 1
+        assert "No. DB setup failed." in result.output
 
 
 class TestCliDBRun:
@@ -88,8 +79,12 @@ class TestCliDBRun:
             assert result.exit_code == 1
             assert f"No. Input path '{tmp_dir.resolve()}' is not a file." in result.output
 
-    def test_ok(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, fx_test_config: Config):
+    def test_ok(
+        self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, fx_test_config: Config
+    ):
         """Executes contents of input file against DB."""
+        mocker.patch("ops_data_store.cli.db.DBClient.execute", return_value=None)
+
         with NamedTemporaryFile(mode="w") as tmp_file:
             tmp_file_path = Path(tmp_file.name)
             tmp_file.write(
@@ -112,14 +107,12 @@ class TestCliDBRun:
             assert f"Executing SQL from input file at '{tmp_file_path.resolve()}'" in result.output
             assert "Complete." in result.output
 
-            with psycopg.connect(fx_test_config.DB_DSN) as conn, conn.cursor() as cur:
-                cur.execute("SELECT COUNT(*) FROM test;")
-                assert cur.fetchone()[0] == 1
-
-                cur.execute("DROP TABLE IF EXISTS test;")
-
-    def test_error(self, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, fx_test_config: Config):
+    def test_error(
+        self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, fx_test_config: Config
+    ):
         """Invalid input file gives error."""
+        mocker.patch("ops_data_store.cli.db.DBClient.check", side_effect=ProgrammingError())
+
         with NamedTemporaryFile(mode="w") as tmp_file:
             tmp_file_path = Path(tmp_file.name)
             tmp_file.write(
