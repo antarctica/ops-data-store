@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import logging
+import weakref
 from typing import Optional
 
 import ldap
 import requests
+from ldap.ldapobject import SimpleLDAPObject
 from msal import ConfidentialClientApplication
 
 from ops_data_store.config import Config
@@ -153,9 +155,31 @@ class LDAPClient:
         self.client = ldap.initialize(self.config.AUTH_LDAP_URL)
         self._is_bound = False
 
-    def __del__(self) -> None:
-        """Destroy instance."""
-        self._unbind()
+        self._finalizer = weakref.finalize(self, self._unbind, self.logger, self.client, self._is_bound)
+
+    @classmethod
+    def _unbind(cls: LDAPClient, logger: logging.Logger, client: SimpleLDAPObject, is_bound: bool) -> None:
+        """
+        Unbind from LDAP server.
+
+        This method is called as the '_finalizer' when the class instance is destroyed, as such it cannot access any
+        class attributes and is passed the logger, client, etc. as arguments.
+
+        :type logger: Logger
+        :param logger: App logger instance
+        :type client: SimpleLDAPObject
+        :param client: LDAP client instance
+        :type is_bound: bool
+        :param is_bound: Whether the client is bound to the LDAP server
+        """
+        logger.info("Attempting to unbind from LDAP server.")
+
+        if not is_bound:
+            logger.info("Skipping as already unbound.")
+            return
+
+        client.unbind_s()
+        logger.info("LDAP unbind successful.")
 
     def _bind(self) -> None:
         """Bind to LDAP server."""
@@ -173,18 +197,6 @@ class LDAPClient:
             self.logger.error(e, exc_info=True)
             error_msg = "Failed to connect to LDAP server."
             raise RuntimeError(error_msg) from e
-
-    def _unbind(self) -> None:
-        """Unbind from LDAP server."""
-        self.logger.info("Attempting to unbind from LDAP server.")
-
-        if not self._is_bound:
-            self.logger.info("Skipping as already unbound.")
-            return
-
-        self.client.unbind_s()
-        self.logger.info("LDAP unbind successful.")
-        self._is_bound = False
 
     def _search_objects(self, base: str, ldap_filter: str, attributes: list[str]) -> dict:
         """
