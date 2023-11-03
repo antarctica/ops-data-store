@@ -185,6 +185,10 @@ Layers can be edited as normal, the add feature form should already be configure
 
 ## Implementation
 
+### Architecture
+
+![architecture diagram](docs/img/architecture.png)
+
 ### Command line interface
 
 [Typer](https://typer.tiangolo.com) is used as the framework for the control CLI.
@@ -764,8 +768,14 @@ Instances:
 * Cambridge (*Staging*) - managed by BAS IT in the wider SDA staging infrastructure
 * Rothera (*Production*) - managed by BAS IT in the on-station infrastructure
 
+The infrastructure needed for each instance can summarised by this diagram:
+
+![infrastructure](docs/img/infrastructure.png)
+
 Some of the infrastructure used by this project is environment or instance specific. Other elements are shared across
-all instances/environments.
+all instances/environments as this diagram:
+
+![environments-and-instances](docs/img/environments.png)
 
 ### Application servers
 
