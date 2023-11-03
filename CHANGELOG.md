@@ -13,6 +13,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Deployment issue template
   [#97](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/97)
+* Architecture and infrastructure diagrams in documentation
+  [#81](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/81)
 
 ## [0.5.0] - 2023-11-01
 
