@@ -75,3 +75,22 @@ def run(input_path: Annotated[Path, typer.Option()]) -> None:
 
     logging.info("Input file loaded and executed successfully.")
     print("Complete.")
+
+
+@app.command(help="Save DB contents to backup file.")
+def backup(output_path: Annotated[Path, typer.Option()]) -> None:
+    """Save contents of DB into an SQL file."""
+    client = DBClient()
+
+    logger.info("Saving DB contents to file.")
+    logger.info(f"Output path: {output_path.resolve()}")
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    try:
+        client.dump(path=output_path)
+        logger.info("Dump command completed without error.")
+        print("Ok. Complete.")
+    except RuntimeError as e:
+        logger.error(e, exc_info=True)
+        print("No. Error saving database.")
+        raise typer.Abort() from e

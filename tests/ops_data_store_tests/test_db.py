@@ -1,3 +1,5 @@
+from pathlib import Path
+from subprocess import CalledProcessError
 from unittest.mock import MagicMock
 
 import psycopg
@@ -107,3 +109,25 @@ class TestDBClient:
         client = DBClient()
 
         client.execute(query="SELECT 1;")
+
+    def test_dump_ok(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture):
+        """Dump succeeds."""
+        mocker.patch("subprocess.run")
+
+        client = DBClient()
+
+        client.dump(path=Path("/x.sql"))
+
+        assert "Dumping database via `pg_dump`." in caplog.text
+        assert "DB dump ok." in caplog.text
+
+    def test_dump_fail(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture):
+        """Failed dump raises error."""
+        mocker.patch("subprocess.run", side_effect=CalledProcessError(returncode=1, cmd="x"))
+
+        client = DBClient()
+
+        with pytest.raises(RuntimeError, match="DB dump failed."):
+            client.dump(path=Path("/x.sql"))
+
+        assert "Dumping database via `pg_dump`." in caplog.text

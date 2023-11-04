@@ -130,3 +130,36 @@ class TestCliDBRun:
             assert result.exit_code == 1
             assert f"Executing SQL from input file at '{tmp_file_path.resolve()}'" in result.output
             assert "No. Error running commands in input file." in result.output
+
+
+class TestCliDBBackup:
+    """Tests for `db backup`."""
+
+    def test_ok(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+        """Dumps database."""
+        mocker.patch("ops_data_store.cli.db.DBClient.dump", return_value=None)
+
+        with NamedTemporaryFile(mode="w") as tmp_file:
+            tmp_file_path = Path(tmp_file.name)
+
+            result = fx_cli_runner.invoke(app=cli, args=["db", "backup", "--output-path", tmp_file_path])
+
+            assert "Saving DB contents to file." in caplog.text
+            assert "Dump command completed without error." in caplog.text
+
+            assert result.exit_code == 0
+            assert "Ok. Complete." in result.output
+
+    def test_error(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+        """Displays error."""
+        mocker.patch("ops_data_store.cli.db.DBClient.dump", side_effect=RuntimeError("Error"))
+
+        with NamedTemporaryFile(mode="w") as tmp_file:
+            tmp_file_path = Path(tmp_file.name)
+
+            result = fx_cli_runner.invoke(app=cli, args=["db", "backup", "--output-path", tmp_file_path])
+
+            assert "Saving DB contents to file." in caplog.text
+
+            assert result.exit_code == 1
+            assert "No. Error saving database." in result.output
