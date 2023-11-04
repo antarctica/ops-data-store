@@ -105,6 +105,7 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 
 - `ods-ctl db check`: verifies the database is available
 - `ods-ctl db setup`: configure a new database for use
+- `ods-ctl db backup --ouput-path [path/to/file.sql]`: saves `pg_dump` output to the output file
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
 
 ### QGIS project
@@ -560,7 +561,7 @@ Required OS packages for Python app server:
 - OpenLDAP (including development headers)
 - GDAL 3.4 (including development headers and the `gdal-config` binary, [1])
 - libxml (including the `xmllint` binary)
-- libpq
+- libpq (including the `pg_dump` binary)
 
 [1] In exceptional circumstances, the `urllib3` package can be downloaded to use an earlier version of OpenSSL. See
 [Installation](#installation) section for more information.

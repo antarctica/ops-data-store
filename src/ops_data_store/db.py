@@ -1,4 +1,6 @@
 import logging
+import subprocess
+from pathlib import Path
 
 import psycopg
 from psycopg import Cursor
@@ -192,3 +194,25 @@ class DBClient:
         """Execute a query against the DB."""
         with psycopg.connect(self._dsn) as conn, conn.cursor() as cur:
             cur.execute(query)
+
+    def dump(self, path: Path) -> None:
+        """
+        Backup database to a file.
+
+        Wrapper around `pg_dump` command.
+
+        Warning: Any existing file at `path` will be overwritten.
+
+        :type path: Path
+        :param path: Where to save dump file.
+        """
+        try:
+            self.logger.info("Dumping database via `pg_dump`.")
+            subprocess_args = ["pg_dump", f"--dbname={self._dsn}", f"--file={path.resolve()}"]
+            self.logger.info(f"Args: {subprocess_args}")
+            subprocess.run(args=subprocess_args, check=True, text=True, capture_output=True)
+            self.logger.info("DB dump ok.")
+        except subprocess.CalledProcessError as e:
+            self.logger.error(e, exc_info=True)
+            msg = "DB dump failed."
+            raise RuntimeError(msg) from e

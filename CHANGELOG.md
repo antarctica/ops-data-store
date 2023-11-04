@@ -15,6 +15,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#97](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/97)
 * Architecture and infrastructure diagrams in documentation
   [#81](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/81)
+* `db backup` CLI command and `dump` command in app db client running `pg_dump`
+  [#93](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/93)
 
 ### Changed
 
