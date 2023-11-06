@@ -34,6 +34,12 @@ class Config:
             msg = "Required config option `DB_DSN` not set."
             raise RuntimeError(msg) from e
 
+        try:
+            self.env.list("APP_ODS_DATA_MANAGED_TABLE_NAMES")
+        except EnvError as e:
+            msg = "Required config option `DATA_MANAGED_TABLE_NAMES` not set."
+            raise RuntimeError(msg) from e
+
     def dump(self) -> dict:
         """Return application configuration as a dictionary."""
         return {
@@ -52,6 +58,8 @@ class Config:
             "AUTH_LDAP_OU_GROUPS": self.AUTH_LDAP_OU_GROUPS,
             "AUTH_LDAP_NAME_CONTEXT_USERS": self.AUTH_LDAP_NAME_CONTEXT_USERS,
             "AUTH_LDAP_NAME_CONTEXT_GROUPS": self.AUTH_LDAP_NAME_CONTEXT_GROUPS,
+            "DATA_MANAGED_TABLE_NAMES": self.DATA_MANAGED_TABLE_NAMES,
+            "DATA_QGIS_TABLE_NAMES": self.DATA_QGIS_TABLE_NAMES,
         }
 
     @property
@@ -166,3 +174,13 @@ class Config:
         Typically, `cn`.
         """
         return self.env.str("APP_ODS_AUTH_LDAP_CXT_GROUPS", default=None)
+
+    @property
+    def DATA_MANAGED_TABLE_NAMES(self) -> list[str]:
+        """Names of tables used for managed datasets."""
+        return self.env.list("APP_ODS_DATA_MANAGED_TABLE_NAMES")
+
+    @property
+    def DATA_QGIS_TABLE_NAMES(self) -> list[str]:
+        """Names of tables used for optional QGIS features."""
+        return ["layer_styles"]
