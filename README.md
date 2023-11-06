@@ -49,6 +49,9 @@ In relation to dataset [Permissions](#permissions), support for the following is
 - creating and synchronising LDAP members to the database as postgres roles and users
 - running the Azure to LDAP group sync from a hosted environment
 
+In relation to dataset and database backups, backups must be captured manually (rather than scheduled automatically)
+and are not verified as being accurate or usable.
+
 ### Related projects
 
 This project is limited to the technical and operational aspects of providing a platform for hosting datasets. Other
@@ -100,6 +103,10 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 
 - `ods-ctl config check`: verifies required configuration options have been set
 - `ods-ctl config show`: displays the current application configuration
+
+#### Control CLI `data` commands
+
+- `ods-ctl data backup --ouput-path [path/to/file.gpkg]`: saves managed datasets and QGIS styles to GeoPackage backup
 
 #### Control CLI `db` commands
 
@@ -219,6 +226,8 @@ details, and must be defined by the user, using either appropriate environment v
 | `AUTH_LDAP_OU_GROUPS`      | `APP_ODS_AUTH_LDAP_OU_GROUPS`      | No [2]   | No        | No        | String          | Scope for group related objects in LDAP server          | 'groups'                                                                 |
 | `AUTH_LDAP_CXT_USERS`      | `APP_ODS_AUTH_LDAP_CXT_USERS`      | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify users       | 'cn' [3]                                                                 |
 | `AUTH_LDAP_CXT_GROUPS`     | `APP_ODS_AUTH_LDAP_CXT_GROUPS`     | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify groups      | 'cn' [3]                                                                 |
+| `DATA_MANAGED_TABLE_NAMES` | `APP_ODS_DATA_MANAGED_TABLE_NAMES` | Yes      | No        | No        | List of Strings | Names of database tables used for managed datasets      | ['depot', 'instrument']                                                  |
+| `DATA_QGIS_TABLE_NAMES`    | -                                  | No       | No        | Yes       | List of Strings | Names of database tables optionally used by QGIS        | ['layer_styles']                                                         |
 
 **Note:**
 

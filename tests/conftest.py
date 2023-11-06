@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 
 from ops_data_store.auth import AzureClient, SimpleSyncClient
 from ops_data_store.config import Config
+from ops_data_store.data import DataClient
 from tests.mocks import test_check_target_users__ldap_check_users
 
 
@@ -113,6 +114,18 @@ def fx_test_auth_ldap_name_context_groups(fx_test_env: Env) -> str:
 
 
 @pytest.fixture()
+def fx_test_data_managed_table_names(fx_test_env: Env) -> list[str]:
+    """Names of managed dataset tables."""
+    return fx_test_env.list("APP_ODS_DATA_MANAGED_TABLE_NAMES")
+
+
+@pytest.fixture()
+def fx_test_data_qgis_table_names(fx_test_env: Env) -> list[str]:
+    """Names of QGIS tables."""
+    return ["layer_styles"]
+
+
+@pytest.fixture()
 def fx_test_config() -> Config:
     """Provide access to app configuration."""
     return Config()
@@ -135,6 +148,8 @@ def fx_test_config_dict(
     fx_test_auth_ldap_ou_groups: str,
     fx_test_auth_ldap_name_context_users: str,
     fx_test_auth_ldap_name_context_groups: str,
+    fx_test_data_managed_table_names: list[str],
+    fx_test_data_qgis_table_names: list[str],
 ) -> dict:
     """Config as dict."""
     return {
@@ -153,6 +168,8 @@ def fx_test_config_dict(
         "AUTH_LDAP_OU_GROUPS": fx_test_auth_ldap_ou_groups,
         "AUTH_LDAP_NAME_CONTEXT_USERS": fx_test_auth_ldap_name_context_users,
         "AUTH_LDAP_NAME_CONTEXT_GROUPS": fx_test_auth_ldap_name_context_groups,
+        "DATA_MANAGED_TABLE_NAMES": fx_test_data_managed_table_names,
+        "DATA_QGIS_TABLE_NAMES": fx_test_data_qgis_table_names,
     }
 
 
@@ -226,3 +243,9 @@ def fx_mock_ssc(
 def fx_se_mock_ldap_check_users() -> Callable:
     """Side effect for `LDAPClient.check_users()` used in the `TestAuth.test_check_target_users`."""
     return test_check_target_users__ldap_check_users
+
+
+@pytest.fixture()
+def fx_data_client() -> DataClient:
+    """App data client."""
+    return DataClient()

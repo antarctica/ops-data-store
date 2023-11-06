@@ -31,6 +31,9 @@ variables:
   APP_ODS_AUTH_LDAP_CXT_USERS: "cn"
   APP_ODS_AUTH_LDAP_CXT_GROUPS: "cn"
 
+  # Data config
+  APP_ODS_DATA_MANAGED_TABLE_NAMES: "test"
+
 cache:
   paths:
     - .cache/pip  # for pipx/pip

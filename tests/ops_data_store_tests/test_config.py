@@ -266,3 +266,41 @@ class TestConfigAuthLdapNameContextGroups:
         assert fx_test_config.AUTH_LDAP_NAME_CONTEXT_GROUPS is None
 
         environ["APP_ODS_AUTH_LDAP_CXT_GROUPS"] = ldap_name_context_groups
+
+
+class TestConfigDataManagedTableNames:
+    """Tests for `DATA_MANAGED_TABLE_NAMES` property."""
+
+    def test_ok(self, fx_test_data_managed_table_names: list[str], fx_test_config: Config) -> None:
+        """Property check."""
+        assert fx_test_data_managed_table_names == fx_test_config.DATA_MANAGED_TABLE_NAMES
+
+    def test_missing(self, fx_test_config: Config) -> None:
+        """Missing property raises exception."""
+        table_names = environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"]
+        del environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"]
+
+        with pytest.raises(EnvError):
+            # noinspection PyStatementEffect
+            fx_test_config.DATA_MANAGED_TABLE_NAMES  # noqa: B018
+
+        environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"] = table_names
+
+    def test_validate_error(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        table_names = environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"]
+        del environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"]
+
+        # assert validate method returns RuntimeError and message is 'foo'
+        with pytest.raises(RuntimeError, match="Required config option `DATA_MANAGED_TABLE_NAMES` not set."):
+            fx_test_config.validate()
+
+        environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"] = table_names
+
+
+class TestDataQgisTableNames:
+    """Tests for `DATA_QGIS_TABLE_NAMES` property."""
+
+    def test_ok(self, fx_test_data_qgis_table_names: list[str], fx_test_config: Config) -> None:
+        """Property can be read."""
+        assert fx_test_data_qgis_table_names == fx_test_config.DATA_QGIS_TABLE_NAMES
