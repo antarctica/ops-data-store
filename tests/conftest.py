@@ -1,4 +1,7 @@
+import json
+from datetime import datetime, timezone
 from importlib.metadata import version
+from pathlib import Path
 from typing import Callable
 from unittest.mock import Mock
 
@@ -9,6 +12,7 @@ from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
 from ops_data_store.auth import AzureClient, SimpleSyncClient
+from ops_data_store.backup import RollingFileState, RollingFileStateIteration, RollingFileStateMeta
 from ops_data_store.config import Config
 from ops_data_store.data import DataClient
 from tests.mocks import test_check_target_users__ldap_check_users
@@ -249,3 +253,101 @@ def fx_se_mock_ldap_check_users() -> Callable:
 def fx_data_client() -> DataClient:
     """App data client."""
     return DataClient()
+
+
+@pytest.fixture()
+def fx_rfs_schema_version() -> str:
+    """Rolling file set schema version."""  # noqa: D401
+    return "1"
+
+
+@pytest.fixture()
+def fx_rfs_max_iterations() -> int:
+    """Maximum iterations for rolling file set."""
+    return 3
+
+
+@pytest.fixture()
+def fx_rfs_first_iteration() -> RollingFileStateIteration:
+    """Original, oldest, iteration in a rolling file set."""
+    created = datetime(year=2022, month=4, day=24, hour=4, minute=40, second=1, tzinfo=timezone.utc)
+    return RollingFileStateIteration(
+        sha1sum="d4f497e82c586022966d3f7d3d3d93faa76721aa",
+        replaces_sha1sum="",
+        created_at=created,
+        original_name="alice.txt",
+        sequence=0,
+        path=Path("/foo_1.txt"),
+    )
+
+
+@pytest.fixture()
+def fx_rfs_second_iteration(fx_rfs_first_iteration: RollingFileStateIteration) -> RollingFileStateIteration:
+    """Newest, most recent, iteration in a rolling file set."""
+    created = datetime(year=2022, month=5, day=25, hour=5, minute=50, second=1, tzinfo=timezone.utc)
+    return RollingFileStateIteration(
+        sha1sum="7fa79c52bf5a13daab69690c634dcc64c1871db0",
+        replaces_sha1sum=fx_rfs_first_iteration.sha1sum,
+        created_at=created,
+        original_name="bob.txt",
+        sequence=1,
+        path=Path("/foo_2.txt"),
+    )
+
+
+@pytest.fixture()
+def fx_rfs_meta(fx_rfs_max_iterations: int, fx_rfs_second_iteration: RollingFileStateIteration) -> RollingFileStateMeta:
+    """Rolling file set state metadata."""  # noqa: D401
+    return RollingFileStateMeta(
+        max_iterations=fx_rfs_max_iterations,
+        iterations=2,
+        newest_iteration_sha1sum=fx_rfs_second_iteration.sha1sum,
+        updated_at=datetime.fromisoformat("2023-11-07T12:43:40.065573+00:00"),
+    )
+
+
+@pytest.fixture()
+def fx_rfs_state(
+    fx_rfs_meta: RollingFileStateMeta,
+    fx_rfs_first_iteration: RollingFileStateIteration,
+    fx_rfs_second_iteration: RollingFileStateIteration,
+) -> RollingFileState:
+    """Rolling file set state."""  # noqa: D401
+    iterations = {
+        fx_rfs_first_iteration.sha1sum: fx_rfs_first_iteration,
+        fx_rfs_second_iteration.sha1sum: fx_rfs_second_iteration,
+    }
+    return RollingFileState(meta=fx_rfs_meta, iterations=iterations)
+
+
+@pytest.fixture()
+def fx_rfs_state_json() -> str:
+    """Rolling file set state as JSON encoded str."""  # noqa: D401
+    data = {
+        "meta": {
+            "max_iterations": 3,
+            "iterations": 2,
+            "newest_iteration_sha1sum": "7fa79c52bf5a13daab69690c634dcc64c1871db0",
+            "schema_version": "1",
+            "updated_at": "2023-11-07T12:43:40.065573+00:00",
+        },
+        "iterations": {
+            "d4f497e82c586022966d3f7d3d3d93faa76721aa": {
+                "sha1sum": "d4f497e82c586022966d3f7d3d3d93faa76721aa",
+                "replaces_sha1sum": "",
+                "created_at": "2022-04-24T04:40:01+00:00",
+                "original_name": "alice.txt",
+                "sequence": 0,
+                "path": "/foo_1.txt",
+            },
+            "7fa79c52bf5a13daab69690c634dcc64c1871db0": {
+                "sha1sum": "7fa79c52bf5a13daab69690c634dcc64c1871db0",
+                "replaces_sha1sum": "d4f497e82c586022966d3f7d3d3d93faa76721aa",
+                "created_at": "2022-05-25T05:50:01+00:00",
+                "original_name": "bob.txt",
+                "sequence": 1,
+                "path": "/foo_2.txt",
+            },
+        },
+    }
+    return json.dumps(data, indent=2)

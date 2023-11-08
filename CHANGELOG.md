@@ -19,6 +19,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#93](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/93)
 * `data backup` CLI command and app data client using GDAL
   [#108](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/108)
+* Initial implementation of a rolling file set, for keeping a fixed number of iterations of a file
+  [#92](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/92)
 
 ### Changed
 
