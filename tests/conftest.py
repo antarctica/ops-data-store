@@ -12,7 +12,7 @@ from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
 from ops_data_store.auth import AzureClient, SimpleSyncClient
-from ops_data_store.backup import RollingFileState, RollingFileStateIteration, RollingFileStateMeta
+from ops_data_store.backup import BackupClient, RollingFileState, RollingFileStateIteration, RollingFileStateMeta
 from ops_data_store.config import Config
 from ops_data_store.data import DataClient
 from tests.mocks import test_check_target_users__ldap_check_users
@@ -130,6 +130,18 @@ def fx_test_data_qgis_table_names(fx_test_env: Env) -> list[str]:
 
 
 @pytest.fixture()
+def fx_test_backups_path(fx_test_env: Env) -> Path:
+    """Path for backups."""
+    return fx_test_env.path("APP_ODS_BACKUPS_PATH")
+
+
+@pytest.fixture()
+def fx_test_backups_count(fx_test_env: Env) -> int:
+    """Maximum number of backup iterations to keep."""
+    return fx_test_env.int("APP_ODS_BACKUPS_COUNT")
+
+
+@pytest.fixture()
 def fx_test_config() -> Config:
     """Provide access to app configuration."""
     return Config()
@@ -154,6 +166,8 @@ def fx_test_config_dict(
     fx_test_auth_ldap_name_context_groups: str,
     fx_test_data_managed_table_names: list[str],
     fx_test_data_qgis_table_names: list[str],
+    fx_test_backups_path: Path,
+    fx_test_backups_count: int,
 ) -> dict:
     """Config as dict."""
     return {
@@ -174,6 +188,8 @@ def fx_test_config_dict(
         "AUTH_LDAP_NAME_CONTEXT_GROUPS": fx_test_auth_ldap_name_context_groups,
         "DATA_MANAGED_TABLE_NAMES": fx_test_data_managed_table_names,
         "DATA_QGIS_TABLE_NAMES": fx_test_data_qgis_table_names,
+        "BACKUPS_PATH": fx_test_backups_path,
+        "BACKUPS_COUNT": fx_test_backups_count,
     }
 
 
@@ -351,3 +367,13 @@ def fx_rfs_state_json() -> str:
         },
     }
     return json.dumps(data, indent=2)
+
+
+@pytest.fixture()
+def fx_backup_client(mocker: MockFixture) -> BackupClient:
+    """App backup client."""
+    mocker.patch("ops_data_store.backup.DataClient", autospec=True)
+    mocker.patch("ops_data_store.backup.DBClient", autospec=True)
+    mocker.patch("ops_data_store.backup.RollingFileSet", autospec=True)
+
+    return BackupClient()

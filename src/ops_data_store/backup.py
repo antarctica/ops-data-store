@@ -10,6 +10,10 @@ from pathlib import Path
 from shutil import copyfile
 from typing import Optional, Union
 
+from ops_data_store.config import Config
+from ops_data_store.data import DataClient
+from ops_data_store.db import DBClient
+
 
 @dataclass
 class RollingFileStateMeta:
@@ -374,3 +378,49 @@ class RollingFileSet:
 
         self._prune_iterations()
         self._create_iteration(path=path)
+
+
+class BackupClient:
+    """
+    Application backup client.
+
+    A high level manager class for maintaining rolling database and managed dataset backups.
+    """
+
+    def __init__(self) -> None:
+        """Create instance."""
+        self.config = Config()
+
+        self.logger = logging.getLogger("app")
+        self.logger.info("Creating backup client.")
+
+        self.db_client = DBClient()
+        self.data_client = DataClient()
+
+        self._max_iterations = self.config.BACKUPS_COUNT
+        self._backups_path = self.config.BACKUPS_PATH
+        self._db_backup_name = "db_backup.sql"
+        self._data_backup_name = "managed_datasets_backup.gpkg"
+
+        self._db_backups = RollingFileSet(
+            workspace_path=self._backups_path, base_name=self._db_backup_name, max_iterations=self._max_iterations
+        )
+        self._data_backups = RollingFileSet(
+            workspace_path=self._backups_path, base_name=self._data_backup_name, max_iterations=self._max_iterations
+        )
+
+    def backup(self) -> None:
+        """Create backups and add to file sets."""
+        self.logger.info("Creating database backup.")
+        db_backup_path = self._backups_path.joinpath(self._db_backup_name)
+        self.db_client.dump(path=db_backup_path)
+        self._db_backups.add(path=db_backup_path)
+        db_backup_path.unlink()
+        self.logger.info("Created database backup.")
+
+        self.logger.info("Creating managed dataset backup.")
+        data_backup_path = self._backups_path.joinpath(self._data_backup_name)
+        self.data_client.export(path=data_backup_path)
+        self._data_backups.add(path=data_backup_path)
+        data_backup_path.unlink()
+        self.logger.info("Created managed dataset backup.")

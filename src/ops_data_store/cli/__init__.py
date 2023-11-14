@@ -5,6 +5,7 @@ from typing import Optional
 import typer
 
 from ops_data_store.cli.auth import app as auth_cli
+from ops_data_store.cli.backup import app as backup_cli
 from ops_data_store.cli.config import app as config_cli
 from ops_data_store.cli.data import app as data_cli
 from ops_data_store.cli.db import app as db_cli
@@ -14,6 +15,7 @@ config = Config()
 
 app = typer.Typer(name="ods-ctl", help="BAS MAGIC Operations Data Store control CLI.")
 app.add_typer(auth_cli, name="auth", help="Manage application authentication/authorisation.")
+app.add_typer(backup_cli, name="backup", help="Manage backups.")
 app.add_typer(config_cli, name="config", help="Manage application configuration.")
 app.add_typer(data_cli, name="data", help="Manage datasets.")
 app.add_typer(db_cli, name="db", help="Manage application database.")

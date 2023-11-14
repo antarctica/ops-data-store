@@ -99,6 +99,10 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 - `ods-ctl auth check`: verifies authentication/authorisation services are available
 - `ods-ctl auth sync --azure-group [group-id] --ldap-group [group-id]`: syncs members of an Azure group to an LDAP group
 
+#### Control CLI `backup` commands
+
+- `ods-ctl backup now`: combines `ods-ctl data backup` and `ods-ctl db backup` as part of a managed, rolling, backup set
+
 #### Control CLI `config` commands
 
 - `ods-ctl config check`: verifies required configuration options have been set
@@ -112,7 +116,7 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 
 - `ods-ctl db check`: verifies the database is available
 - `ods-ctl db setup`: configure a new database for use
-- `ods-ctl db backup --ouput-path [path/to/file.sql]`: saves `pg_dump` output to the output file
+- `ods-ctl db backup --ouput-path [path/to/file.sql]`: saves database to SQL backup file via `pg_dump`
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
 
 ### QGIS project
@@ -228,6 +232,8 @@ details, and must be defined by the user, using either appropriate environment v
 | `AUTH_LDAP_CXT_GROUPS`     | `APP_ODS_AUTH_LDAP_CXT_GROUPS`     | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify groups      | 'cn' [3]                                                                 |
 | `DATA_MANAGED_TABLE_NAMES` | `APP_ODS_DATA_MANAGED_TABLE_NAMES` | Yes      | No        | No        | List of Strings | Names of database tables used for managed datasets      | ['depot', 'instrument']                                                  |
 | `DATA_QGIS_TABLE_NAMES`    | -                                  | No       | No        | Yes       | List of Strings | Names of database tables optionally used by QGIS        | ['layer_styles']                                                         |
+| `BACKUPS_PATH`             | `APP_ODS_BACKUPS_PATH`             | Yes      | No        | No        | String (Path)   | Location to store application backups [4]               | '/var/opt/ops_data_store/backups/'                                       |
+| `BACKUPS_COUNT`            | `APP_ODS_BACKUPS_COUNT`            | Yes      | No        | No        | Number          | Number of backups to keep as part of a rolling window   | '10'                                                                     |
 
 **Note:**
 
@@ -236,6 +242,8 @@ details, and must be defined by the user, using either appropriate environment v
 [2] `AUTH_*` config options are required if managing authentication/authorisation aspects of the Data Store
 
 [3] Make sure to use the correct naming context prefix for the LDAP server, e.g. `cn=conwat` vs. `uid=conwat`.
+
+[4] The `BACKUPS_PATH` config option MUST point to an existing directory that is writable by the application user.
 
 ### Database
 
@@ -248,6 +256,14 @@ extension for storing spatial information along with custom functions and data t
   - using the `geom_as_ddm` function and `ddm_point` data type
 - recording when and by who rows in managed datasets are changed
   - using the `set_updated_at` and `set_updated_by` functions
+
+### File store [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+The file system is used for storing application [Backups](#backups). It may also be used for hosting the Python command
+line application and/or database and share a common volume, however this is not required and not common, particularly
+for the database.
 
 ### QGIS
 
@@ -346,6 +362,104 @@ Mappings for roles, teams, the database and LDAP:
 
 The [Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
 command group can be used to synchronise users between these systems.
+
+### Backups [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+Managed datasets hosted in this platform, and the underlying [Database](#database) can be exported as file based
+backups, to allow undesired data changes to be recovered (i.e. where a feature is accidentally deleted).
+
+A fixed number of backups are kept, with the oldest backup replaced by the newest when a configured limit is reached.
+This forms a backup window within which backups can be accessed. The length of this window depends on the number of
+backups to keep and how often they are made (i.e. a limit of 7 with daily backups gives a window of a week).
+
+**Note:** Backups are intended as point-in-time snapshots of data, rather than long-term, data archives (which will
+likely require manual preparation).
+
+**Note:** Currently, backups need to be captured manually, in future they will be automated on a regular schedule.
+
+Currently, two separate backups are created:
+
+1. GeoPackages:
+    * [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
+    * can be added directly to GIS clients or used with tools such as GDAL/OGR
+    * contain managed datasets and QGIS layer style information only
+    * intended for long-term use
+2. PostgreSQL database dumps:
+    * technology specific file format for database information
+    * requires loading into a compatible Postgres database to use
+    * contains all database objects (data types, tables, views, functions, triggers)
+    * does not contain database users, roles and grants (see [Permissions](#permissions) section)
+    * not intended for long-term use (i.e. will be withdrawn in time)
+
+Backups are independent of each other, i.e. if the backup limit is 6, a maximum of 6 GeoPackage, and 6 Postgres,
+backups will be retained - rather than 3 of each. Backups are captured together to try and ensure consistency.
+
+The [Command Line Interface](#command-line-interface), specifically commands in the
+[`backup`](#control-cli-backup-commands) command group can be used to create and manage backups.
+
+#### Backup state files
+
+To avoid issues with file systems that capture all files within their own managed backups (such as the BAS SAN),
+backups are named using generic names that are rotated. In order to tell specific backups apart a backup state file is
+maintained automatically alongside each backup.
+
+This state file is encoded as JSON using the `.state.json` extension and designed to be human-readable. State files
+contain two sections, a `meta` section and a list of iterations. Iterations are identified using the SHA1 checksum of
+the file contents - as the filename will be made generic and change over time.
+
+Example state file for a three file backup set:
+
+```json
+{
+  "meta": {
+    "max_iterations": 3,
+    "iterations": 3,
+    "newest_iteration_sha1sum": "1f3c3cd6977c3253d6cf0a4219dbb74a791fdccb",
+    "schema_version": "1",
+    "updated_at": "2023-11-09T11:44:05.188558+00:00"
+  },
+  "iterations": {
+    "5a88d442089f97497fa3e2cc25827073c2d4c518": {
+      "sha1sum": "5a88d442089f97497fa3e2cc25827073c2d4c518",
+      "replaces_sha1sum": "",
+      "created_at": "2023-11-09T11:39:49.535065+00:00",
+      "original_name": "db_backup.sql",
+      "sequence": 1,
+      "path": "backups/db_backup_1.sql"
+    },
+    "cf7650f9cafda9aee8815161b9e088d820f32f4a": {
+      "sha1sum": "cf7650f9cafda9aee8815161b9e088d820f32f4a",
+      "replaces_sha1sum": "5a88d442089f97497fa3e2cc25827073c2d4c518",
+      "created_at": "2023-11-09T11:43:08.484397+00:00",
+      "original_name": "db_backup.sql",
+      "sequence": 2,
+      "path": "backups/db_backup_2.sql"
+    },
+    "1f3c3cd6977c3253d6cf0a4219dbb74a791fdccb": {
+      "sha1sum": "1f3c3cd6977c3253d6cf0a4219dbb74a791fdccb",
+      "replaces_sha1sum": "cf7650f9cafda9aee8815161b9e088d820f32f4a",
+      "created_at": "2023-11-09T11:44:05.183804+00:00",
+      "original_name": "db_backup.sql",
+      "sequence": 3,
+      "path": "backups/db_backup_3.sql"
+    }
+  }
+}
+```
+
+The oldest backup is identified by the lowest `sequence` value (i.e. `0`) and does not have a `replaces_sha1sum` value
+as it logically doesn't replace a previous backup. For other backups, the `replaces_sha1sum` value can be used to
+calculate the order of backups if the sequence information is lost. The order backups appear in the `iterations` list
+MUST NOT be used to infer the order of backups.
+
+The `created_at` and `original_name` properties relate to the file added to the backup set (which may be named
+generically) or include a timestamp or other unique value. These values, along with the `sha1sum` will therefore not
+change.
+
+**Note:** The backup system implemented within this application does not include measures to protect against file
+corruption. Separate processes will be needed to achieve this if needed.
 
 ## Datasets
 
@@ -560,6 +674,7 @@ Required infrastructure:
 - a service or server for running [Postgres](https://www.postgresql.org) databases
 - an Azure Entra (Active Directory) app registration
 - LDAP groups and application user
+- a file system for holding [Backups](#backups)
 
 ### Application server requirements
 
@@ -610,6 +725,19 @@ These groups must:
 In addition:
 
 - all LDAP users must be contained in a single OU (e.g. 'people' or 'users')
+
+### File system requirements
+
+A file system is required for storing application backups.
+
+This file system must:
+
+- be accessible/addressable via the Python `Path` class (i.e. a local, or mounted network, file system)
+- provide at least the created date for files via metadata the Python `Path.stat` method can access
+- provide suitable permissions for the Python application to read and write all files (i.e. via an OS user)
+- have sufficient space to maintain the number of backups configured (recommended minimum: 5GB)
+
+As this file system is used for backups, it should to the extent possible, be designed to be stable/reliable.
 
 ## Installation
 
@@ -762,6 +890,7 @@ Connection details for any resources created should be stored in the MAGIC 1Pass
 - request a Windows VM (configured as a BAS workstation) with QGIS LTS installed to act as a reference VM
 - request a LDAP entity to use for managing application LDAP groups
 - request LDAP groups as needed for implementing application permissions
+- request SAN/data volume mounted in the application server with permissions for the Python app OS user to read/write
 
 ## Infrastructure
 

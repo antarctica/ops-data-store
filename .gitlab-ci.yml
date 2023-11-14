@@ -34,6 +34,10 @@ variables:
   # Data config
   APP_ODS_DATA_MANAGED_TABLE_NAMES: "test"
 
+  # Backups config
+  APP_ODS_BACKUPS_PATH: "./backups"
+  APP_ODS_BACKUPS_COUNT: "3"
+
 cache:
   paths:
     - .cache/pip  # for pipx/pip

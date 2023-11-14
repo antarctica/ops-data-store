@@ -6,8 +6,15 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import pytest
+from pytest_mock import MockFixture
 
-from ops_data_store.backup import RollingFileSet, RollingFileState, RollingFileStateIteration, RollingFileStateMeta
+from ops_data_store.backup import (
+    BackupClient,
+    RollingFileSet,
+    RollingFileState,
+    RollingFileStateIteration,
+    RollingFileStateMeta,
+)
 
 
 class TestRollingFileStateMeta:
@@ -531,3 +538,38 @@ class TestRollingFile:
 
             with pytest.raises(ValueError, match="Path is not a file or does not exist."):
                 file_set.add(path=workspace_path)
+
+
+class TestBackupClient:
+    """Tests for app backups client."""
+
+    def test_init(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture) -> None:
+        """Can be initialised."""
+        mocker.patch("ops_data_store.backup.DataClient", autospec=True)
+        mocker.patch("ops_data_store.backup.DBClient", autospec=True)
+        mocker.patch("ops_data_store.backup.RollingFileSet", autospec=True)
+
+        client = BackupClient()
+
+        assert "Creating backup client." in caplog.text
+
+        assert isinstance(client, BackupClient)
+
+    def test_backup(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture, fx_backup_client: BackupClient):
+        """Can create backups."""
+        with TemporaryDirectory() as workspace:
+            fx_backup_client._backups_path = Path(workspace)
+            db_backup_path = fx_backup_client._backups_path.joinpath(fx_backup_client._db_backup_name)
+            data_backup_path = fx_backup_client._backups_path.joinpath(fx_backup_client._data_backup_name)
+            db_backup_path.touch()
+            data_backup_path.touch()
+
+            fx_backup_client.backup()
+
+            assert db_backup_path.exists() is False
+            assert data_backup_path.exists() is False
+
+        assert "Creating database backup." in caplog.text
+        assert "Created database backup." in caplog.text
+        assert "Creating managed dataset backup." in caplog.text
+        assert "Created managed dataset backup." in caplog.text
