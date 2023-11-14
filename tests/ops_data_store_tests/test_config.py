@@ -53,15 +53,12 @@ class TestConfigDbDsn:
         environ["APP_ODS_DB_DSN"] = db_dsn
 
     def test_validate_error(self, fx_test_config: Config) -> None:
-        """Missing `DB_DSN` property fails validation."""
+        """Missing property fails validation."""
         db_dsn = environ["APP_ODS_DB_DSN"]
         del environ["APP_ODS_DB_DSN"]
 
-        # assert validate method returns RuntimeError and message is 'foo'
-        with pytest.raises(RuntimeError) as e:
+        with pytest.raises(RuntimeError, match="Required config option `DB_DSN` not set."):
             fx_test_config.validate()
-
-        assert str(e.value) == "Required config option `DB_DSN` not set."
 
         environ["APP_ODS_DB_DSN"] = db_dsn
 
@@ -292,7 +289,6 @@ class TestConfigDataManagedTableNames:
         table_names = environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"]
         del environ["APP_ODS_DATA_MANAGED_TABLE_NAMES"]
 
-        # assert validate method returns RuntimeError and message is 'foo'
         with pytest.raises(RuntimeError, match="Required config option `DATA_MANAGED_TABLE_NAMES` not set."):
             fx_test_config.validate()
 
