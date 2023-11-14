@@ -39,6 +39,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#110](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/110)
 * Switching to `ruff format` for Python code formatting (echo's Black style)
   [#114](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/114)
+* Incorporate depot and instrument managed dataset schema changes
+  [#68](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/68)
 
 ## [0.5.0] - 2023-11-01
 
