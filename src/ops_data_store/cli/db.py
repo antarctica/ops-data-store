@@ -14,23 +14,23 @@ config = Config()
 logger = logging.getLogger("app")
 
 
-@app.command(help="Check DB connectivity.")
+@app.command(help="Check database connectivity.")
 def check() -> None:
-    """Check DB connection."""
+    """Check database connection."""
     client = DBClient()
 
     try:
         client.check()
-        print("Ok. DB connection successful.")
+        print("Ok. Database connection successful.")
     except RuntimeError as e:
         logger.error(e, exc_info=True)
-        print("No. DB connection failed.")
+        print("No. Database connection failed.")
         raise typer.Abort() from e
 
 
-@app.command(help="Configure a new DB for use.")
+@app.command(help="Configure new database instance for use.")
 def setup() -> None:
-    """Set up DB for use."""
+    """Set up database for use."""
     print("Setting up database for first time use.")
     print(
         "Note: If this command fails, please either create an issue in the 'Ops Data Store' project in GitLab, or "
@@ -40,55 +40,55 @@ def setup() -> None:
 
     try:
         client.setup()
-        print("Ok. DB setup complete.")
+        print("Ok. Database setup completed normally.")
     except RuntimeError as e:
         logger.error(e, exc_info=True)
         print(e)
-        print("No. DB setup failed.")
+        print("No. Database setup failed.")
         raise typer.Abort() from e
 
 
-@app.command(help="Execute contents of an SQL against DB.")
+@app.command(help="Execute contents of an SQL against database.")
 def run(input_path: Annotated[Path, typer.Option()]) -> None:
-    """Load contents of SQL file and execute against DB."""
+    """Load contents of SQL file and execute against database."""
     client = DBClient()
 
-    logger.info("Loading file contents and running inside DB.")
-    logging.info(f"Input path: {input_path.resolve()}")
+    logger.info("Loading file contents and running inside database.")
 
+    logger.info(f"Input path: {input_path.resolve()}")
     if not input_path.exists():
-        logging.error("Input path not found.")
+        logger.error("Input path not found.")
         print(f"No. Input path '{input_path.resolve()}' does not exist.")
         raise typer.Abort()
     if not input_path.is_file():
-        logging.error("Input path not a file.")
+        logger.error("Input path not a file.")
         print(f"No. Input path '{input_path.resolve()}' is not a file.")
         raise typer.Abort()
 
     try:
-        print(f"Executing SQL from input file at '{input_path.resolve()}' against app DB.")
+        print(f"Executing SQL from input file at '{input_path.resolve()}' against app database.")
         client.execute(query=input_path.read_text())
     except (psycopg.ProgrammingError, psycopg.OperationalError) as e:
         logger.error(e, exc_info=True)
         print("No. Error running commands in input file.")
         raise typer.Abort() from e
 
-    logging.info("Input file loaded and executed successfully.")
-    print("Complete.")
+    logger.info("Input file loaded and executed normally.")
+    print("Ok. Complete.")
 
 
-@app.command(help="Save DB contents to backup file.")
+@app.command(help="Save database as backup file.")
 def backup(output_path: Annotated[Path, typer.Option()]) -> None:
-    """Save contents of DB into an SQL file."""
+    """Save contents of database into an SQL file."""
     client = DBClient()
 
-    logger.info("Saving DB contents to file.")
+    logger.info("Saving app database to file.")
     logger.info(f"Output path: {output_path.resolve()}")
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     try:
         client.dump(path=output_path)
-        logger.info("Dump command completed without error.")
+        logger.info("App database saved to file normally.")
         print("Ok. Complete.")
     except RuntimeError as e:
         logger.error(e, exc_info=True)

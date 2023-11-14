@@ -23,7 +23,7 @@ class DataClient:
     """
     Application data client.
 
-    A higher level abstraction over the database client to manage datasets.
+    A high level abstraction over the database client to manage datasets.
     """
 
     def __init__(self) -> None:
