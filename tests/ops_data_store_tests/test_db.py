@@ -8,6 +8,7 @@ from psycopg import ProgrammingError
 from pytest_mock import MockFixture
 
 from ops_data_store.db import DBClient
+from ops_data_store.db import Path as DBClientPath
 
 
 class TestDBClient:
@@ -113,9 +114,11 @@ class TestDBClient:
     def test_dump_ok(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture):
         """Dump succeeds."""
         mocker.patch("subprocess.run")
+        mocker.patch.object(DBClientPath, "open", mocker.mock_open())
 
         client = DBClient()
 
+        # mock needs to be localised to prevent issues loading config from `.env` files
         client.dump(path=Path("/x.sql"))
 
         assert "Dumping database via `pg_dump`." in caplog.text

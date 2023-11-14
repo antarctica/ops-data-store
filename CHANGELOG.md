@@ -22,6 +22,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Initial implementation of a rolling file set, for keeping a fixed number of iterations of a file
   [#92](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/92)
 
+### Fixed
+
+* Including timestamp in DB client dumps to workaround backups only tracking by file checksum
+  [#115](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/115)
+
 ### Changed
 
 * Refactoring CLI modules into a single package, rather than by CLI group
