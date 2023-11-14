@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.6.0] - 2023-11-14
+
 ### Added
 
 * Deployment issue template
