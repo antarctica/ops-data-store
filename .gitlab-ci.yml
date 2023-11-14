@@ -68,6 +68,7 @@ stages:
     - poetry check
     - poetry config virtualenvs.in-project true
     - poetry install --no-interaction --no-ansi
+    - mkdir -p $APP_ODS_BACKUPS_PATH
 
 before_script:
     - *before_script_common
