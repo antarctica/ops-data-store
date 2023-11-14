@@ -16,3 +16,6 @@ __pycache__
 # Secrets
 .env
 .test.env
+
+# Backups
+/backups/

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from importlib.metadata import version
+from pathlib import Path
 from typing import Optional
 
 from environs import Env, EnvError
@@ -40,6 +41,24 @@ class Config:
             msg = "Required config option `DATA_MANAGED_TABLE_NAMES` not set."
             raise RuntimeError(msg) from e
 
+        try:
+            backups_path: Path = self.env.path("APP_ODS_BACKUPS_PATH")
+            if not backups_path.is_dir():
+                msg = f"`BACKUPS_PATH` config value: '{backups_path.resolve()}' not a directory or does not exist."
+                raise RuntimeError(msg)
+        except EnvError as e:
+            msg = "Required config option `BACKUPS_PATH` not set."
+            raise RuntimeError(msg) from e
+
+        try:
+            backups_count: int = self.env.int("APP_ODS_BACKUPS_COUNT")
+            if backups_count < 1:
+                msg = f"`BACKUPS_COUNT` config value: '{backups_count}' must be greater than 0."
+                raise RuntimeError(msg)
+        except EnvError as e:
+            msg = "Required config option `BACKUPS_COUNT` not set."
+            raise RuntimeError(msg) from e
+
     def dump(self) -> dict:
         """Return application configuration as a dictionary."""
         return {
@@ -60,6 +79,8 @@ class Config:
             "AUTH_LDAP_NAME_CONTEXT_GROUPS": self.AUTH_LDAP_NAME_CONTEXT_GROUPS,
             "DATA_MANAGED_TABLE_NAMES": self.DATA_MANAGED_TABLE_NAMES,
             "DATA_QGIS_TABLE_NAMES": self.DATA_QGIS_TABLE_NAMES,
+            "BACKUPS_PATH": self.BACKUPS_PATH,
+            "BACKUPS_COUNT": self.BACKUPS_COUNT,
         }
 
     @property
@@ -184,3 +205,17 @@ class Config:
     def DATA_QGIS_TABLE_NAMES(self) -> list[str]:
         """Names of tables used for optional QGIS features."""
         return ["layer_styles"]
+
+    @property
+    def BACKUPS_PATH(self) -> Path:
+        """Where to store backups."""
+        return self.env.path("APP_ODS_BACKUPS_PATH")
+
+    @property
+    def BACKUPS_COUNT(self) -> int:
+        """
+        Number of backup iterations to keep.
+
+        Applies to per backup series - i.e. if set to `3`, 3 DB and 3 managed datasets backups will be kept.
+        """
+        return self.env.int("APP_ODS_BACKUPS_COUNT")

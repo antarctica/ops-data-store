@@ -1,4 +1,5 @@
 from os import environ
+from pathlib import Path
 
 import pytest
 from environs import EnvError
@@ -304,3 +305,83 @@ class TestDataQgisTableNames:
     def test_ok(self, fx_test_data_qgis_table_names: list[str], fx_test_config: Config) -> None:
         """Property can be read."""
         assert fx_test_data_qgis_table_names == fx_test_config.DATA_QGIS_TABLE_NAMES
+
+
+class TestConfigBackupPath:
+    """Tests for `BACKUPS_PATH` property."""
+
+    def test_ok(self, fx_test_backups_path: Path, fx_test_config: Config) -> None:
+        """Property check."""
+        assert fx_test_backups_path == fx_test_config.BACKUPS_PATH
+
+    def test_missing(self, fx_test_config: Config) -> None:
+        """Missing property raises exception."""
+        path = environ["APP_ODS_BACKUPS_PATH"]
+        del environ["APP_ODS_BACKUPS_PATH"]
+
+        with pytest.raises(EnvError):
+            # noinspection PyStatementEffect
+            fx_test_config.BACKUPS_PATH  # noqa: B018
+
+        environ["APP_ODS_BACKUPS_PATH"] = path
+
+    def test_validate_error_missing(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        path = environ["APP_ODS_BACKUPS_PATH"]
+        del environ["APP_ODS_BACKUPS_PATH"]
+
+        with pytest.raises(RuntimeError, match="Required config option `BACKUPS_PATH` not set."):
+            fx_test_config.validate()
+
+        environ["APP_ODS_BACKUPS_PATH"] = path
+
+    def test_validate_error_not_dir(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        path = environ["APP_ODS_BACKUPS_PATH"]
+        environ["APP_ODS_BACKUPS_PATH"] = "/does-not-exist"
+
+        with pytest.raises(
+            RuntimeError, match="`BACKUPS_PATH` config value: '/does-not-exist' not a directory or does not exist."
+        ):
+            fx_test_config.validate()
+
+        environ["APP_ODS_BACKUPS_PATH"] = path
+
+
+class TestConfigBackupCount:
+    """Tests for `BACKUPS_COUNT` property."""
+
+    def test_ok(self, fx_test_backups_count: Path, fx_test_config: Config) -> None:
+        """Property check."""
+        assert fx_test_backups_count == fx_test_config.BACKUPS_COUNT
+
+    def test_missing(self, fx_test_config: Config) -> None:
+        """Missing property raises exception."""
+        count = environ["APP_ODS_BACKUPS_COUNT"]
+        del environ["APP_ODS_BACKUPS_COUNT"]
+
+        with pytest.raises(EnvError):
+            # noinspection PyStatementEffect
+            fx_test_config.BACKUPS_COUNT  # noqa: B018
+
+        environ["APP_ODS_BACKUPS_COUNT"] = count
+
+    def test_validate_error_missing(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        count = environ["APP_ODS_BACKUPS_COUNT"]
+        del environ["APP_ODS_BACKUPS_COUNT"]
+
+        with pytest.raises(RuntimeError, match="Required config option `BACKUPS_COUNT` not set."):
+            fx_test_config.validate()
+
+        environ["APP_ODS_BACKUPS_COUNT"] = count
+
+    def test_validate_error_below_one(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        count = environ["APP_ODS_BACKUPS_COUNT"]
+        environ["APP_ODS_BACKUPS_COUNT"] = "0"
+
+        with pytest.raises(RuntimeError, match="`BACKUPS_COUNT` config value: '0' must be greater than 0."):
+            fx_test_config.validate()
+
+        environ["APP_ODS_BACKUPS_COUNT"] = count
