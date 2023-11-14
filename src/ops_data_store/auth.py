@@ -50,8 +50,8 @@ class AzureClient:
             self.logger.info("Error description: %s", result["error_description"])
             self.logger.info("Correlation ID: %s", result["correlation_id"])
 
-            error_msg = "Failed to acquire Azure token."
-            raise RuntimeError(error_msg) from e
+            msg = "Failed to acquire Azure token."
+            raise RuntimeError(msg) from e
 
     def check_token(self) -> None:
         """
@@ -188,8 +188,8 @@ class LDAPClient:
             self._is_bound = True
         except ldap.LDAPError as e:
             self.logger.error(e, exc_info=True)
-            error_msg = "Failed to connect to LDAP server."
-            raise RuntimeError(error_msg) from e
+            msg = "Failed to connect to LDAP server."
+            raise RuntimeError(msg) from e
 
     def _search_objects(self, base: str, ldap_filter: str, attributes: list[str]) -> dict:
         """

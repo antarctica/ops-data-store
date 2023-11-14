@@ -195,6 +195,12 @@ To configure a layer for the first time:
 
 Layers can be edited as normal, the add feature form should already be configured to hide generated or platform fields.
 
+### Creating backups
+
+Currently, database and dataset [backups](#backups) need to be created manually.
+
+The application [CLI](#control-cli-backup-commands) needs to be used to trigger a backup.
+
 ## Implementation
 
 ### Architecture
@@ -235,11 +241,9 @@ details, and must be defined by the user, using either appropriate environment v
 | `BACKUPS_PATH`             | `APP_ODS_BACKUPS_PATH`             | Yes      | No        | No        | String (Path)   | Location to store application backups [4]               | '/var/opt/ops_data_store/backups/'                                       |
 | `BACKUPS_COUNT`            | `APP_ODS_BACKUPS_COUNT`            | Yes      | No        | No        | Number          | Number of backups to keep as part of a rolling window   | '10'                                                                     |
 
-**Note:**
+[1] The `DB_DSN` config option MUST be a valid [psycopg](https://www.psycopg.org) connection string.
 
-[1] The `DB_DSN` config option MUST be a valid [psycopg](https://www.psycopg.org) connection string
-
-[2] `AUTH_*` config options are required if managing authentication/authorisation aspects of the Data Store
+[2] `AUTH_*` config options are required if managing authentication/authorisation aspects of the Data Store.
 
 [3] Make sure to use the correct naming context prefix for the LDAP server, e.g. `cn=conwat` vs. `uid=conwat`.
 
@@ -307,9 +311,9 @@ Store's [Permissions](#permissions) system.
 
 ### Permissions
 
-Datasets hosted in this platform are typically restricted as to who can read and/or edit from them. The platform
-includes a simple permissions system to enforce these restrictions. This system includes three roles which can be
-assigned to individual users:
+Managed datasets hosted in this platform are typically restricted as to who can read and/or edit from them. The
+platform includes a simple permissions system to enforce these restrictions. This system includes three roles which can
+be assigned to individual users:
 
 - *admin*: can view and change any information to manage and administer the platform (inc. members of MAGIC and BAS IT)
 - *owner*: can change and view information
@@ -341,9 +345,9 @@ These roles are implemented in the [Database](#database) using roles and users:
 - individuals are represented as postgres users, which are assigned (inherit) one or more postgres roles
 
 Users are assigned to roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP
-group 'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#azure) groups
-representing Microsoft Teams. These Teams are used by departments day to day outside of this platform and project.
-The intention is to prevent departments needing to maintain a duplicate membership list, which may get out of sync.
+group 'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#microsoft-entra)
+groups representing Microsoft Teams. These Teams are used by departments outside of this platform and project. The
+intention is to prevent departments needing to maintain a duplicate membership list, which may get out of sync.
 
 Membership information moves in one direction: from Azure (MS Teams) to LDAP, then to Postgres.
 
@@ -940,8 +944,8 @@ for initial setup with UKRI.
 
 ### Reference VM
 
-Used to simulate a GIS workstation used by Operations and act as a known working example for debugging and testing.
-Currently configured to use the Cambridge (Staging) instance.
+Used to simulate an end user computer used by Operations, acting as a known working example for debugging and testing.
+Currently configured to use the *Cambridge (Staging)* platform instance.
 
 - [Windows VM 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=mb2mfbk66zrowd4kcj3kjc5tdy&h=magic.1password.eu)
 

@@ -105,8 +105,14 @@ class TestDBClient:
             with psycopg.connect("") as conn, conn.cursor() as cur:
                 client._setup_functions(cur=cur)
 
-    def test_execute(self):
+    def test_execute(self, mocker: MockFixture):
         """Execute succeeds."""
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__.return_value.execute.return_value = None
+        mock_conn = MagicMock()
+        mock_conn.__enter__.return_value.cursor.return_value = mock_cursor
+        mocker.patch("psycopg.connect", return_value=mock_conn)
+
         client = DBClient()
 
         client.execute(query="SELECT 1;")

@@ -12,7 +12,7 @@ class TestCliDBBackup:
     """Tests for `data backup`."""
 
     def test_ok(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
-        """Exports datasets."""
+        """Can export datasets."""
         mocker.patch("ops_data_store.cli.data.DataClient.export", return_value=None)
 
         with NamedTemporaryFile(mode="w") as tmp_file:
@@ -26,7 +26,7 @@ class TestCliDBBackup:
             assert "Ok. Complete." in result.output
 
     def test_error(self, mocker: MockerFixture, fx_cli_runner: CliRunner) -> None:
-        """Displays error."""
+        """Displays error when problem occurs."""
         mocker.patch("ops_data_store.cli.data.DataClient.export", side_effect=RuntimeError("Error"))
 
         with NamedTemporaryFile(mode="w") as tmp_file:

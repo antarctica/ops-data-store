@@ -18,7 +18,7 @@ class TestCliDBCheck:
         result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
 
         assert result.exit_code == 0
-        assert "Ok. DB connection successful." in result.output
+        assert "Ok. Database connection successful." in result.output
 
     def test_fail(self, mocker: MockerFixture, fx_cli_runner: CliRunner) -> None:
         """Aborts when DB is not reachable."""
@@ -27,7 +27,7 @@ class TestCliDBCheck:
         result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
 
         assert result.exit_code == 1
-        assert "No. DB connection failed." in result.output
+        assert "No. Database connection failed." in result.output
 
 
 class TestCliDBSetup:
@@ -40,7 +40,7 @@ class TestCliDBSetup:
         result = fx_cli_runner.invoke(app=cli, args=["db", "setup"])
 
         assert result.exit_code == 0
-        assert "Ok. DB setup complete." in result.output
+        assert "Ok. Database setup completed normally." in result.output
 
     def test_fail(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
         """Fails when error occurs."""
@@ -49,7 +49,7 @@ class TestCliDBSetup:
         result = fx_cli_runner.invoke(app=cli, args=["db", "setup"])
 
         assert result.exit_code == 1
-        assert "No. DB setup failed." in result.output
+        assert "No. Database setup failed." in result.output
 
 
 class TestCliDBRun:
@@ -61,7 +61,7 @@ class TestCliDBRun:
 
         result = fx_cli_runner.invoke(app=cli, args=["db", "run", "--input-path", fake_path])
 
-        assert "Loading file contents and running inside DB." in caplog.text
+        assert "Loading file contents and running inside database." in caplog.text
         assert "Input path not found." in caplog.text
 
         assert result.exit_code == 1
@@ -73,7 +73,7 @@ class TestCliDBRun:
             tmp_dir = Path(tmp_dir)
             result = fx_cli_runner.invoke(app=cli, args=["db", "run", "--input-path", tmp_dir])
 
-            assert "Loading file contents and running inside DB." in caplog.text
+            assert "Loading file contents and running inside database." in caplog.text
             assert "Input path not a file." in caplog.text
 
             assert result.exit_code == 1
@@ -100,8 +100,8 @@ class TestCliDBRun:
 
             result = fx_cli_runner.invoke(app=cli, args=["db", "run", "--input-path", tmp_file_path])
 
-            assert "Loading file contents and running inside DB." in caplog.text
-            assert "Input file loaded and executed successfully." in caplog.text
+            assert "Loading file contents and running inside database." in caplog.text
+            assert "Input file loaded and executed normally." in caplog.text
 
             assert result.exit_code == 0
             assert f"Executing SQL from input file at '{tmp_file_path.resolve()}'" in result.output
@@ -124,7 +124,7 @@ class TestCliDBRun:
 
             result = fx_cli_runner.invoke(app=cli, args=["db", "run", "--input-path", tmp_file_path])
 
-            assert "Loading file contents and running inside DB." in caplog.text
+            assert "Loading file contents and running inside database." in caplog.text
             assert 'syntax error at or near "INVALID"' in caplog.text
 
             assert result.exit_code == 1
@@ -144,8 +144,8 @@ class TestCliDBBackup:
 
             result = fx_cli_runner.invoke(app=cli, args=["db", "backup", "--output-path", tmp_file_path])
 
-            assert "Saving DB contents to file." in caplog.text
-            assert "Dump command completed without error." in caplog.text
+            assert "Saving app database to file." in caplog.text
+            assert "App database saved to file normally." in caplog.text
 
             assert result.exit_code == 0
             assert "Ok. Complete." in result.output
@@ -159,7 +159,7 @@ class TestCliDBBackup:
 
             result = fx_cli_runner.invoke(app=cli, args=["db", "backup", "--output-path", tmp_file_path])
 
-            assert "Saving DB contents to file." in caplog.text
+            assert "Saving app database to file." in caplog.text
 
             assert result.exit_code == 1
             assert "No. Error saving database." in result.output
