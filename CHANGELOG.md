@@ -37,6 +37,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#109](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/109)
 * Refactoring LDAP auth client
   [#110](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/110)
+* Switching to `ruff format` for Python code formatting (echo's Black style)
+  [#114](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/114)
 
 ## [0.5.0] - 2023-11-01
 

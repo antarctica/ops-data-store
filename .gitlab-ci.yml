@@ -103,8 +103,8 @@ lint:
   stage: 📋 lint
   needs: []
   script:
-    - poetry run black --check src/ tests/
     - poetry run ruff check src/ tests/ --output-format gitlab > lint-results.json
+    - poetry run ruff format --check src/ tests/
     - poetry run safety check --full-report --ignore=51832,48545
   artifacts:
     reports:
