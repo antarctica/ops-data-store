@@ -21,7 +21,6 @@ requests = "^2.31.0"
 python-ldap = "^3.4.3"
 
 [tool.poetry.group.lint.dependencies]
-black = "^23.9.1"
 ruff = "^0.0.291"
 safety = "^2.3.5"
 
@@ -31,10 +30,6 @@ pytest-cov = "^4.1.0"
 pytest-mock = "^3.11.1"
 pytest-random-order = "^1.1.0"
 requests-mock = "^1.11.0"
-
-[tool.black]
-line-length = 120
-target-version = ["py39"]
 
 [tool.ruff]
 src = ["src"]

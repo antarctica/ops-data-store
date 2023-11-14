@@ -1051,12 +1051,20 @@ In particular this tool can't check for issues that are only be detectable when 
 
 ### Python linting
 
-[Ruff](https://docs.astral.sh/ruff/) is used to lint Python files. Specific checks and config options are set in
-`pyproject.toml`. Linting checks are run automatically in [Continuous Integration](#continuous-integration). To check
-locally:
+[Ruff](https://docs.astral.sh/ruff/) is used to lint and format Python files. Specific checks and config options are
+set in `pyproject.toml`. Linting checks are run automatically in [Continuous Integration](#continuous-integration).
+
+To check locally:
 
 ```
-$ poetry run ruff src/
+$ poetry run ruff check src/ tests/
+$ poetry run ruff format --check src/ tests/
+```
+
+To format files:
+
+```
+$ poetry run ruff format src/ tests/
 ```
 
 ### Development database
