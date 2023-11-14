@@ -1,5 +1,6 @@
 import logging
 import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
 
 import psycopg
@@ -9,14 +10,7 @@ from ops_data_store.config import Config
 
 
 class DBClient:
-    """
-    Application database client.
-
-    Used for managing resources within an LDAP directory.
-
-    This client will maintain bound to the LDAP server until the class instance is destroyed. It will bind automatically
-    when first needed.
-    """
+    """Application database client."""
 
     def __init__(self) -> None:
         """Create instance."""
@@ -201,6 +195,8 @@ class DBClient:
 
         Wrapper around `pg_dump` command.
 
+        The current time is appended as a comment to the dump file to ensure uniqueness where data doesn't change.
+
         Warning: Any existing file at `path` will be overwritten.
 
         :type path: Path
@@ -211,6 +207,11 @@ class DBClient:
             subprocess_args = ["pg_dump", f"--dbname={self._dsn}", f"--file={path.resolve()}"]
             self.logger.info(f"Args: {subprocess_args}")
             subprocess.run(args=subprocess_args, check=True, text=True, capture_output=True)
+
+            self.logger.info("Appending timestamp to dump file.")
+            with path.open(mode="a") as file:
+                file.write(f"--\n-- Database dump created at: {datetime.now(tz=timezone.utc).isoformat()}\n--\n")
+
             self.logger.info("DB dump ok.")
         except subprocess.CalledProcessError as e:
             self.logger.error(e, exc_info=True)
