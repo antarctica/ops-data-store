@@ -1207,6 +1207,17 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 - to manage the service: `brew services [command] postgresql@14`
 - to view logs: `/usr/local/var/log/postgresql@14.log`
 
+### Adding new configuration options [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+1. add new properties to `ops_data_store.config.Config` class
+2. include new properties to `ops_data_store.config.Config.dump()` method
+3. if relevant, update `ops_data_store.config.Config.validate()` method
+4. update `.env` files and templates
+5. update `.gitlab-ci.yml` variables
+6. update `tests.ops_data_store_tests.test_config` module
+
 ## Testing
 
 ### Python tests
