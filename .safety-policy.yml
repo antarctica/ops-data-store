@@ -22,5 +22,8 @@ security:
         48545:  # https://pyup.io/v/48545/97c
             reason: it's unclear whether we're vulnerable to this, see MAGIC/ops-data-store#29 for details
             expires: '2024-04-04'
+        61893:  # https://data.safetycli.com/v/61893/97c/
+            reason: we're unable to use a newer version of Urllib3 see MAGIC/ops-data-store#127 for details
+            expires: '2024-04-04'
 
 # [Configuration for the `safety alert` command omitted as not used]
