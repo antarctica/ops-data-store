@@ -1108,10 +1108,10 @@ extensions available are required (one for local development and one for testing
 For example, if a Postgres instance is running locally with trust based authentication for the local user:
 
 ```
-$ psql -d postgres -c "CREATE DATABASE ops_data_store_dev;"
-$ psql -d postgres -c "COMMENT ON DATABASE ops_data_store_dev IS 'Ops Data Store local development DB'";
-$ psql -d postgres -c "CREATE DATABASE ops_data_store_test;"
-$ psql -d postgres -c "COMMENT ON DATABASE ops_data_store_test IS 'Ops Data Store local development testing DB'"
+$ psql -d postgres -c 'CREATE DATABASE "ops-data-store-dev";'
+$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-dev" IS '\''Ops Data Store local development DB'\'';'
+$ psql -d postgres -c 'CREATE DATABASE "ops-data-store-test";'
+$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-test" IS '\''Ops Data Store local testing DB'\'';'
 ```
 
 It's strongly recommended to set required configuration options using a `.env` file based off the
