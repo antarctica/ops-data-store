@@ -131,7 +131,7 @@ class DBClient:
             """  # noqa: S608
             )
 
-            cur.execute(f"""SELECT 1 FROM pg_type WHERE typname = {data_type};""")  # noqa: S608
+            cur.execute(f"""SELECT 1 FROM pg_type WHERE typname = '{data_type}';""")  # noqa: S608
             if cur.fetchone()[0] != 1:
                 self.logger.error(f"Required data type '{data_type}' not found after attempting to create.")
                 msg = f"No. Required data type '{data_type}' not found."

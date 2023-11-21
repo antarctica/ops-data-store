@@ -14,6 +14,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Automated backups via cron with Sentry monitoring
   [#41](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/41)
 
+### Fixed
+
+* Incorrect quoting of type names in DB client setup functions
+  [#124](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/124)
+
 ## [0.6.0] - 2023-11-14
 
 ### Added
