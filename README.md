@@ -971,7 +971,7 @@ To upgrade the Python application, upgrade the Python package version using Pip:
 ```
 # if installed in a virtual environment
 $ source /path/to/venv/bin/activate
-$ pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+$ python -m pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
 ```
 
 Check the version is as expected:
