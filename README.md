@@ -49,8 +49,7 @@ In relation to dataset [Permissions](#permissions), support for the following is
 - creating and synchronising LDAP members to the database as postgres roles and users
 - running the Azure to LDAP group sync from a hosted environment
 
-In relation to dataset and database backups, backups must be captured manually (rather than scheduled automatically)
-and are not verified as being accurate or usable.
+In relation to dataset and database backups, backups are not verified as being accurate or usable.
 
 ### Related projects
 
@@ -197,9 +196,12 @@ Layers can be edited as normal, the add feature form should already be configure
 
 ### Creating backups
 
-Currently, database and dataset [backups](#backups) need to be created manually.
+Database and dataset [backups](#backups) are created automatically every day. A limited number of backups are kept
+before the oldest is replaced. Use the [`config show`](#control-cli-config-commands) application CLI command to show
+where backups are stored and how many will be kept.
 
-The application [CLI](#control-cli-backup-commands) needs to be used to trigger a backup.
+If needed a manual backup can be created using the [`backup now`](#control-cli-backup-commands) application CLI command.
+Manual backups count towards maximum number of backups.
 
 ## Implementation
 
@@ -367,9 +369,7 @@ Mappings for roles, teams, the database and LDAP:
 The [Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
 command group can be used to synchronise users between these systems.
 
-### Backups [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### Backups
 
 Managed datasets hosted in this platform, and the underlying [Database](#database) can be exported as file based
 backups, to allow undesired data changes to be recovered (i.e. where a feature is accidentally deleted).
@@ -403,7 +403,7 @@ backups will be retained - rather than 3 of each. Backups are captured together 
 The [Command Line Interface](#command-line-interface), specifically commands in the
 [`backup`](#control-cli-backup-commands) command group can be used to create and manage backups.
 
-#### Backup state files
+#### Backups state files
 
 To avoid issues with file systems that capture all files within their own managed backups (such as the BAS SAN),
 backups are named using generic names that are rotated. In order to tell specific backups apart a backup state file is
@@ -464,6 +464,27 @@ change.
 
 **Note:** The backup system implemented within this application does not include measures to protect against file
 corruption. Separate processes will be needed to achieve this if needed.
+
+#### Backups automation
+
+Backups can be captured automatically using cron or other task scheduling tool by calling the
+[`backup now`](#control-cli-backup-commands) CLI command.
+
+For example to run with cron every day at 04:00 (AM):
+
+```
+0 4 * * * /path/to/ods-ctl backup now >> /path/to/backups/$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+```
+
+This will create per-run log files (e.g. `/path/to/backups/2023-11-20-04:00:00-UTC.log`). See the
+[Installation](#installation) section for how to configure automated backups in a deployed instance.
+
+### Monitoring
+
+#### Sentry cron monitoring
+
+The Sentry error tracking platform is used to monitor [scheduled tasks](https://docs.sentry.io/product/crons/) such
+as [Backups](#backups-automation) using the [Sentry CLI](https://docs.sentry.io/product/crons/getting-started/cli/).
 
 ## Datasets
 
@@ -679,6 +700,7 @@ Required infrastructure:
 - an Azure Entra (Active Directory) app registration
 - LDAP groups and application user
 - a file system for holding [Backups](#backups)
+- a Sentry subscription to monitor [Automated backups](#backups-automation)
 
 ### Application server requirements
 
@@ -742,6 +764,13 @@ This file system must:
 - have sufficient space to maintain the number of backups configured (recommended minimum: 5GB)
 
 As this file system is used for backups, it should to the extent possible, be designed to be stable/reliable.
+
+### Sentry requirements
+
+A [Sentry](https://sentry.io/) subscription is required for monitoring automated backups with:
+
+- a Sentry team that should receive failure notifications (e.g. `magic`)
+- a Sentry project to represent the platform (`ops-data-store`)
 
 ## Installation
 
@@ -840,6 +869,48 @@ $ ods-ctl auth sync -ag 75ec55c1-7e92-45e3-9746-e50bd71fcfef -lg apps_magic_ods_
 $ ods-ctl auth sync -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -lg apps_magic_ods_write_au
 $ ods-ctl auth sync -ag 906f20ee-7698-48c8-b2ff-75592384af68 -lg apps_magic_ods_read
 ```
+
+To monitor application backups via Sentry install the [Sentry CLI](https://docs.sentry.io/product/cli/):
+
+```
+$ mkdir ~/bin
+$ export INSTALL_DIR=./bin
+$ curl -sL https://sentry.io/get-cli/ | sh
+```
+
+**Note:** The CLI can also be installed [manually](https://docs.sentry.io/product/cli/installation/#manual-download).
+
+Create a Sentry cron monitor within the relevant Sentry subscription:
+
+- project: *ops-data-store*
+- name: `ods-backups`
+- schedule type: *cron*
+- cron pattern: `0 4 * * *`
+- cron timezone: *UTC*
+- grace period: `5` minutes
+- max runtime: `5` minutes
+- notify: `#magic`
+- failure tolerance: `1`
+- recovery tolerance: `1`
+- environment: *All Environments*
+
+Create directory for cron backup logs:
+
+```
+$ mkdir -p ~/logs/cron/
+```
+
+Add a new cron job `crontab -e`:
+
+```
+SHELL=/bin/bash
+MAILTO=monitoring@example.com
+
+## Operations Data Store automated backups - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#backups-automation
+0 4 * * * SENTRY_DSN=[sentry DSN] sentry-cli monitors run -e [sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods_backups-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+```
+
+Replace `[sentry DSN]`, `[sentry env]` with relevant secret and per-instance label.
 
 ## Upgrading [WIP]
 
@@ -948,6 +1019,10 @@ Used to simulate an end user computer used by Operations, acting as a known work
 Currently configured to use the *Cambridge (Staging)* platform instance.
 
 - [Windows VM 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=mb2mfbk66zrowd4kcj3kjc5tdy&h=magic.1password.eu)
+
+### Sentry Project
+
+- [Operations Data Store 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=ii2ev4tt3w7i3t2hmx7qbgqe6q&h=magic.1password.eu)
 
 ## Development
 
