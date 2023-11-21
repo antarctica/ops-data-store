@@ -203,6 +203,34 @@ where backups are stored and how many will be kept.
 If needed a manual backup can be created using the [`backup now`](#control-cli-backup-commands) application CLI command.
 Manual backups count towards maximum number of backups.
 
+### Identifying latest backups
+
+Within a given platform instance, see the relevant 1Password entry in the [Infrastructure](#infrastructure) section for
+where backups are stored.
+
+Within this directory, open the relevant JSON [State file](#backups-state-files) and check the
+`meta.newest_iteration_sha1sum` property, e.g. "9e0f11af67e08e9368ff3d94445826fd2014df9b".
+
+Find this checksum in the `iterations` list for details including the date of the backup and it's location.
+
+### Migrating data from one instance to another [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+This process is only supported as an ad-hoc process until a formal important, export and replication workflow is in
+place. It is assumed all data from a source instance will be moved to a target instance, outside of this scenario
+manual deviation may be needed.
+
+1. from the source instance, get the [Latest managed datasets backup (GeoPackage)](#identifying-latest-backups)
+2. copy each managed dataset layer [1]
+3. copy any QGIS layer styles manually via the QGIS UI
+
+```
+$ ogr2ogr -f "PostgreSQL" PG:"user=ops-data-store password=[db password] host=[db host] dbname=ops-data-store" [source].gpkg -nln [layer] -overwrite -append
+```
+
+See the relevant 1Password entry in the [Infrastructure](#infrastructure) section for database connection details
+
 ## Implementation
 
 ### Architecture
@@ -774,6 +802,8 @@ A [Sentry](https://sentry.io/) subscription is required for monitoring automated
 
 ## Installation
 
+### Install python app
+
 For the Python application, it is strongly recommended to install this project into a virtual environment:
 
 ```
@@ -797,6 +827,8 @@ $ python -m pip install ops-data-store --extra-index-url https://public-access:R
 $ python -m pip install --upgrade urllib3==1.26.18
 ```
 
+### Verify python app installation
+
 The control CLI can be used to check the application has been installed correctly and is the expected version:
 
 ```
@@ -807,15 +839,19 @@ $ ods-ctl --version
 0.1.0
 ```
 
+### Create python app alias
+
 Optionally, the `ods-ctl` command can be added to the PATH or symlinked to a location already in the PATH (such as
 `~/bin/`) to make it easier to call:
 
 ```
 $ mkdir ~/bin
 $ cd ~/bin
-$ ln -s /path/to/venv/bin/ ods-ctl
+$ ln -s /path/to/venv/bin/ods-ctl ods-ctl
 $ cd ~
 ```
+
+### Create python app environment file
 
 Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables. See the
 [Infrastructure](#infrastructure) section for connection information to use.
@@ -832,6 +868,8 @@ Ok. Configuration valid.
 
 $ ods-ctl config show
 ```
+
+### Configure database
 
 To check the application database is available, and then configure it for use:
 
@@ -852,6 +890,8 @@ Create the schemas for managed datasets by running the contents of the
 $ ods-ctl db run --input-path dataset-schemas.sql
 ```
 
+### Configure auth syncing
+
 If using an instance for syncing users and assigning dataset permissions, check Azure and LDAP are available:
 
 ```
@@ -870,6 +910,8 @@ $ ods-ctl auth sync -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -lg apps_magic_ods_
 $ ods-ctl auth sync -ag 906f20ee-7698-48c8-b2ff-75592384af68 -lg apps_magic_ods_read
 ```
 
+### Install Sentry monitoring
+
 To monitor application backups via Sentry install the [Sentry CLI](https://docs.sentry.io/product/cli/):
 
 ```
@@ -880,19 +922,27 @@ $ curl -sL https://sentry.io/get-cli/ | sh
 
 **Note:** The CLI can also be installed [manually](https://docs.sentry.io/product/cli/installation/#manual-download).
 
+### Create backups cron job
+
 Create a Sentry cron monitor within the relevant Sentry subscription:
 
 - project: *ops-data-store*
-- name: `ods-backups`
+- name/slug: `ods-backups`
 - schedule type: *cron*
 - cron pattern: `0 4 * * *`
 - cron timezone: *UTC*
-- grace period: `5` minutes
-- max runtime: `5` minutes
+- grace period: `1` minutes
+- max runtime: `2` minutes
 - notify: `#magic`
 - failure tolerance: `1`
 - recovery tolerance: `1`
 - environment: *All Environments*
+
+Once created, edit the monitor's associated alert to set:
+
+- conditions: post message to `#dev` channel in MAGIC Slack (in addition to regular team notification)
+- action interval: *5 minutes*
+- alert owner: `#magic`
 
 Create directory for cron backup logs:
 
@@ -907,10 +957,10 @@ SHELL=/bin/bash
 MAILTO=monitoring@example.com
 
 ## Operations Data Store automated backups - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#backups-automation
-0 4 * * * SENTRY_DSN=[sentry DSN] sentry-cli monitors run -e [sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods_backups-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+0 4 * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods-backups-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
 ```
 
-Replace `[sentry DSN]`, `[sentry env]` with relevant secret and per-instance label.
+Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
 
 ## Upgrading [WIP]
 
@@ -995,11 +1045,15 @@ all instances/environments as this diagram:
 
 - [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+- [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
 ### Databases
 
 - [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+- [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
 ### Azure App Registrations
 
