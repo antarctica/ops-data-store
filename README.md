@@ -971,7 +971,7 @@ To upgrade the Python application, upgrade the Python package version using Pip:
 ```
 # if installed in a virtual environment
 $ source /path/to/venv/bin/activate
-$ pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
+$ python -m pip install --upgrade ops-data-store --extra-index-url https://public-access:RPiBoxfdzokx_GSzST5M@gitlab.data.bas.ac.uk/api/v4/projects/1134/packages/pypi/simple
 ```
 
 Check the version is as expected:
@@ -1108,10 +1108,10 @@ extensions available are required (one for local development and one for testing
 For example, if a Postgres instance is running locally with trust based authentication for the local user:
 
 ```
-$ psql -d postgres -c "CREATE DATABASE ops_data_store_dev;"
-$ psql -d postgres -c "COMMENT ON DATABASE ops_data_store_dev IS 'Ops Data Store local development DB'";
-$ psql -d postgres -c "CREATE DATABASE ops_data_store_test;"
-$ psql -d postgres -c "COMMENT ON DATABASE ops_data_store_test IS 'Ops Data Store local development testing DB'"
+$ psql -d postgres -c 'CREATE DATABASE "ops-data-store-dev";'
+$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-dev" IS '\''Ops Data Store local development DB'\'';'
+$ psql -d postgres -c 'CREATE DATABASE "ops-data-store-test";'
+$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-test" IS '\''Ops Data Store local testing DB'\'';'
 ```
 
 It's strongly recommended to set required configuration options using a `.env` file based off the
@@ -1206,6 +1206,17 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 
 - to manage the service: `brew services [command] postgresql@14`
 - to view logs: `/usr/local/var/log/postgresql@14.log`
+
+### Adding new configuration options [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+1. add new properties to `ops_data_store.config.Config` class
+2. include new properties to `ops_data_store.config.Config.dump()` method
+3. if relevant, update `ops_data_store.config.Config.validate()` method
+4. update `.env` files and templates
+5. update `.gitlab-ci.yml` variables
+6. update `tests.ops_data_store_tests.test_config` module
 
 ## Testing
 
