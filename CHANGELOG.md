@@ -13,6 +13,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Automated backups via cron with Sentry monitoring
   [#41](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/41)
+* Documentation improvements based on production setup
+  [#128](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/128)
 
 ## [0.6.1] - 2023-11-21
 
