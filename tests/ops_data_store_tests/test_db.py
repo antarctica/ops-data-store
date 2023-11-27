@@ -105,6 +105,21 @@ class TestDBClient:
             with psycopg.connect("") as conn, conn.cursor() as cur:
                 client._setup_functions(cur=cur)
 
+    def test_int_setup_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+        """
+        Setup succeeds (Integration test).
+
+        Connects to real database to address #124, #125.
+        """
+        client = DBClient()
+
+        client.setup()
+
+        assert "Setting up required database objects." in caplog.text
+        assert "Setting up required DB extension 'postgis'." in caplog.text
+        assert "Setting up required DB data type 'ddm_point'." in caplog.text
+        assert "Setting up required DB function 'generate_ulid'." in caplog.text
+
     def test_execute(self, mocker: MockFixture):
         """Execute succeeds."""
         mock_cursor = MagicMock()
