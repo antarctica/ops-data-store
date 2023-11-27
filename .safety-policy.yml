@@ -25,5 +25,8 @@ security:
         61893:  # https://data.safetycli.com/v/61893/97c/
             reason: we're unable to use a newer version of Urllib3 see MAGIC/ops-data-store#127 for details
             expires: '2024-04-04'
+        62044:  # https://data.safetycli.com/v/62044/f17
+            reason: We are already using the latest version of pip currently available, risk score is very low
+            expires: '2024-05-25'
 
 # [Configuration for the `safety alert` command omitted as not used]
