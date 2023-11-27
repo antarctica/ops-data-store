@@ -16,6 +16,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Documentation improvements based on production setup
   [#128](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/128)
 
+### Changed
+
+* Updating documentation diagrams
+  [#123](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/123)
+
 ## [0.6.1] - 2023-11-21
 
 ### Fixed
