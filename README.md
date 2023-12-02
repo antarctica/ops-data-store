@@ -707,17 +707,25 @@ CREATE TRIGGER NEW_DATASET_updated_by_trigger
   EXECUTE FUNCTION set_updated_by();
 ```
 
+Once added, add the new table as a layer in QGIS and configure as needed (e.g. form fields, aliases, symbology). Save
+the layer properties/style back to the data source and verify entry added to QGIS `layer_styles` table.
+
 ### Amending an existing managed dataset [WIP]
 
 **Note:** This section is a work in progress and may be incomplete.
 
 ...
 
+In QGIS, update the properties for the updated layer/table as needed and save to the QGIS `layer_styles` table.
+
+**Note:** QGIS will create a new entry in the `layer_styles` table, with the previous style/entry no longer set as a
+default. These previous styles can be removed if needed.
+
 ### Removing a managed dataset [WIP]
 
 **Note:** This section is a work in progress and may be incomplete.
 
-...
+Manually remove any styles for the removed layer in the QGIS `layer_styles` table.
 
 ## Requirements
 
