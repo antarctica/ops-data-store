@@ -15,6 +15,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#41](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/41)
 * Documentation improvements based on production setup
   [#128](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/128)
+* Documentation for creating/updating/removing QGIS layer styles as underlying tables are added/modified/removed
+  [#136](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/136)
 
 ### Changed
 
