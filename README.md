@@ -559,6 +559,13 @@ For example to run with cron every day at 04:00 (AM):
 This will create per-run log files (e.g. `/path/to/backups/2023-11-20-04:00:00-UTC.log`). See the
 [Installation](#installation) section for how to configure automated backups in a deployed instance.
 
+### Infrastructure backups
+
+For BAS IT managed infrastructure, additional backups are maintained by BAS IT:
+
+- Virtual Machines are backed up incrementally daily and fully every week for 1 month and then a monthly backup for 6
+  months
+
 ### Monitoring
 
 #### Sentry cron monitoring
