@@ -17,6 +17,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#128](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/128)
 * Documentation for creating/updating/removing QGIS layer styles as underlying tables are added/modified/removed
   [#136](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/136)
+* Documenting BAS IT LDAP and DB sync process
+  [#98](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/98),
+  [#106](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/106)
+* Basic documentation on BAS IT VM backups
+  [#100](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/100)
 
 ### Changed
 
