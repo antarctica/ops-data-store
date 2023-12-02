@@ -231,6 +231,21 @@ $ ogr2ogr -f "PostgreSQL" PG:"user=ops-data-store password=[db password] host=[d
 
 See the relevant 1Password entry in the [Infrastructure](#infrastructure) section for database connection details
 
+### Update user roles
+
+To assign or remove roles from the [Permissions](#permissions) to or from users:
+
+1. identify the relevant application role (e.g. 'Admins')
+2. from the mappings table in the [Permissions](#permissions) table, find the relevant Azure Group that corresponds to
+   that role
+3. ask an owner of the Microsoft Team related to this Azure Group to add or remove the relevant users
+4. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
+5. wait for the next [BAS IT User Sync Mechanism](#user-synchronisation-mechanism) sync point
+
+Users should then have, or should not have, the relevant role(s) and relevant access to managed [Datasets](#datasets).
+
+**Note:** If needed, BAS IT can also update team/group memberships.
+
 ## Implementation
 
 ### Architecture
@@ -339,6 +354,42 @@ Store's [Permissions](#permissions) system.
 
 ...
 
+### User synchronisation mechanism [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+As part of the Data Store's [Permissions](#permissions) system, a mechanism has been implemented by BAS IT to:
+
+- replicate relevant objects between [LDAP](#ldap) servers
+- create, update or remove [Database](#database) users and their permissions based on LDAP objects
+
+This mechanism is only accessible to BAS IT and any issues will need resolving via the BAS IT Service Desk.
+
+For reference, this mechanism runs on a daily schedule at:
+
+- 09:15 UTC (06:15 Rothera)
+- 15:15 UTC (12:15 Rothera)
+- 21:15 UTC (18:15 Rothera)
+
+(Where Rothera is UTC -03:00).
+
+For replicating LDAP objects between servers:
+
+- the *Cambridge (Production)* LDAP server is considered the source of truth
+- application LDAP groups, and users these groups contain as members, are replicated to LDAP servers in other environments
+- credentials for users are replicated, ensuring users can use the same credentials in all environments
+- user credentials will be updated in other environments if changed in the source LDAP server at the next sync execution
+- users that are no longer members of groups will be reflected in other environments at the next sync execution
+
+For managing database users based on LDAP objects:
+
+- base Postgres roles are created for each application role/group, granted relevant access to database objects
+- for each application LDAP group, each member is created as a Postgres user role, named after the LDAP UID attribute
+- these Postgres user roles are configured to inherit the relevant base Postgres role, granting them relevant permissions
+- user credentials are not replicated to these user roles as Postgres is configured to use LDAP authentication
+- user roles for users removed from a LDAP group will no longer inherit from the relevant base role, revoking permissions
+- user roles may inherit from multiple base Postgres roles if members of multiple application LDAP groups
+
 ### Permissions
 
 Managed datasets hosted in this platform are typically restricted as to who can read and/or edit from them. The
@@ -394,8 +445,9 @@ Mappings for roles, teams, the database and LDAP:
 | Owners   | BAS Air Unit         | `7b8458b9-dc90-445b-bff8-2442f77d58a9` | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
 | Viewers  | -                    | `906f20ee-7698-48c8-b2ff-75592384af68` | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
 
-The [Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
-command group can be used to synchronise users between these systems.
+The [User Synchronisation Mechanism](#user-synchronisation-mechanism) and the
+[Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
+command group are used for synchronising users, and verifying users have been synced, between these systems.
 
 ### Backups
 
@@ -766,6 +818,11 @@ A single database, and an account with permissions to create, read, update and d
 to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`
 respectively are recommended as conventional defaults.
 
+In addition, a mechanism must be available for creating and maintaining Postgres role and users as outlined in abstract
+in the [Permissions](#permissions) section. This must support updating permissions as needed based on the memberships of the
+relevant LDAP groups. It must be documented in the [User Synchronisation Mechanism](#user-synchronisation-mechanism)
+section.
+
 ### Microsoft Entra requirements
 
 Required Azure app registration permissions (application assigned):
@@ -1024,6 +1081,7 @@ Connection details for any resources created should be stored in the MAGIC 1Pass
 - request a LDAP entity to use for managing application LDAP groups
 - request LDAP groups as needed for implementing application permissions
 - request SAN/data volume mounted in the application server with permissions for the Python app OS user to read/write
+- request a user synchronisation mechanism between LDAP servers and between LDAP and Postgres
 
 ## Infrastructure
 
@@ -1038,6 +1096,7 @@ Environments:
 Instances:
 
 * Cambridge (*Staging*) - managed by BAS IT in the wider SDA staging infrastructure
+* Cambridge (*Production*) - managed by BAS IT as general infrastructure
 * Rothera (*Production*) - managed by BAS IT in the on-station infrastructure
 
 The infrastructure needed for each instance can summarised by this diagram:
@@ -1073,7 +1132,9 @@ for initial setup with UKRI.
 
 ### LDAP servers
 
-- [BAS LDAP (All environments) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
+- [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=qnqmxfsoxnj7jblkelsgxs5fhu&h=magic.1password.eu)
+- [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
+- [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=qnqmxfsoxnj7jblkelsgxs5fhu&h=magic.1password.eu)
 
 ### Reference VM
 
