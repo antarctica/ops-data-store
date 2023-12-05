@@ -32,6 +32,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Adding missing unique constraint for platform identifiers (`pid`)
   [#144](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/144)
+* GDAL version issue
+  [#126](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/126)
 
 ### Changed
 

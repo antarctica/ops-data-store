@@ -1394,6 +1394,54 @@ Checks are run automatically in [Continuous Integration](#continuous-integration
 $ poetry run safety check --full-report
 ```
 
+### Python gdal dependency version
+
+The [GDAL Python bindings](https://pypi.org/project/GDAL/) are tied to the [GDAL library](https://gdal.org) version.
+
+BAS IT managed servers currently use an older version of GDAL (3.4.3) which is required by this project. Installing
+this version in a development environment is often unsupported due to it's age causing an incompatibility.
+
+Running with a the 3.4.3 Python bindings but a newer Library version will give errors such as:
+
+```
+src/ops_data_store/data.py:4: in <module>
+    from osgeo.gdal import (
+.venv/lib/python3.9/site-packages/osgeo/__init__.py:45: in <module>
+    _gdal = swig_import_helper()
+.venv/lib/python3.9/site-packages/osgeo/__init__.py:42: in swig_import_helper
+    return importlib.import_module('_gdal')
+E   ModuleNotFoundError: No module named '_gdal'
+```
+
+The correct fix for this problem is to upgrade the version of GDAL available on BAS IT managed servers. In the meantime
+a workaround can be used to locally upgrade the Python bindings to match a newer Library version but not commit the
+updated Poetry lock file.
+
+This creates a problem when other dependencies are added or updated as the upgraded Python bindings package will also
+be included, and partial updates cannot be committed because the file includes a checksum. To workaround this problem
+the following workflow can be used:
+
+1. make other changes as needed
+2. downgrade the GDAL dependency [1]
+3. commit the Poetry lock file
+4. upgrade the GDAL dependency (but do not commit change) [2]
+
+[1]
+
+```
+$ poetry remove gdal
+$ poetry add gdal@3.4.3
+```
+
+[2]
+
+```
+$ poetry remove gdal
+$ poetry add gdal
+```
+
+(Adapt the second `add gdal` command to the version of GDAL needed locally).
+
 ### Python static security analysis
 
 Ruff is configured to run [Bandit](https://github.com/PyCQA/bandit), a static analysis tool for Python.
