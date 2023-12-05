@@ -26,6 +26,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#139](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/139),
   [#140](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/140)
 
+### Fixed
+
+* Adding missing unique constraint for platform identifiers (`pid`)
+  [#144](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/144)
+
 ### Changed
 
 * Updating documentation diagrams

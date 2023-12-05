@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS public.circus
   pk         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT circus_pk PRIMARY KEY,
   pid        UUID                     NOT NULL DEFAULT generate_ulid(),
+  pid        UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by TEXT                     NOT NULL DEFAULT 'unknown',

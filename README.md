@@ -698,11 +698,11 @@ Managed datasets are assigned to these teams in relation to [Permissions](#permi
 
 All managed datasets have at least two identifiers, though most will have three as defined below:
 
-| Domain     | Owner    | Audience  | Column Name | Data Type | Format/Scheme                        | Required |
-|------------|----------|-----------|-------------|-----------|--------------------------------------|----------|
-| Technology | MAGIC/IT | MAGIC/IT  | `pk`        | Integer   | PostgreSQL Identity                  | Yes      |
-| Platform   | MAGIC    | MAGIC/Ops | `pid`       | UUID      | [ULID](https://github.com/ulid/spec) | Yes      |
-| Dataset    | Ops      | MAGIC/Ops | `id`        | String    | -                                    | No       |
+| Domain     | Owner    | Audience  | Column Name | Data Type | Format/Scheme                        | Required | Unique   |
+|------------|----------|-----------|-------------|-----------|--------------------------------------|----------|----------|
+| Technology | MAGIC/IT | MAGIC/IT  | `pk`        | Integer   | PostgreSQL Identity                  | Yes      | Yes      |
+| Platform   | MAGIC    | MAGIC/Ops | `pid`       | UUID      | [ULID](https://github.com/ulid/spec) | Yes      | Yes      |
+| Dataset    | Ops      | MAGIC/Ops | `id`        | String    | -                                    | No       | Optional |
 
 For example:
 
