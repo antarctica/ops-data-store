@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import psycopg
 import pytest
 from psycopg import ProgrammingError
+from psycopg.sql import SQL
 from pytest_mock import MockFixture
 
 from ops_data_store.db import DBClient
@@ -155,3 +156,12 @@ class TestDBClient:
             client.dump(path=Path("/x.sql"))
 
         assert "Dumping database via `pg_dump`." in caplog.text
+
+    def test_fetch_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+        """Fetch succeeds."""
+        client = DBClient()
+
+        # noinspection PyTypeChecker
+        client.fetch(query=SQL("SELECT 1;"))
+
+        assert "Fetching from database." in caplog.text

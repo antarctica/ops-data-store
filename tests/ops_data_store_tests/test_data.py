@@ -80,3 +80,17 @@ class TestDataClient:
             fx_data_client.export(path=Path("/x.gpkg"))
 
         assert "Exporting datasets to GeoPackage via GDAL/OGR." in caplog.text
+
+    def test_convert_ok(
+        self,
+        mocker: MockFixture,
+        fx_data_client: DataClient,
+        caplog: pytest.LogCaptureFixture,
+    ):
+        """Convert succeeds."""
+        mocker.patch("ops_data_store.data.AirUnitNetworkClient.export", return_value=None)
+
+        fx_data_client.convert()
+
+        assert "Converting Air Unit datasets to output formats." in caplog.text
+        assert "Conversion ok." in caplog.text

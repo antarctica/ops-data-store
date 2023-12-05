@@ -19,6 +19,7 @@ typer = "^0.9.0"
 msal = "^1.24.1"
 requests = "^2.31.0"
 python-ldap = "^3.4.3"
+bas-air-unit-network-dataset = "^0.4.0"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.291"

@@ -22,6 +22,9 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#106](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/106)
 * Basic documentation on BAS IT VM backups
   [#100](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/100)
+* Include Air Unit Network Utility for managing Air Unit network datasets
+  [#139](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/139),
+  [#140](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/140)
 
 ### Changed
 

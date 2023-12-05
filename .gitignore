@@ -17,5 +17,6 @@ __pycache__
 .env
 .test.env
 
-# Backups
+# Data
 /backups/
+/outputs/

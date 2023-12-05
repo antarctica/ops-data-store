@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from importlib.metadata import version
 from pathlib import Path
 from typing import Callable
@@ -7,10 +7,14 @@ from unittest.mock import Mock
 
 import ldap
 import pytest
+from bas_air_unit_network_dataset.models.route import Route
+from bas_air_unit_network_dataset.models.route_waypoint import RouteWaypoint
+from bas_air_unit_network_dataset.models.waypoint import Waypoint
 from environs import Env
 from pytest_mock import MockFixture
 from typer.testing import CliRunner
 
+from ops_data_store.airnet import AirUnitNetworkClient
 from ops_data_store.auth import AzureClient, SimpleSyncClient
 from ops_data_store.backup import BackupClient, RollingFileState, RollingFileStateIteration, RollingFileStateMeta
 from ops_data_store.config import Config
@@ -142,6 +146,30 @@ def fx_test_backups_count(fx_test_env: Env) -> int:
 
 
 @pytest.fixture()
+def fx_test_data_airnet_output_path(fx_test_env: Env) -> Path:
+    """Path for Air Unit Network outputs."""
+    return fx_test_env.path("APP_ODS_DATA_AIRNET_OUTPUT_PATH")
+
+
+@pytest.fixture()
+def fx_test_data_airnet_routes_table() -> str:
+    """Name of table used for Air Unit Network routes."""
+    return "route_container"
+
+
+@pytest.fixture()
+def fx_test_data_airnet_route_waypoints_table() -> str:
+    """Name of table used for Air Unit Network route waypoints."""
+    return "route_waypoint"
+
+
+@pytest.fixture()
+def fx_test_data_airnet_waypoints_table() -> str:
+    """Name of table used for Air Unit Network waypoints."""
+    return "waypoint"
+
+
+@pytest.fixture()
 def fx_test_config() -> Config:
     """Provide access to app configuration."""
     return Config()
@@ -168,28 +196,36 @@ def fx_test_config_dict(
     fx_test_data_qgis_table_names: list[str],
     fx_test_backups_path: Path,
     fx_test_backups_count: int,
+    fx_test_data_airnet_output_path: Path,
+    fx_test_data_airnet_routes_table: str,
+    fx_test_data_airnet_route_waypoints_table: str,
+    fx_test_data_airnet_waypoints_table: str,
 ) -> dict:
     """Config as dict."""
     return {
-        "VERSION": fx_test_package_version,
-        "DB_DSN": fx_test_db_dsn,
         "AUTH_AZURE_AUTHORITY": fx_test_auth_azure_authority,
         "AUTH_AZURE_CLIENT_ID": fx_test_auth_azure_client_id,
         "AUTH_AZURE_CLIENT_SECRET": fx_test_auth_azure_client_secret,
         "AUTH_AZURE_SCOPES": fx_test_auth_azure_scopes,
-        "AUTH_MS_GRAPH_ENDPOINT": fx_test_auth_ms_graph_endpoint,
-        "AUTH_LDAP_URL": fx_test_auth_ldap_url,
         "AUTH_LDAP_BASE_DN": fx_test_auth_ldap_base_dn,
         "AUTH_LDAP_BIND_DN": fx_test_auth_ldap_bind_dn,
         "AUTH_LDAP_BIND_PASSWORD": fx_test_auth_ldap_bind_password,
-        "AUTH_LDAP_OU_USERS": fx_test_auth_ldap_ou_users,
-        "AUTH_LDAP_OU_GROUPS": fx_test_auth_ldap_ou_groups,
-        "AUTH_LDAP_NAME_CONTEXT_USERS": fx_test_auth_ldap_name_context_users,
         "AUTH_LDAP_NAME_CONTEXT_GROUPS": fx_test_auth_ldap_name_context_groups,
+        "AUTH_LDAP_NAME_CONTEXT_USERS": fx_test_auth_ldap_name_context_users,
+        "AUTH_LDAP_OU_GROUPS": fx_test_auth_ldap_ou_groups,
+        "AUTH_LDAP_OU_USERS": fx_test_auth_ldap_ou_users,
+        "AUTH_LDAP_URL": fx_test_auth_ldap_url,
+        "AUTH_MS_GRAPH_ENDPOINT": fx_test_auth_ms_graph_endpoint,
+        "BACKUPS_COUNT": fx_test_backups_count,
+        "BACKUPS_PATH": fx_test_backups_path,
+        "DATA_AIRNET_OUTPUT_PATH": fx_test_data_airnet_output_path,
+        "DATA_AIRNET_ROUTES_TABLE": fx_test_data_airnet_routes_table,
+        "DATA_AIRNET_ROUTE_WAYPOINTS_TABLE": fx_test_data_airnet_route_waypoints_table,
+        "DATA_AIRNET_WAYPOINTS_TABLE": fx_test_data_airnet_waypoints_table,
         "DATA_MANAGED_TABLE_NAMES": fx_test_data_managed_table_names,
         "DATA_QGIS_TABLE_NAMES": fx_test_data_qgis_table_names,
-        "BACKUPS_PATH": fx_test_backups_path,
-        "BACKUPS_COUNT": fx_test_backups_count,
+        "DB_DSN": fx_test_db_dsn,
+        "VERSION": fx_test_package_version,
     }
 
 
@@ -377,3 +413,60 @@ def fx_backup_client(mocker: MockFixture) -> BackupClient:
     mocker.patch("ops_data_store.backup.RollingFileSet", autospec=True)
 
     return BackupClient()
+
+
+@pytest.fixture()
+def fx_at_wp_start() -> Waypoint:
+    """Start/origin waypoint in a travel network."""
+    waypoint = Waypoint(
+        identifier="ALPHA",
+        lon=-75.01463335007429,
+        lat=-69.91516669280827,
+        name="Alpha",
+        colocated_with="Foo",
+        last_accessed_at=date(2012, 4, 24),
+        last_accessed_by="~conwat",
+        comment="There's unlimited juice?",
+    )
+    waypoint.fid = "01HGVADKH3JQTEKT0X9YWP8ZJM"
+
+    return waypoint
+
+
+@pytest.fixture()
+def fx_at_wp_end() -> Waypoint:
+    """End/destination waypoint in a travel network."""
+    waypoint = Waypoint(identifier="BRAVO", lon=-75.19033329561353, lat=-70.8301666751504)
+    waypoint.fid = "01HGVADKHZXSFZ09S46S2HW6RG"
+
+    return waypoint
+
+
+@pytest.fixture()
+def fx_at_rt(fx_at_wp_start: Waypoint, fx_at_wp_end: Waypoint) -> Route:
+    """Route in a travel network."""
+    route = Route(name="01_ALPHA_TO_BRAVO")
+    route.fid = "01HGVADKJMJ17N5QX5Q0V0W3WN"
+    route.waypoints.append(RouteWaypoint(waypoint=fx_at_wp_start, sequence=1))
+    route.waypoints.append(RouteWaypoint(waypoint=fx_at_wp_end, sequence=2))
+
+    return route
+
+
+@pytest.fixture()
+def fx_airnet_client(
+    mocker: MockFixture, fx_at_wp_start: Waypoint, fx_at_wp_end: Waypoint, fx_at_rt: Route
+) -> AirUnitNetworkClient:
+    """
+    App AirNet client.
+
+    Pre-populated with test waypoint and route.
+    """
+    mocker.patch("ops_data_store.airnet.DBClient", autospec=True)
+
+    client = AirUnitNetworkClient()
+    client.network.waypoints.append(fx_at_wp_start)
+    client.network.waypoints.append(fx_at_wp_end)
+    client.network.routes.append(fx_at_rt)
+
+    return client
