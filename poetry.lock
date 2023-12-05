@@ -501,13 +501,13 @@ test = ["Fiona[s3]", "pytest (>=7)", "pytest-cov", "pytz"]
 
 [[package]]
 name = "gdal"
-version = "3.8.0"
+version = "3.4.3"
 description = "GDAL: Geospatial Data Abstraction Library"
 category = "main"
 optional = false
 python-versions = ">=3.6.0"
 files = [
-    {file = "GDAL-3.8.0.tar.gz", hash = "sha256:9ec312ccd48a1182603feebb38de7bf2e824d16fbefbd8f2e5041a3af2aada07"},
+    {file = "GDAL-3.4.3.tar.gz", hash = "sha256:f4f4b0bb34073b164c5a05a1b0eb44af47349e5606eb7b75244c2167ac462f36"},
 ]
 
 [package.extras]
@@ -1442,4 +1442,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "f04d28a14b14f3015b08d2949f0c48c7a63ba9c8d86294d3440c0de31c166cf1"
+content-hash = "f2900d51e978a24f6e6c985b2eb7faac06490f2a8e09755f58bb71d0d859beee"
