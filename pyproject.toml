@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ops-data-store"
-version = "0.6.1"
+version = "0.7.0"
 description = "Data store for hosted and managed datasets for BAS Field Operations and Air Unit."
 authors = ["Felix Fennell <felnne@bas.ac.uk>"]
 license = "MIT"
@@ -12,7 +12,7 @@ ods-ctl = 'ops_data_store.cli:app'
 
 [tool.poetry.dependencies]
 environs = "^9.5.0"
-gdal = "3.4.3"
+gdal = "3.8.0"
 psycopg = {version = "^3.1.12", extras = ["binary"]}
 python = "^3.9"
 typer = "^0.9.0"
