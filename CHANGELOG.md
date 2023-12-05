@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.7.0] - 2023-12-05
+
 ### Added
 
 * Automated backups via cron with Sentry monitoring
