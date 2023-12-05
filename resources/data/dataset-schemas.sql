@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS public.depot
 (
   pk                         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT depot_pk PRIMARY KEY,
-  pid                        UUID                     NOT NULL DEFAULT generate_ulid(),
+  pid                        UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
   id                         TEXT                     NOT NULL,
   updated_at                 TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by                 TEXT                     NOT NULL DEFAULT 'unknown',
@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS public.instrument
 (
   pk                         INTEGER GENERATED ALWAYS AS IDENTITY
     CONSTRAINT instrument_pk PRIMARY KEY,
-  pid                        UUID                     NOT NULL DEFAULT generate_ulid(),
+  pid                        UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
   id                         TEXT                     NOT NULL,
   updated_at                 TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by                 TEXT                     NOT NULL DEFAULT 'unknown',
