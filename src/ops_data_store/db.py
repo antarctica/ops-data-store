@@ -5,6 +5,7 @@ from pathlib import Path
 
 import psycopg
 from psycopg import Cursor
+from psycopg.sql import Composed
 
 from ops_data_store.config import Config
 
@@ -217,3 +218,19 @@ class DBClient:
             self.logger.error(e, exc_info=True)
             msg = "DB dump failed."
             raise RuntimeError(msg) from e
+
+    def fetch(self, query: Composed) -> list[tuple]:
+        """
+        Fetch results from a query.
+
+        :type query: Composed
+        :param query: Query to execute.
+        :rtype: list[tuple]
+        :return: Query results.
+        """
+        self.logger.info("Fetching from database.")
+        self.logger.debug(f"Query: {query}")
+
+        with psycopg.connect(self._dsn) as conn, conn.cursor() as cur:
+            cur.execute(query)
+            return cur.fetchall()

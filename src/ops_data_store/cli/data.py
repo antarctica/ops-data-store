@@ -32,3 +32,16 @@ def backup(output_path: Annotated[Path, typer.Option()]) -> None:
         logger.error(e, exc_info=True)
         print("No. Error saving managed datasets.")
         raise typer.Abort() from e
+
+
+@app.command(help="Convert select managed datasets to device formats.")
+def convert() -> None:
+    """Convert selected managed datasets from DB to device formats."""
+    print("Note: This command only exports formally managed routes and waypoints.")
+
+    client = DataClient()
+    client.convert()
+
+    logger.info("Routes and waypoints converted normally.")
+    print(f"Output path: {config.DATA_AIRNET_OUTPUT_PATH.resolve()}")
+    print("Ok. Complete.")

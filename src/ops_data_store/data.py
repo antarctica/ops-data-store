@@ -15,6 +15,7 @@ from osgeo.gdal import (
     VectorTranslateOptions,
 )
 
+from ops_data_store.airnet import AirUnitNetworkClient
 from ops_data_store.config import Config
 from ops_data_store.db import DBClient
 
@@ -36,6 +37,7 @@ class DataClient:
         GDALUseExceptions()
 
         self.db_client = DBClient()
+        self.airnet_client = AirUnitNetworkClient()
 
         self.export_tables: list[str] = self.config.DATA_MANAGED_TABLE_NAMES + self.config.DATA_QGIS_TABLE_NAMES
 
@@ -90,3 +92,15 @@ class DataClient:
                 raise RuntimeError(msg) from e
 
         self.logger.info("Export ok.")
+
+    def convert(self) -> None:
+        """
+        Convert Air Unit datasets to CSV, GPX and FPL formats.
+
+        Warning: Any existing outputs will be overwritten.
+        """
+        self.logger.info("Converting Air Unit datasets to output formats.")
+
+        self.airnet_client.export()
+
+        self.logger.info("Conversion ok.")

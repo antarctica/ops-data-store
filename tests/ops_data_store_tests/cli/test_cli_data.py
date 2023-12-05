@@ -8,7 +8,7 @@ from typer.testing import CliRunner
 from ops_data_store.cli import app as cli
 
 
-class TestCliDBBackup:
+class TestCliDataBackup:
     """Tests for `data backup`."""
 
     def test_ok(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
@@ -36,3 +36,18 @@ class TestCliDBBackup:
 
             assert result.exit_code == 1
             assert "No. Error saving managed datasets." in result.output
+
+
+class TestCliDataConvert:
+    """Tests for `data convert`."""
+
+    def test_ok(self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner) -> None:
+        """Can convert datasets."""
+        mocker.patch("ops_data_store.cli.data.DataClient.convert", return_value=None)
+
+        result = fx_cli_runner.invoke(app=cli, args=["data", "convert"])
+
+        assert "Routes and waypoints converted normally." in caplog.text
+
+        assert result.exit_code == 0
+        assert "Ok. Complete." in result.output

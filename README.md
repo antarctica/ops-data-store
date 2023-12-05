@@ -110,6 +110,7 @@ YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implement
 #### Control CLI `data` commands
 
 - `ods-ctl data backup --ouput-path [path/to/file.gpkg]`: saves managed datasets and QGIS styles to GeoPackage backup
+- `ods-ctl data convert`: saves managed routes and waypoints for printing and using in GPS devices
 
 #### Control CLI `db` commands
 
@@ -175,6 +176,13 @@ Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
     - *(the user may have multiple *Ops Data Store* entries they'll need to pick from based on their current location)*
 1. select relevant layer -> *Add Layer to Project*
 
+
+#### Configure layer properties
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+**Note:** These instructions depend on the [Adding DB Layer](#adding-db-layer) workflow.
+
 To configure a layer for the first time:
 
 1. from the *Layers* pane -> (added layer) -> *Properties* -> *Attribute Form*:
@@ -186,13 +194,51 @@ To configure a layer for the first time:
 
 **Note:** The first layer style saved to the database will automatically create a `layer_styles` table.
 
+
+#### Configure layer snapping
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+**Note:** These instructions depend on the [Configure Layer Properties](#configure-layer-properties) workflow.
+
+To edit features in the *route* layer, snapping needs to be configured for the *waypoint* layer, as route features are
+constructed from waypoint features.
+
+1. enable the snapping toolbar
+1. click the *Enable Snapping* button from the snapping toolbar
+1. click the *Advanced Configuration* button from the snapping toolbar and change from *All Layers* to
+   *Advanced Configuration*
+1. click the *Edit Advanced Configuration* button from the snapping toolbar and edit the configuration to:
+    * set Waypoints as the only available snapping layer
+    * set the tolerance to `80000.0` meters (80KM)
+
+Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
+[2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
+
 #### Editing features in DB layer
 
 **Note:** These instructions are intended for adapting into documentation by MAGIC team members.
 
-**Note:** These instructions depend on the [Adding DB layer](#adding-db-layer) workflow.
+**Note:** These instructions depend on the [Configure Layer Properties](#configure-layer-properties) and
+[Configure Layer Snapping](#configure-layer-snapping) workflows
 
-Layers can be edited as normal, the add feature form should already be configured to hide generated or platform fields.
+Layers should be editable as normal. The add/edit feature form should already be configured to hide generated or
+platform fields and set appropriate aliases.
+
+When editing the *Route* layer, all vertices MUST overlap with existing waypoints. QGIS will allow any coordinate to
+be selected, however when saved any vertex that does not overlap will be omitted due to the way routes are saved.
+
+### Accessing route and waypoint outputs
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+To access the CSV, GPX and FPL outputs for waypoints and routes in the BAS Air Unit travel network:
+
+1. visit `https://{placeholder}/content/air-unit-network/` in a web browser
+2. download the desired outputs, outputs are organised by format
+
+Replace `{placeholder}` values wth settings from the relevant database listed in the [Infrastructure](#infrastructure)
+section.
 
 ### Creating backups
 
@@ -264,27 +310,31 @@ details, and must be defined by the user, using either appropriate environment v
 
 **Note:** If using an `.env` file, an example [`.example.env`](.example.env) is available as a guide.
 
-| Config Property            | Environment Variable               | Required | Sensitive | Read Only | Type            | Description                                             | Example                                                                  |
-|----------------------------|------------------------------------|----------|-----------|-----------|-----------------|---------------------------------------------------------|--------------------------------------------------------------------------|
-| `VERSION`                  | -                                  | No       | No        | Yes       | String          | Application version, read from package metadata         | '0.1.0'                                                                  |
-| `DB_DSN`                   | `APP_ODS_DB_DSN`                   | Yes      | Yes       | No        | String          | Application database connection string [1]              | 'postgresql://user:pass@host/db'                                         |
-| `AUTH_AZURE_AUTHORITY`     | `APP_ODS_AUTH_AZURE_AUTHORITY`     | No [2]   | No        | No        | String          | Endpoint used for authenticating against Azure          | 'https://login.microsoftonline.com/b311db95-32ad-438f-a101-7ba061712a4e' |
-| `AUTH_AZURE_CLIENT_ID`     | `APP_ODS_AUTH_AZURE_CLIENT_ID`     | No [2]   | No        | No        | String          | Identifier used for authenticating against Azure        | '3b2c5acf-728a-4b78-85f0-9560a6aad701'                                   |
-| `AUTH_AZURE_CLIENT_SECRET` | `APP_ODS_AUTH_AZURE_CLIENT_SECRET` | No [2]   | Yes       | No        | String          | Secret used for authenticating against Azure            | 'xxx'                                                                    |
-| `AUTH_AZURE_SCOPES`        | -                                  | No [2]   | No        | Yes       | List of Strings | Permissions requested when authenticating against Azure | ['https://graph.microsoft.com/.default']                                 |
-| `AUTH_MS_GRAPH_ENDPOINT`   | -                                  | No [2]   | No        | Yes       | String          | Endpoint used for the Microsoft Graph API               | 'https://graph.microsoft.com/v1.0'                                       |
-| `AUTH_LDAP_URL`            | `APP_ODS_AUTH_LDAP_URL`            | No [2]   | No        | No        | String          | Endpoint used for authenticating against LDAP server    | 'ldap://ldap.example.com:389'                                            |
-| `AUTH_LDAP_BASE_DN`        | `APP_ODS_AUTH_LDAP_BASE_DN`        | No [2]   | No        | No        | String          | Base scope to apply to all LDAP queries                 | 'dc=example,dc=com'                                                      |
-| `AUTH_LDAP_BIND_DN`        | `APP_ODS_AUTH_LDAP_BIND_DN`        | No [2]   | No        | No        | String          | Identifier used for authenticating against LDAP server  | 'cn=app,ou=apps,dc=example,dc=com' [3]                                   |
-| `AUTH_LDAP_BIND_PASSWORD`  | `APP_ODS_AUTH_LDAP_BIND_PASSWORD`  | No [2]   | Yes       | No        | String          | Secret used for authenticating against LDAP server      | 'xxx'                                                                    |
-| `AUTH_LDAP_OU_USERS`       | `APP_ODS_AUTH_LDAP_OU_USERS`       | No [2]   | No        | No        | String          | Scope for user related objects in LDAP server           | 'users'                                                                  |
-| `AUTH_LDAP_OU_GROUPS`      | `APP_ODS_AUTH_LDAP_OU_GROUPS`      | No [2]   | No        | No        | String          | Scope for group related objects in LDAP server          | 'groups'                                                                 |
-| `AUTH_LDAP_CXT_USERS`      | `APP_ODS_AUTH_LDAP_CXT_USERS`      | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify users       | 'cn' [3]                                                                 |
-| `AUTH_LDAP_CXT_GROUPS`     | `APP_ODS_AUTH_LDAP_CXT_GROUPS`     | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify groups      | 'cn' [3]                                                                 |
-| `DATA_MANAGED_TABLE_NAMES` | `APP_ODS_DATA_MANAGED_TABLE_NAMES` | Yes      | No        | No        | List of Strings | Names of database tables used for managed datasets      | ['depot', 'instrument']                                                  |
-| `DATA_QGIS_TABLE_NAMES`    | -                                  | No       | No        | Yes       | List of Strings | Names of database tables optionally used by QGIS        | ['layer_styles']                                                         |
-| `BACKUPS_PATH`             | `APP_ODS_BACKUPS_PATH`             | Yes      | No        | No        | String (Path)   | Location to store application backups [4]               | '/var/opt/ops_data_store/backups/'                                       |
-| `BACKUPS_COUNT`            | `APP_ODS_BACKUPS_COUNT`            | Yes      | No        | No        | Number          | Number of backups to keep as part of a rolling window   | '10'                                                                     |
+| Config Property                     | Environment Variable               | Required | Sensitive | Read Only | Type            | Description                                                      | Example                                                                  |
+|-------------------------------------|------------------------------------|----------|-----------|-----------|-----------------|------------------------------------------------------------------|--------------------------------------------------------------------------|
+| `AUTH_AZURE_AUTHORITY`              | `APP_ODS_AUTH_AZURE_AUTHORITY`     | No [2]   | No        | No        | String          | Endpoint used for authenticating against Azure                   | 'https://login.microsoftonline.com/b311db95-32ad-438f-a101-7ba061712a4e' |
+| `AUTH_AZURE_CLIENT_ID`              | `APP_ODS_AUTH_AZURE_CLIENT_ID`     | No [2]   | No        | No        | String          | Identifier used for authenticating against Azure                 | '3b2c5acf-728a-4b78-85f0-9560a6aad701'                                   |
+| `AUTH_AZURE_CLIENT_SECRET`          | `APP_ODS_AUTH_AZURE_CLIENT_SECRET` | No [2]   | Yes       | No        | String          | Secret used for authenticating against Azure                     | 'xxx'                                                                    |
+| `AUTH_AZURE_SCOPES`                 | -                                  | No [2]   | No        | Yes       | List of Strings | Permissions requested when authenticating against Azure          | ['https://graph.microsoft.com/.default']                                 |
+| `AUTH_LDAP_BASE_DN`                 | `APP_ODS_AUTH_LDAP_BASE_DN`        | No [2]   | No        | No        | String          | Base scope to apply to all LDAP queries                          | 'dc=example,dc=com'                                                      |
+| `AUTH_LDAP_BIND_DN`                 | `APP_ODS_AUTH_LDAP_BIND_DN`        | No [2]   | No        | No        | String          | Identifier used for authenticating against LDAP server           | 'cn=app,ou=apps,dc=example,dc=com' [3]                                   |
+| `AUTH_LDAP_BIND_PASSWORD`           | `APP_ODS_AUTH_LDAP_BIND_PASSWORD`  | No [2]   | Yes       | No        | String          | Secret used for authenticating against LDAP server               | 'xxx'                                                                    |
+| `AUTH_LDAP_CXT_GROUPS`              | `APP_ODS_AUTH_LDAP_CXT_GROUPS`     | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify groups               | 'cn' [3]                                                                 |
+| `AUTH_LDAP_CXT_USERS`               | `APP_ODS_AUTH_LDAP_CXT_USERS`      | No [2]   | No        | No        | String          | LDAP naming context prefix used to identify users                | 'cn' [3]                                                                 |
+| `AUTH_LDAP_OU_GROUPS`               | `APP_ODS_AUTH_LDAP_OU_GROUPS`      | No [2]   | No        | No        | String          | Scope for group related objects in LDAP server                   | 'groups'                                                                 |
+| `AUTH_LDAP_OU_USERS`                | `APP_ODS_AUTH_LDAP_OU_USERS`       | No [2]   | No        | No        | String          | Scope for user related objects in LDAP server                    | 'users'                                                                  |
+| `AUTH_LDAP_URL`                     | `APP_ODS_AUTH_LDAP_URL`            | No [2]   | No        | No        | String          | Endpoint used for authenticating against LDAP server             | 'ldap://ldap.example.com:389'                                            |
+| `AUTH_MS_GRAPH_ENDPOINT`            | -                                  | No [2]   | No        | Yes       | String          | Endpoint used for the Microsoft Graph API                        | 'https://graph.microsoft.com/v1.0'                                       |
+| `BACKUPS_COUNT`                     | `APP_ODS_BACKUPS_COUNT`            | Yes      | No        | No        | Number          | Number of backups to keep as part of a rolling window            | '10'                                                                     |
+| `BACKUPS_PATH`                      | `APP_ODS_BACKUPS_PATH`             | Yes      | No        | No        | String (Path)   | Location to store application backups [4]                        | '/var/opt/ops-data-store/backups/'                                       |
+| `DATA_AIRNET_OUTPUT_PATH`           | `APP_ODS_DATA_AIRNET_OUTPUT_PATH`  | Yes      | No        | No        | String (Path)   | Location to store Air Unit Network exports [4]                   | `/var/www/ops-data-store/air-unit-outputs/`                              |
+| `DATA_AIRNET_ROUTES_TABLE`          | -                                  | No       | No        | Yes       | String          | Name of database table used for Air Unit Network routes          | 'route_container'                                                        |
+| `DATA_AIRNET_ROUTE_WAYPOINTS_TABLE` | -                                  | No       | No        | Yes       | String          | Name of database table used for Air Unit Network route waypoints | 'route_waypoint'                                                         |
+| `DATA_AIRNET_WAYPOINTS_TABLE`       | -                                  | No       | No        | Yes       | String          | Name of database table used for Air Unit Network waypoints       | 'waypoint'                                                               |
+| `DATA_MANAGED_TABLE_NAMES`          | `APP_ODS_DATA_MANAGED_TABLE_NAMES` | Yes      | No        | No        | List of Strings | Names of database tables used for managed datasets               | ['depot', 'instrument']                                                  |
+| `DATA_QGIS_TABLE_NAMES`             | -                                  | No       | No        | Yes       | List of Strings | Names of database tables optionally used by QGIS                 | ['layer_styles']                                                         |
+| `DB_DSN`                            | `APP_ODS_DB_DSN`                   | Yes      | Yes       | No        | String          | Application database connection string [1]                       | 'postgresql://user:pass@host/db'                                         |
+| `VERSION`                           | -                                  | No       | No        | Yes       | String          | Application version, read from package metadata                  | '0.1.0'                                                                  |
 
 [1] The `DB_DSN` config option MUST be a valid [psycopg](https://www.psycopg.org) connection string.
 
@@ -292,7 +342,33 @@ details, and must be defined by the user, using either appropriate environment v
 
 [3] Make sure to use the correct naming context prefix for the LDAP server, e.g. `cn=conwat` vs. `uid=conwat`.
 
-[4] The `BACKUPS_PATH` config option MUST point to an existing directory that is writable by the application user.
+[4] These options MUST point to an existing directory that is writable by the application user.
+
+### BAS Air Unit Network Utility [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+The [BAS Air Unit Network Dataset utility 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset) is used to
+convert the *Waypoint* and *Route* [Managed Dataset](#managed-datasets) maintained by the BAS Air Unit into formats for
+use in GPS devices and other activities such as printing.
+
+These datasets can be converted using the [`data convert`](#control-cli-data-commands) CLI command. Outputs are written
+to the [File Store](#file-store) and available to end-users through the [Web Server](#web-server).
+
+#### Automatic conversion
+
+To avoid the need for end-users to use the [CLI](#command-line-interface) to generate outputs, the
+[`data convert`](#control-cli-data-commands) CLI command can be run automatically using cron or other task scheduling
+tool.
+
+For example to run with cron every 5 minutes:
+
+```
+*/5 * * * * /path/to/ods-ctl data convert >> /path/to/logs/$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+```
+
+This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.log`). See the
+[Installation](#installation) section for how to configure automated conversions in a deployed instance.
 
 ### Database
 
@@ -306,13 +382,14 @@ extension for storing spatial information along with custom functions and data t
 - recording when and by who rows in managed datasets are changed
   - using the `set_updated_at` and `set_updated_by` functions
 
-### File store [WIP]
+### File store
 
-**Note:** This section is a work in progress and may be incomplete.
+The file store holds application [Backups](#backups) and [Converted Outputs](#bas-air-unit-network-utility). It is
+typically a file system, either using local disks or remote file shares. Other technologies, such as objects stores,
+cannot currently be used but could be supported if needed.
 
-The file system is used for storing application [Backups](#backups). It may also be used for hosting the Python command
-line application and/or database and share a common volume, however this is not required and not common, particularly
-for the database.
+The file store may also be used for hosting the [CLI](#command-line-interface) and/or [Database](#database), however
+this is not required, and not common particularly for the database.
 
 ### QGIS
 
@@ -352,7 +429,13 @@ Store's [Permissions](#permissions) system.
 
 **Note:** This section is a work in progress and may be incomplete.
 
-...
+[Apache HTTP Server](https://httpd.apache.org) is used for hosting content from the [File Store](#file-store)
+available to end users. It is implemented as a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured at
+`/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT.
+
+The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility-wip),
+restricted using authentication and authorisation using [LDAP](#ldap). Users must have a valid LDAP account and be a
+member of the *Viewer* role from the [Permissions](#permissions) system.
 
 ### User synchronisation mechanism [WIP]
 
@@ -786,6 +869,17 @@ default. These previous styles can be removed if needed.
 
 Manually remove any styles for the removed layer in the QGIS `layer_styles` table.
 
+### QGIS editing support for routes
+
+The managed *Route* dataset is non-spatial, as they consist of an ordered sequence of *Waypoint* identifiers. This
+prevents editing of routes in QGIS which requires a linestring geometry.
+
+To support being able to edit route features in QGIS a writable view is implemented as part of the managed dataset
+schemas. For reading, the view includes a derived `geom` column by combining the point geometries of each waypoint
+included in the route into a linestring. For writing, triggers split the linestring geometry into points, which are
+converted into waypoint identifiers, using the waypoint geometry as a join. A tolerance of 1KM is used to avoid
+precision differences preventing this spatial join not need to match feature positions exactly.
+
 ## Requirements
 
 Required infrastructure:
@@ -1035,8 +1129,47 @@ MAILTO=monitoring@example.com
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
 
 ## Upgrading [WIP]
+### Create conversion cron job
 
 **Note:** This section is a work in progress and may be restructured.
+Create a Sentry cron monitor within the relevant Sentry subscription:
+
+- project: *ops-data-store*
+- name/slug: `ods-conversion`
+- schedule type: *cron*
+- cron pattern: `*/5 * * * *`
+- cron timezone: *UTC*
+- grace period: `1` minutes
+- max runtime: `2` minutes
+- notify: `#magic`
+- failure tolerance: `1`
+- recovery tolerance: `1`
+- environment: *All Environments*
+
+Once created, edit the monitor's associated alert to set:
+
+- conditions: post message to `#dev` channel in MAGIC Slack (in addition to regular team notification)
+- action interval: *5 minutes*
+- alert owner: `#magic`
+
+Create directory for cron backup logs:
+
+```
+$ mkdir -p ~/logs/cron/
+```
+
+Add a new cron job `crontab -e`:
+
+```
+SHELL=/bin/bash
+MAILTO=monitoring@example.com
+
+## Operations Data Store automated conversion - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#automatic-conversion
+*/5 * * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-conversion -- /var/opt/ops-data-store/venv/bin/ods-ctl data convert >> /users/ods/logs/cron/ods-conversion-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+```
+
+Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
+
 
 To upgrade the Python application, upgrade the Python package version using Pip:
 
@@ -1234,7 +1367,7 @@ For consistency is strongly recommended to configure your IDE or other editor to
 - except for tests, all Python code should be contained in the [`ops_data_store`](/src/ops_data_store) package.
 - use `Path.resolve()` if displaying or logging file/directory paths in Python
 - Python dependencies are managed with [Poetry](https://python-poetry.org) in `pyproject.toml`
-- configuration options should be defined in the common [`Config`](/src/ops_data_store/config.py) class and this README
+- configuration options should be defined in the common [`Config`](/src/ops_data_store/config.py) class and this README in alphabetical order
 - configuration options should be read using the relevant [environs](https://github.com/sloria/environs) helper method
 - use logging to record how actions progress, using the `app` logger (e.g. `logger = logging.getLogger('app')`)
 

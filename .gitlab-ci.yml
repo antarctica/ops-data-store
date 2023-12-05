@@ -32,6 +32,7 @@ variables:
   APP_ODS_AUTH_LDAP_CXT_GROUPS: "cn"
 
   # Data config
+  APP_ODS_DATA_AIRNET_OUTPUT_PATH: "./outputs"
   APP_ODS_DATA_MANAGED_TABLE_NAMES: "test"
 
   # Backups config
@@ -68,7 +69,7 @@ stages:
     - poetry check
     - poetry config virtualenvs.in-project true
     - poetry install --no-interaction --no-ansi
-    - mkdir -p $APP_ODS_BACKUPS_PATH
+    - mkdir -p $APP_ODS_BACKUPS_PATH $APP_ODS_DATA_AIRNET_OUTPUT_PATH
 
 before_script:
     - *before_script_common
@@ -84,6 +85,7 @@ test:
     - psql -h $POSTGRES_HOST -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 'OK' AS status;"
     - poetry run python -c 'from ops_data_store.config import Config; c = Config(); print(c.DB_DSN)'
   script:
+    - echo $APP_ODS_BACKUPS_COUNT
     - poetry run pytest --strict-markers --random-order --cov --cov-report=html -o junit_family=xunit2 --junitxml=test-results.xml
   coverage: '/Total coverage: \d+\.\d+/'
   artifacts:

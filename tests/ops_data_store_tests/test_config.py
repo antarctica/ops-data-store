@@ -381,3 +381,69 @@ class TestConfigBackupCount:
             fx_test_config.validate()
 
         environ["APP_ODS_BACKUPS_COUNT"] = count
+
+
+class TestDataAirnetOutputPath:
+    """Tests for `DATA_AIRNET_OUTPUT_PATH` property."""
+
+    def test_ok(self, fx_test_data_airnet_output_path: Path, fx_test_config: Config) -> None:
+        """Property check."""
+        assert fx_test_data_airnet_output_path == fx_test_config.DATA_AIRNET_OUTPUT_PATH
+
+    def test_missing(self, fx_test_config: Config) -> None:
+        """Missing property raises exception."""
+        path = environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"]
+        del environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"]
+
+        with pytest.raises(EnvError):
+            # noinspection PyStatementEffect
+            fx_test_config.DATA_AIRNET_OUTPUT_PATH  # noqa: B018
+
+        environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"] = path
+
+    def test_validate_error_missing(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        path = environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"]
+        del environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"]
+
+        with pytest.raises(RuntimeError, match="Required config option `DATA_AIRNET_OUTPUT_PATH` not set."):
+            fx_test_config.validate()
+
+        environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"] = path
+
+    def test_validate_error_not_dir(self, fx_test_config: Config) -> None:
+        """Missing property fails validation."""
+        path = environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"]
+        environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"] = "/does-not-exist"
+
+        with pytest.raises(
+            RuntimeError,
+            match="`DATA_AIRNET_OUTPUT_PATH` config value: '/does-not-exist' not a directory or does not exist.",
+        ):
+            fx_test_config.validate()
+
+        environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"] = path
+
+
+class TestDataAirnetRoutesTable:
+    """Tests for `DATA_AIRNET_ROUTES_TABLE` property."""
+
+    def test_ok(self, fx_test_data_airnet_routes_table: str, fx_test_config: Config) -> None:
+        """Property can be read."""
+        assert fx_test_data_airnet_routes_table == fx_test_config.DATA_AIRNET_ROUTES_TABLE
+
+
+class TestDataAirnetRouteWaypointsTable:
+    """Tests for `DATA_AIRNET_ROUTE_WAYPOINTS_TABLE` property."""
+
+    def test_ok(self, fx_test_data_airnet_route_waypoints_table: str, fx_test_config: Config) -> None:
+        """Property can be read."""
+        assert fx_test_data_airnet_route_waypoints_table == fx_test_config.DATA_AIRNET_ROUTE_WAYPOINTS_TABLE
+
+
+class TestDataAirnetWaypointsTable:
+    """Tests for `DATA_AIRNET_WAYPOINTS_TABLE` property."""
+
+    def test_ok(self, fx_test_data_airnet_waypoints_table: str, fx_test_config: Config) -> None:
+        """Property can be read."""
+        assert fx_test_data_airnet_waypoints_table == fx_test_config.DATA_AIRNET_WAYPOINTS_TABLE
