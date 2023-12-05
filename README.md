@@ -136,6 +136,9 @@ If needed, shortcuts can be created to start QGIS with a specific profile:
 
 **Note:** To start QGIS normally use the `default` profile.
 
+Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
+[2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
+
 #### Adding DB connection
 
 **Note:** These instructions are intended for adapting into documentation by MAGIC team members.
@@ -169,13 +172,15 @@ Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
 
 **Note:** These instructions are intended for adapting into documentation by MAGIC team members.
 
-**Note:** These instructions depend on the [Adding DB connection](#adding-db-connection) workflow.
+**Note:** These instructions depend on the [Adding DB Connection](#adding-db-connection) workflow.
 
 1. open QGIS with the relevant profile and project active
 1. from the *Browser* pane -> *PostgreSQL* -> *Ops Data Store*
     - *(the user may have multiple *Ops Data Store* entries they'll need to pick from based on their current location)*
 1. select relevant layer -> *Add Layer to Project*
 
+Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
+[2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
 
 #### Configure layer properties
 
@@ -189,11 +194,13 @@ To configure a layer for the first time:
     - *pk*, *pid*, *updated_at*, *updated_by*, *lat_dd*, *lon_dd*, *lat_ddm* and *lon_ddm*:
       - *General* -> *Editable*: *Uncheck*
       - *Widget Type*: *Hidden*
-1. set other layer properties (symbology, labelling, etc.) as needed
+1. set other layer properties (aliases, symbology, labelling, etc.) as needed
 1. *Style* -> *Save as Default* -> *Datasource Database* -> *Ok*
 
 **Note:** The first layer style saved to the database will automatically create a `layer_styles` table.
 
+Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
+[2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
 
 #### Configure layer snapping
 
@@ -257,7 +264,7 @@ where backups are stored.
 Within this directory, open the relevant JSON [State file](#backups-state-files) and check the
 `meta.newest_iteration_sha1sum` property, e.g. "9e0f11af67e08e9368ff3d94445826fd2014df9b".
 
-Find this checksum in the `iterations` list for details including the date of the backup and it's location.
+Find this checksum in the `iterations` list for details including the date of the backup, and it's location.
 
 ### Migrating data from one instance to another [WIP]
 
@@ -269,7 +276,7 @@ manual deviation may be needed.
 
 1. from the source instance, get the [Latest managed datasets backup (GeoPackage)](#identifying-latest-backups)
 2. copy each managed dataset layer [1]
-3. copy any QGIS layer styles manually via the QGIS UI
+3. copy any QGIS layer by dumping the `layer_styles` table from the source DB and restoring in the target environment
 
 ```
 $ ogr2ogr -f "PostgreSQL" PG:"user=ops-data-store password=[db password] host=[db host] dbname=ops-data-store" [source].gpkg -nln [layer] -overwrite -append
@@ -277,7 +284,9 @@ $ ogr2ogr -f "PostgreSQL" PG:"user=ops-data-store password=[db password] host=[d
 
 See the relevant 1Password entry in the [Infrastructure](#infrastructure) section for database connection details
 
-### Update user roles
+### Update user roles [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
 
 To assign or remove roles from the [Permissions](#permissions) to or from users:
 
@@ -470,7 +479,7 @@ For managing database users based on LDAP objects:
 - for each application LDAP group, each member is created as a Postgres user role, named after the LDAP UID attribute
 - these Postgres user roles are configured to inherit the relevant base Postgres role, granting them relevant permissions
 - user credentials are not replicated to these user roles as Postgres is configured to use LDAP authentication
-- user roles for users removed from a LDAP group will no longer inherit from the relevant base role, revoking permissions
+- user roles for users removed from an LDAP group will no longer inherit from the relevant base role, revoking permissions
 - user roles may inherit from multiple base Postgres roles if members of multiple application LDAP groups
 
 ### Permissions
@@ -521,12 +530,12 @@ environments, or may require manual action in each. See the notes in the [Infras
 
 Mappings for roles, teams, the database and LDAP:
 
-| Role     | Team                 | Azure Group                            | LDAP Group                   | Postgres Role                |
-|----------|----------------------|----------------------------------------|------------------------------|------------------------------|
-| Admins   | -                    | `34db44b7-4441-4f60-8daa-d0c192d74704` | `apps_magic_ods_write_admin` | `apps_magic_ods_write_admin` |
-| Owners   | BAS Field Operations | `75ec55c1-7e92-45e3-9746-e50bd71fcfef` | `apps_magic_ods_write_fo`    | `apps_magic_ods_write_fo`    |
-| Owners   | BAS Air Unit         | `7b8458b9-dc90-445b-bff8-2442f77d58a9` | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
-| Viewers  | -                    | `906f20ee-7698-48c8-b2ff-75592384af68` | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
+| Role    | Team                 | Azure Group                                                                                                                                                              | LDAP Group                   | Postgres Role                |
+|---------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|------------------------------|
+| Admins  | -                    | [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704) | `apps_magic_ods_write_admin` | `apps_magic_ods_write_admin` |
+| Owners  | BAS Field Operations | [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef) | `apps_magic_ods_write_fo`    | `apps_magic_ods_write_fo`    |
+| Owners  | BAS Air Unit         | [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9) | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
+| Viewers | -                    | [`906f20ee-7698-48c8-b2ff-75592384af68`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/906f20ee-7698-48c8-b2ff-75592384af68) | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
 
 The [User Synchronisation Mechanism](#user-synchronisation-mechanism) and the
 [Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
@@ -636,13 +645,13 @@ Backups can be captured automatically using cron or other task scheduling tool b
 For example to run with cron every day at 04:00 (AM):
 
 ```
-0 4 * * * /path/to/ods-ctl backup now >> /path/to/backups/$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+0 4 * * * /path/to/ods-ctl backup now >> /path/to/logs/$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
 ```
 
-This will create per-run log files (e.g. `/path/to/backups/2023-11-20-04:00:00-UTC.log`). See the
+This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.log`). See the
 [Installation](#installation) section for how to configure automated backups in a deployed instance.
 
-### Infrastructure backups
+#### Infrastructure backups
 
 For BAS IT managed infrastructure, additional backups are maintained by BAS IT:
 
@@ -689,10 +698,12 @@ See the relevant subsection for adding to, amending or removing from these schem
 
 Managed datasets are assigned to these teams in relation to [Permissions](#permissions) needed to change information:
 
-| Dataset     | Owner (Team)         |
-|-------------|----------------------|
-| Depots      | BAS Field Operations |
-| Instruments | BAS Field Operations |
+| Dataset         | Owner (Team)         |
+|-----------------|----------------------|
+| Depots          | BAS Field Operations |
+| Instruments     | BAS Field Operations |
+| Waypoints       | BAS Air Unit         |
+| Routes          | BAS Air Unit         |
 
 ### Managed dataset identifiers
 
@@ -820,29 +831,29 @@ Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) using the tem
 
 CREATE TABLE IF NOT EXISTS public.NEW_DATASET
 (
-  pk         INTEGER GENERATED ALWAYS AS IDENTITY
+  pk         INTEGER                  GENERATED ALWAYS AS IDENTITY
     CONSTRAINT NEW_DATASET_pk PRIMARY KEY,
-  pid        UUID                     NOT NULL DEFAULT generate_ulid(),
+  pid        UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
   id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by TEXT                     NOT NULL DEFAULT 'unknown',
   geom       GEOMETRY(Point, 4326),
-  lat_dd     TEXT GENERATED ALWAYS AS (st_y(geom)::text) STORED,
-  lon_dd     TEXT GENERATED ALWAYS AS (st_x(geom)::text) STORED,
-  lat_ddm    TEXT GENERATED ALWAYS AS ((geom_as_ddm(geom)).y) STORED,
-  lon_ddm    TEXT GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
+  lat_dd     TEXT                     GENERATED ALWAYS AS (st_y(geom)::text) STORED,
+  lon_dd     TEXT                     GENERATED ALWAYS AS (st_x(geom)::text) STORED,
+  lat_ddm    TEXT                     GENERATED ALWAYS AS ((geom_as_ddm(geom)).y) STORED,
+  lon_ddm    TEXT                     GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
 );
 
 CREATE INDEX IF NOT EXISTS NEW_DATASET_geom_idx
   ON public.NEW_DATASET USING gist (geom);
 
-CREATE TRIGGER NEW_DATASET_updated_at_trigger
+CREATE OR REPLACE TRIGGER NEW_DATASET_updated_at_trigger
   BEFORE INSERT OR UPDATE
   ON NEW_DATASET
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
-CREATE TRIGGER NEW_DATASET_updated_by_trigger
+CREATE OR REPLACE TRIGGER NEW_DATASET_updated_by_trigger
   BEFORE INSERT OR UPDATE
   ON NEW_DATASET
   FOR EACH ROW
@@ -898,7 +909,7 @@ Required OS packages for Python app server:
 - Python 3.9+
 - OpenSSL 1.1.1+ [1]
 - OpenLDAP (including development headers)
-- GDAL 3.4 (including development headers and the `gdal-config` binary, [1])
+- GDAL 3.4 (including development headers and the `gdal-config` binary [1])
 - libxml (including the `xmllint` binary)
 - libpq (including the `pg_dump` binary)
 
@@ -1128,10 +1139,8 @@ MAILTO=monitoring@example.com
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
 
-## Upgrading [WIP]
 ### Create conversion cron job
 
-**Note:** This section is a work in progress and may be restructured.
 Create a Sentry cron monitor within the relevant Sentry subscription:
 
 - project: *ops-data-store*
@@ -1170,6 +1179,7 @@ MAILTO=monitoring@example.com
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
 
+## Upgrading
 
 To upgrade the Python application, upgrade the Python package version using Pip:
 
@@ -1218,7 +1228,7 @@ Connection details for any resources created should be stored in the MAGIC 1Pass
 - request an application server for running Python applications
 - request a Postgres database with required extensions
 - request a Windows VM (configured as a BAS workstation) with QGIS LTS installed to act as a reference VM
-- request a LDAP entity to use for managing application LDAP groups
+- request an LDAP entity to use for managing application LDAP groups
 - request LDAP groups as needed for implementing application permissions
 - request SAN/data volume mounted in the application server with permissions for the Python app OS user to read/write
 - request a user synchronisation mechanism between LDAP servers and between LDAP and Postgres
@@ -1239,7 +1249,7 @@ Instances:
 * Cambridge (*Production*) - managed by BAS IT as general infrastructure
 * Rothera (*Production*) - managed by BAS IT in the on-station infrastructure
 
-The infrastructure needed for each instance can summarised by this diagram:
+The infrastructure needed for each instance can be summarised by this diagram:
 
 ![infrastructure](docs/img/infrastructure.png)
 
@@ -1416,9 +1426,7 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 - to manage the service: `brew services [command] postgresql@14`
 - to view logs: `/usr/local/var/log/postgresql@14.log`
 
-### Adding new configuration options [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### Adding new configuration options
 
 1. add new properties to `ops_data_store.config.Config` class
 2. include new properties to `ops_data_store.config.Config.dump()` method
