@@ -362,16 +362,15 @@ class SimpleSyncClient:
     """
     Simple implementation of syncing users from Azure groups to LDAP.
 
-    In this simple client, users from a single (source) Azure group are synced to a single (target) LDAP group. Members
-    in the target group are replaced by those in the source. Any LDAP members not in the Azure group are dropped.
+    In this simple client, users from one or more (source) Azure groups are synced to a single (target) LDAP group.
+    Members in the target group are replaced by the union of those in the source. Any LDAP members not in the Azure
+    group are dropped.
     """
 
-    def __init__(self, azure_group_id: str, ldap_group_id: str) -> None:
+    def __init__(self, azure_group_ids: list[str], ldap_group_id: str) -> None:
         """
         Create instance.
 
-        :type azure_group_id: str
-        :param azure_group_id: Azure group ID
         :type ldap_group_id: str
         :param ldap_group_id: LDAP group ID
         """
@@ -383,10 +382,10 @@ class SimpleSyncClient:
         self.azure_client = AzureClient()
         self.ldap_client = LDAPClient()
 
-        self.logger.info(f"Azure group ID: {azure_group_id}")
+        self.logger.info(f"Azure group IDs: {azure_group_ids}")
         self.logger.info(f"LDAP group ID: {ldap_group_id}")
 
-        self._source_group_id: str = azure_group_id
+        self._source_group_ids: list[str] = azure_group_ids
         self._target_group_id: str = ldap_group_id
         self._target_group_dn: Optional[str] = None
 
@@ -412,12 +411,13 @@ class SimpleSyncClient:
         :rtype: str
         :return: LDAP group DN, or None if group does not exist
         """
-        try:
-            self.azure_client.check_group(group_id=self._source_group_id)
-        except ValueError as e:
-            msg = "Azure group %s does not exist." % self._source_group_id
-            self.logger.error(e, exc_info=True)
-            raise RuntimeError(msg) from e
+        for group_id in self._source_group_ids:
+            try:
+                self.azure_client.check_group(group_id=group_id)
+            except ValueError as e:
+                msg = "Azure group %s does not exist." % group_id
+                self.logger.error(e, exc_info=True)
+                raise RuntimeError(msg) from e
 
         ldap_group_uid = f"{self.config.AUTH_LDAP_NAME_CONTEXT_GROUPS}={self._target_group_id}"
         results = self.ldap_client.check_groups(group_ids=[ldap_group_uid])
@@ -462,12 +462,16 @@ class SimpleSyncClient:
 
     def _get_source_user_ids(self) -> None:
         """
-        Store members of source Azure group as usernames.
+        Store members of source Azure groups as usernames.
 
         Azure group members are identified by their User Principal Name (UPN, an email address). These need converting
         into generic usernames for comparison with LDAP users. E.g. a user `conwat@bas.ac.uk` becomes `conwat`.
         """
-        members = self.azure_client.get_group_members(group_id=self._source_group_id)
+        members = []
+
+        for group_id in self._source_group_ids:
+            members.extend(self.azure_client.get_group_members(group_id=group_id))
+
         self._source_user_ids = [member.split("@")[0] for member in members]
 
     def _get_target_user_ids(self) -> None:
@@ -482,7 +486,7 @@ class SimpleSyncClient:
 
     def evaluate(self) -> dict[str, list[str]]:
         """
-        Assess syncing users from an Azure group to an LDAP group.
+        Assess syncing users from one or more Azure groups to an LDAP group.
 
         This method performs no modifications to LDAP. It examines the members of the Azure and LDAP groups
         (if they exist) and determines which users should be added to or removed from the LDAP group.
@@ -527,10 +531,11 @@ class SimpleSyncClient:
 
     def sync(self) -> None:
         """
-        Sync users from an Azure group to an LDAP group.
+        Sync users from one or more Azure groups to an LDAP group.
 
-        This method performs modifications to LDAP! It depends on the `evaluate` method to check source/target groups
-        exist and determine DNs to add/remove.
+        This method will modify LDAP!
+
+        It depends on the `evaluate` method to check source/target groups exist and determine DNs to add/remove.
 
         Users are added before removing to prevent trying to remove the last member of a group which isn't permitted.
         """
@@ -539,6 +544,6 @@ class SimpleSyncClient:
 
             self.evaluate()
 
-        self.logger.info("Syncing members of Azure group to LDAP.")
+        self.logger.info("Syncing members of Azure groups to LDAP.")
         self.ldap_client.add_to_group(group_dn=self._target_group_dn, user_dns=self._target_dns_add)
         self.ldap_client.remove_from_group(group_dn=self._target_group_dn, user_dns=self._target_dns_del)

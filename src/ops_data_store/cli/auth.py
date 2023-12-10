@@ -25,7 +25,7 @@ def _print_sync_evaluation(eval_result: dict[str, list[str]]) -> None:
         print(f" ! {user}")
     print(f"\nUsers in source and target group (no change, for reference) [{len(eval_result['present'])}]:")
     print(f" = {', '.join(eval_result['present'])}")
-    print(f"\nAll users in source group (for reference) [{len(eval_result['source'])}]:")
+    print(f"\nAll users in source groups (for reference) [{len(eval_result['source'])}]:")
     print(f" > {', '.join(eval_result['source'])}")
     print(f"\nAll users in target group (for reference) [{len(eval_result['target'])}]:")
     print(f" < {', '.join(eval_result['target'])}")
@@ -55,7 +55,7 @@ def check() -> None:
 
 @app.command(help="Sync group members from Azure to LDAP.")
 def sync(
-    azure_group: Annotated[str, typer.Option("--azure-group", "-ag", help="ID of Azure group")],
+    azure_group: Annotated[list[str], typer.Option("--azure-group", "-ag", help="ID of Azure group")],
     ldap_group: Annotated[str, typer.Option("--ldap-group", "-lg", help="ID of LDAP group")],
 ) -> None:
     """Sync group members from Azure to LDAP."""
@@ -65,7 +65,7 @@ def sync(
         "magic@bas.ac.uk with the output of this command."
     )
 
-    sync_client = SimpleSyncClient(azure_group_id=azure_group, ldap_group_id=ldap_group)
+    sync_client = SimpleSyncClient(azure_group_ids=azure_group, ldap_group_id=ldap_group)
 
     try:
         _print_sync_evaluation(eval_result=sync_client.evaluate())

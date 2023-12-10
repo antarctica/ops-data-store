@@ -9,6 +9,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Added
+
+* Support for syncing multiple Azure groups to an LDAP group via `auth sync` command
+  [#151](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/151)
+
 ## [0.7.0] - 2023-12-05
 
 ### Added

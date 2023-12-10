@@ -260,9 +260,9 @@ def _fx_mock_ldap_object(mocker: MockFixture) -> None:
 
 
 @pytest.fixture()
-def fx_mock_ssc_azure_group_id() -> str:
+def fx_mock_ssc_azure_group_ids() -> list[str]:
     """Mock Azure group ID."""
-    return "123"
+    return ["123"]
 
 
 @pytest.fixture()
@@ -286,13 +286,13 @@ def fx_mock_ssc_eval_result() -> dict[str, list[str]]:
 
 @pytest.fixture()
 def fx_mock_ssc(
-    mocker: MockFixture, fx_mock_ssc_azure_group_id: str, fx_mock_ssc_ldap_group_id: str
+    mocker: MockFixture, fx_mock_ssc_azure_group_ids: list[str], fx_mock_ssc_ldap_group_id: str
 ) -> SimpleSyncClient:
     """Mock Simple Sync Client to avoid calling real Azure and LDAP clients."""
     mocker.patch("ops_data_store.auth.AzureClient", autospec=True)
     mocker.patch("ops_data_store.auth.LDAPClient", autospec=True)
 
-    return SimpleSyncClient(azure_group_id=fx_mock_ssc_azure_group_id, ldap_group_id=fx_mock_ssc_ldap_group_id)
+    return SimpleSyncClient(azure_group_ids=fx_mock_ssc_azure_group_ids, ldap_group_id=fx_mock_ssc_ldap_group_id)
 
 
 @pytest.fixture()
