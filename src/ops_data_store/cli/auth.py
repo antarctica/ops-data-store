@@ -13,6 +13,7 @@ logger = logging.getLogger("app")
 
 
 def _print_sync_evaluation(eval_result: dict[str, list[str]]) -> None:
+    """Format and display a sync evaluation result set."""
     print("=== Sync Evaluation ===")
     print(f"\nUsers to be added to target group [{len(eval_result['missing'])}]:")
     for user in eval_result["missing"]:

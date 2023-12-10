@@ -66,9 +66,6 @@ class AzureClient:
         Check Azure group exists.
 
         Raises a ValueError if the specified group does not exist
-
-        :type group_id: str
-        :param group_id: Azure AD group ID
         """
         self.logger.info("Checking group ID: %s exists.", group_id)
 
@@ -91,14 +88,7 @@ class AzureClient:
         self.logger.info("Group ID: %s exists.", group_id)
 
     def get_group_name(self, group_id: str) -> str:
-        """
-        Get display name of Azure group.
-
-        :type group_id: str
-        :param group_id: Azure AD group ID
-        :rtype str
-        :return: Group display name
-        """
+        """Get display name of Azure group."""
         self.logger.info("Getting display name of group ID: %s.", group_id)
         r = requests.get(
             url=f"{self.config.AUTH_MS_GRAPH_ENDPOINT}/groups/{group_id}",
@@ -116,11 +106,6 @@ class AzureClient:
         Get User Principal Name's (UPNs) of members of an Azure group.
 
         In Azure the UPN is the user's email address (e.g. conwat@bas.ac.uk).
-
-        :type group_id: str
-        :param group_id: Azure AD group ID
-        :rtype list[str]
-        :return: List of member UPNs
         """
         self.logger.info("Getting members of group ID: %s from MS Graph API.", group_id)
         r = requests.get(
@@ -164,11 +149,6 @@ class LDAPClient:
 
         This method is called as the '_finalizer' when the class instance is destroyed, as such it cannot access any
         class attributes and is passed the logger, client, etc. as arguments.
-
-        :type logger: Logger
-        :param logger: App logger instance
-        :type client: SimpleLDAPObject
-        :param client: LDAP client instance
         """
         logger.info("Attempting to unbind from LDAP server.")
         client.unbind_s()
@@ -195,16 +175,9 @@ class LDAPClient:
         """
         Search for objects.
 
-        Finds one or more objects within the LDAP server.
+        Finds one or more objects within the LDAP server, returning requested attributes for each result (e.g. `["DN"]`).
 
-        :type base: str
-        :param base: Base DN to search in, e.g. `ou=users,dc=example,dc=com`
-        :type ldap_filter: str
-        :param ldap_filter: A pre-formed LDAP search filter
-        :type attributes: list[str]
-        :param attributes: Attributes to return for each object, e.g. `["dn"]`
-        :rtype dict
-        :return: List of tuples containing object DNs and attributes
+        The `base` should be a valid base DN and the `ldap_filter` a valid LDAP search filter.
         """
         self._bind()
         self.logger.info("Searching for: %s in: %s with filter: %s.", attributes, base, ldap_filter)
@@ -223,12 +196,8 @@ class LDAPClient:
         Because objects are searched for in a specific base (typically an OU), object IDs should be specified as
         partial names, not a full DN (E.g. `cn=admins` not `cn=admins,ou=groups,dc=example,dc=com`).
 
-        :type base: str
-        :param base: Base DN to search in, e.g. `ou=users,dc=example,dc=com`
-        :type object_ids: list[str]
-        :param object_ids: One or more object IDs with correct prefix for the LDAP server, e.g. `cn=conwat`
-        :rtype list[str]
-        :return: DNs for any object IDs found in the LDAP server
+        The `base` should be a valid base DN and `object_ids`, one or more object IDs with correct prefix for the
+        LDAP server, e.g. `cn=conwat`.
         """
         ldap_filter = f"(|{''.join([f'({object_id})' for object_id in object_ids])})"
         dns_searched = [f"{object_id},{base}" for object_id in object_ids]
@@ -258,11 +227,6 @@ class LDAPClient:
 
         Users should be specified as a partial name, not a full DN as searches are scoped to configured groups OU
         already. (E.g. `cn=conwat` not `cn=conwat,ou=users,dc=example,dc=com`).
-
-        :type user_ids: list[str]
-        :param user_ids: One or more user IDs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
-        :rtype list[str]
-        :return: One or more user DNs found in the LDAP server
         """
         ldap_base = f"ou={self.config.AUTH_LDAP_OU_USERS},{self.config.AUTH_LDAP_BASE_DN}"
         return self._check_objects(base=ldap_base, object_ids=user_ids)
@@ -276,11 +240,6 @@ class LDAPClient:
 
         Groups should be specified as a partial name, not a full DN as searches are scoped to configured groups OU
         already. (E.g. `cn=admins` not `cn=admins,ou=groups,dc=example,dc=com`).
-
-        :type group_ids: list[str]
-        :param group_ids: One or more group IDs with correct naming context prefix for the LDAP server, e.g. `cn=admins`
-        :rtype list[str]
-        :return: One or more group DNs found in the LDAP server
         """
         ldap_base = f"ou={self.config.AUTH_LDAP_OU_GROUPS},{self.config.AUTH_LDAP_BASE_DN}"
         return self._check_objects(base=ldap_base, object_ids=group_ids)
@@ -289,10 +248,7 @@ class LDAPClient:
         """
         Get Distinguished Names (DNs) of members of a group.
 
-        :type group_dn: str
-        :param group_dn: Group DN, with correct naming context prefix for the LDAP server, e.g. `cn=admins`
-        :rtype list[str]
-        :return: List of member DNs
+        The group DN should use the correct naming context prefix for the LDAP server, e.g. `cn=admins`.
         """
         ldap_filter = f"({group_dn.split(',')[0]})"
         ldap_base = ",".join(group_dn.split(",")[1:])
@@ -306,11 +262,6 @@ class LDAPClient:
         Add users to group as members.
 
         The group and all members to be added should be specified using their Distinguished Names (DNs).
-
-        :type group_dn: str
-        :param group_dn: Group DN, with correct naming context prefix for the LDAP server, e.g. `cn=admins`
-        :type user_dns: list[str]
-        :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
         """
         if len(user_dns) == 0:
             self.logger.info("Skipping as no users specified.")
@@ -334,11 +285,6 @@ class LDAPClient:
         Remove members from group.
 
         The group and all members to be removed should be specified using their Distinguished Names (DNs).
-
-        :type group_dn: str
-        :param group_dn: Group DN, with correct naming context prefix for the LDAP server, e.g. `cn=admins`
-        :type user_dns: list[str]
-        :param user_dns: One or more user DNs with correct naming context prefix for the LDAP server, e.g. `cn=conwat`
         """
         if len(user_dns) == 0:
             self.logger.info("Skipping as no users specified.")
@@ -368,12 +314,7 @@ class SimpleSyncClient:
     """
 
     def __init__(self, azure_group_ids: list[str], ldap_group_id: str) -> None:
-        """
-        Create instance.
-
-        :type ldap_group_id: str
-        :param ldap_group_id: LDAP group ID
-        """
+        """Create instance."""
         self.config = Config()
 
         self.logger = logging.getLogger("app")
@@ -407,9 +348,6 @@ class SimpleSyncClient:
         Check Azure and LDAP groups exist.
 
         Returns Distinguished Name (DN) for LDAP group if it exists.
-
-        :rtype: str
-        :return: LDAP group DN, or None if group does not exist
         """
         for group_id in self._source_group_ids:
             try:
