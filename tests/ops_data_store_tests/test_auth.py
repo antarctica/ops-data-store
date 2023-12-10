@@ -331,17 +331,17 @@ class TestSimpleSyncClient:
         self,
         caplog: pytest.LogCaptureFixture,
         mocker: MockFixture,
-        fx_mock_ssc_azure_group_id: str,
+        fx_mock_ssc_azure_group_ids: list[str],
         fx_mock_ssc_ldap_group_id: str,
     ) -> None:
         """Can be initialised."""
         mocker.patch("ops_data_store.auth.AzureClient", autospec=True)
         mocker.patch("ops_data_store.auth.LDAPClient", autospec=True)
 
-        client = SimpleSyncClient(azure_group_id=fx_mock_ssc_azure_group_id, ldap_group_id=fx_mock_ssc_ldap_group_id)
+        client = SimpleSyncClient(azure_group_ids=fx_mock_ssc_azure_group_ids, ldap_group_id=fx_mock_ssc_ldap_group_id)
 
         assert "Creating sync client." in caplog.text
-        assert f"Azure group ID: {fx_mock_ssc_azure_group_id}" in caplog.text
+        assert f"Azure group IDs: {fx_mock_ssc_azure_group_ids}" in caplog.text
         assert f"LDAP group ID: {fx_mock_ssc_ldap_group_id}" in caplog.text
 
         assert isinstance(client, SimpleSyncClient)
@@ -358,16 +358,16 @@ class TestSimpleSyncClient:
         assert result == expected
 
     def test_check_groups_exist_missing_azure(
-        self, mocker: MockFixture, fx_mock_ssc_azure_group_id: str, fx_mock_ssc: SimpleSyncClient
+        self, mocker: MockFixture, fx_mock_ssc_azure_group_ids: list[str], fx_mock_ssc: SimpleSyncClient
     ) -> None:
         """Fails where Azure group missing."""
         mocker.patch.object(
             fx_mock_ssc.azure_client,
             "check_group",
-            side_effect=ValueError(f"Group ID: {fx_mock_ssc_azure_group_id} does not exist."),
+            side_effect=ValueError(f"Group ID: {fx_mock_ssc_azure_group_ids[0]} does not exist."),
         )
 
-        with pytest.raises(RuntimeError, match=f"Azure group {fx_mock_ssc._source_group_id} does not exist."):
+        with pytest.raises(RuntimeError, match=f"Azure group {fx_mock_ssc._source_group_ids[0]} does not exist."):
             fx_mock_ssc._check_groups_exist()
 
     def test_check_groups_exist_missing_ldap(self, mocker: MockFixture, fx_mock_ssc: SimpleSyncClient) -> None:
@@ -476,7 +476,7 @@ class TestSimpleSyncClient:
 
         fx_mock_ssc.sync()
 
-        assert "Syncing members of Azure group to LDAP." in caplog.text
+        assert "Syncing members of Azure groups to LDAP." in caplog.text
 
     def test_sync_not_evaluated(
         self, caplog: pytest.LogCaptureFixture, mocker: MockFixture, fx_mock_ssc: SimpleSyncClient
@@ -490,4 +490,4 @@ class TestSimpleSyncClient:
         fx_mock_ssc.sync()
 
         assert "Sync not yet evaluated, evaluating first." in caplog.text
-        assert "Syncing members of Azure group to LDAP." in caplog.text
+        assert "Syncing members of Azure groups to LDAP." in caplog.text

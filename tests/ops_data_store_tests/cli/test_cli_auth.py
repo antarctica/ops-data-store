@@ -33,7 +33,7 @@ class TestCliAuthSync:
         self,
         mocker: MockFixture,
         fx_cli_runner: CliRunner,
-        fx_mock_ssc_azure_group_id: str,
+        fx_mock_ssc_azure_group_ids: list[str],
         fx_mock_ssc_ldap_group_id: str,
         fx_mock_ssc_eval_result: dict[str, list[str]],
     ) -> None:
@@ -50,7 +50,7 @@ class TestCliAuthSync:
 
             result = fx_cli_runner.invoke(
                 app=cli,
-                args=["auth", "sync", "-ag", fx_mock_ssc_azure_group_id, "-lg", fx_mock_ssc_ldap_group_id],
+                args=["auth", "sync", "-ag", fx_mock_ssc_azure_group_ids[0], "-lg", fx_mock_ssc_ldap_group_id],
                 input="n",
             )
 
@@ -62,7 +62,7 @@ class TestCliAuthSync:
         self,
         mocker: MockFixture,
         fx_cli_runner: CliRunner,
-        fx_mock_ssc_azure_group_id: str,
+        fx_mock_ssc_azure_group_ids: str,
         fx_mock_ssc_ldap_group_id: str,
     ):
         """Sync succeeds."""
@@ -70,7 +70,7 @@ class TestCliAuthSync:
 
         result = fx_cli_runner.invoke(
             app=cli,
-            args=["auth", "sync", "-ag", fx_mock_ssc_azure_group_id, "-lg", fx_mock_ssc_ldap_group_id],
+            args=["auth", "sync", "-ag", fx_mock_ssc_azure_group_ids[0], "-lg", fx_mock_ssc_ldap_group_id],
             input="y",
         )
 
@@ -81,7 +81,7 @@ class TestCliAuthSync:
         self,
         mocker: MockFixture,
         fx_cli_runner: CliRunner,
-        fx_mock_ssc_azure_group_id: str,
+        fx_mock_ssc_azure_group_ids: str,
         fx_mock_ssc_ldap_group_id: str,
     ):
         """Sync fails when error occurs."""
@@ -92,7 +92,7 @@ class TestCliAuthSync:
 
             result = fx_cli_runner.invoke(
                 app=cli,
-                args=["auth", "sync", "-ag", fx_mock_ssc_azure_group_id, "-lg", fx_mock_ssc_ldap_group_id],
+                args=["auth", "sync", "-ag", fx_mock_ssc_azure_group_ids[0], "-lg", fx_mock_ssc_ldap_group_id],
                 input="y",
             )
 
