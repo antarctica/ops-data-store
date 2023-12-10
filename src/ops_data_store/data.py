@@ -56,9 +56,6 @@ class DataClient:
         whether subsequent layers should replace/overwrite existing layers (if the output exists), or be included as
         additional layers. We always include subsequent layers as additional layers, automatically switching access
         mode as needed (from 'create' for the initial layer to 'update' for additional layers).
-
-        :type path: Path
-        :param path: Where to save dump file.
         """
         self.logger.info("Exporting datasets to GeoPackage via GDAL/OGR.")
         self.logger.info("Export path: %s", path.resolve())

@@ -199,9 +199,6 @@ class DBClient:
         The current time is appended as a comment to the dump file to ensure uniqueness where data doesn't change.
 
         Warning: Any existing file at `path` will be overwritten.
-
-        :type path: Path
-        :param path: Where to save dump file.
         """
         try:
             self.logger.info("Dumping database via `pg_dump`.")
@@ -220,14 +217,7 @@ class DBClient:
             raise RuntimeError(msg) from e
 
     def fetch(self, query: Composed) -> list[tuple]:
-        """
-        Fetch results from a query.
-
-        :type query: Composed
-        :param query: Query to execute.
-        :rtype: list[tuple]
-        :return: Query results.
-        """
+        """Fetch results from a query."""
         self.logger.info("Fetching from database.")
         self.logger.debug(f"Query: {query}")
 

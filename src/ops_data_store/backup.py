@@ -53,11 +53,6 @@ class RollingFileState:
         Encode data as JSON for serialisation.
 
         Most object types can be returned as-is or encoded as strings. Some types should be ignored, such as loggers.
-
-        :type obj: object
-        :param obj: data to encode
-        :rtype: Union[str, dict]
-        :return: Data that can be safely encoded as JSON.
         """
         if isinstance(obj, datetime):
             return obj.isoformat()
@@ -75,11 +70,6 @@ class RollingFileState:
         Decode serialised JSON.
 
         Converts data to rich types.
-
-        :type data: dict
-        :param data: JSON data to decode.
-        :rtype: tuple[RollingFileStateMeta, dict[str, RollingFileStateIteration]]
-        :return: Decoded data as meta and iterations objects
         """
         data["meta"]["updated_at"] = datetime.fromisoformat(data["meta"]["updated_at"])
         meta = RollingFileStateMeta(**data["meta"])
@@ -172,12 +162,8 @@ class RollingFileState:
         """
         Add iteration to state.
 
-        :type original_path: Path
-        :param original_path: Location of original file.
-        :type sequence: int
-        :param sequence: Iteration sequence
-        :type iteration_path: Path
-        :param iteration_path: Location of iteration file.
+        `original_path` is the path the original file, `iteration_path` is its location within the backup set.
+        `sequence` is an incrementing value representing the order of the iteration in the backup set.
         """
         # noinspection PyUnusedLocal
         replaces_sha1sum = ""  # PyCharm incorrectly thinks this is unused
@@ -197,12 +183,7 @@ class RollingFileState:
         self.meta.iterations = len(self.iterations)
 
     def update_iteration(self, iteration: RollingFileStateIteration) -> None:
-        """
-        Update iteration metadata.
-
-        :type iteration: RollingFileStateIteration
-        :param iteration: Iteration metadata to update.
-        """
+        """Update iteration metadata."""
         self.iterations[iteration.sha1sum] = iteration
 
     @classmethod
@@ -223,9 +204,6 @@ class RollingFileState:
         Encode state as JSON and save to file.
 
         This method is inelegant in that we have to postprocess the data to remove private attributes such as `_logger`.
-
-        :type path: Path
-        :param path: state file location
         """
         self.meta.updated_at = datetime.now(tz=timezone.utc)
         data = json.loads(json.dumps(obj=self.__dict__, default=self._encode_json))
@@ -262,12 +240,8 @@ class RollingFileSet:
         """
         Create instance.
 
-        :type workspace_path: Path
-        :param workspace_path: Directory where file iterations will be stored.
-        :type base_name: str
-        :param base_name: Common, generic, name of file iterations in 'name.extension' format.
-        :type max_iterations: int
-        :param max_iterations: Non-zero maximum of file iterations in set.
+        `workspace_path` is the path to where file iterations will be stored.
+        `base_name` is the common, generic, name of file iterations in `name.extension` format.
         """
         self.logger = logging.getLogger("app")
         self.logger.info("Creating rolling file set.")
@@ -323,6 +297,7 @@ class RollingFileSet:
         self._state = RollingFileState.load(self._state_file)
 
     def _create_iteration(self, path: Path) -> None:
+        """Create a new file iteration."""
         sequence = self._state.iteration_count + 1
         iteration_name = f"{self._base_name_stem}_{sequence}{self._base_name_ext}"
         iteration_path = self._workspace.joinpath(iteration_name)
