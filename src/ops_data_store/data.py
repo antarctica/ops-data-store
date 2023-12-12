@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from sqlite3 import connect as sqlite3_connect
 
 from osgeo.gdal import (
     OF_VECTOR as GDAL_OUTPUT_FORMAT_VECTOR,
@@ -18,6 +19,7 @@ from osgeo.gdal import (
 from ops_data_store.airnet import AirUnitNetworkClient
 from ops_data_store.config import Config
 from ops_data_store.db import DBClient
+from ops_data_store.utils import empty_dir
 
 
 class DataClient:
@@ -88,15 +90,23 @@ class DataClient:
                 msg = "GDAL export failed."
                 raise RuntimeError(msg) from e
 
+        self.logger.info("Fixing layer style references in GeoPackage")
+        with sqlite3_connect(path) as conn:
+            cur = conn.cursor()
+            cur.execute("""UPDATE layer_styles SET f_table_catalog = NULL, f_table_schema = 'main';""")
+
         self.logger.info("Export ok.")
 
     def convert(self) -> None:
         """
         Convert Air Unit datasets to CSV, GPX and FPL formats.
 
-        Warning: Any existing outputs will be overwritten.
+        Warning: Any existing content within the output path will be removed, and any existing outputs overwritten.
         """
         self.logger.info("Converting Air Unit datasets to output formats.")
+
+        self.logger.info("Clearing output directory.")
+        empty_dir(path=self.config.DATA_AIRNET_OUTPUT_PATH)
 
         self.airnet_client.fetch()
         self.airnet_client.export()

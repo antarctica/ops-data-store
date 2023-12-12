@@ -1,5 +1,7 @@
+from os import environ
 from pathlib import Path
-from tempfile import NamedTemporaryFile
+from sqlite3 import connect as sqlite3_connect
+from tempfile import TemporaryDirectory
 
 import pytest
 from pytest_mock import MockFixture
@@ -36,16 +38,42 @@ class TestDataClient:
         caplog: pytest.LogCaptureFixture,
         fx_test_data_managed_table_names: list[str],
     ):
-        """Export succeeds."""
+        """
+        Export succeeds.
+
+        This test is currently flawed because we have to fake an existing GPKG file for the layer_styles fixes to work.
+        This means there is always an existing file, so we can't test the 'create' (None) access mode.
+        """
         expected_name = fx_test_data_managed_table_names[0]
 
         mocker.patch("ops_data_store.data.VectorTranslate", return_value=None)
 
-        fx_data_client.export(path=Path("/x.gpkg"))
+        with TemporaryDirectory() as workspace:
+            workspace_path = Path(workspace)
+            gpkg_path = workspace_path.joinpath("x.gpkg")
+
+            # fake a GPKG with relevant table for patching layer styles (must come before `export()` call)
+            with sqlite3_connect(gpkg_path) as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS layer_styles (
+                        id INTEGER PRIMARY KEY,
+                        f_table_catalog TEXT,
+                        f_table_schema TEXT
+                    );
+                    """
+                )
+                cur.execute(
+                    "INSERT INTO layer_styles (f_table_catalog, f_table_schema) VALUES (?, ?);",
+                    ("ops-data-store", "public"),
+                )
+
+            fx_data_client.export(path=gpkg_path)
 
         assert "Exporting datasets to GeoPackage via GDAL/OGR." in caplog.text
-        assert "Export path: /x.gpkg" in caplog.text
-        assert f"Access mode for layer: {expected_name} is: None." in caplog.text
+        assert f"Export path: {gpkg_path.resolve()}" in caplog.text
+        assert f"Access mode for layer: {expected_name} is: update." in caplog.text
         assert "Export ok." in caplog.text
 
     def test_export_ok_exist(
@@ -60,8 +88,27 @@ class TestDataClient:
 
         mocker.patch("ops_data_store.data.VectorTranslate", return_value=None)
 
-        with NamedTemporaryFile(mode="w") as tmp_file:
-            fx_data_client.export(path=Path(tmp_file.name))
+        with TemporaryDirectory() as workspace:
+            workspace_path = Path(workspace)
+            gpkg_path = workspace_path.joinpath("x.gpkg")
+
+            # fake a GPKG with relevant table for patching layer styles (must come before `export()` call)
+            with sqlite3_connect(gpkg_path) as conn:
+                cur = conn.cursor()
+                cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS layer_styles (
+                        id INTEGER PRIMARY KEY,
+                        f_table_catalog TEXT,
+                        f_table_schema TEXT
+                    );"""
+                )
+                cur.execute(
+                    "INSERT INTO layer_styles (f_table_catalog, f_table_schema) VALUES (?, ?);",
+                    ("ops-data-store", "public"),
+                )
+
+            fx_data_client.export(path=gpkg_path)
 
         assert "Exporting datasets to GeoPackage via GDAL/OGR." in caplog.text
         assert f"Access mode for layer: {expected_name} is: update." in caplog.text
@@ -91,7 +138,21 @@ class TestDataClient:
         mocker.patch("ops_data_store.data.AirUnitNetworkClient.fetch", return_value=None)
         mocker.patch("ops_data_store.data.AirUnitNetworkClient.export", return_value=None)
 
-        fx_data_client.convert()
+        output_path = environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"]
+
+        with TemporaryDirectory() as workspace:
+            workspace_path = Path(workspace)
+            test_file = workspace_path.joinpath("test.txt")
+            environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"] = str(workspace_path)
+
+            # make a test file that will be removed
+            test_file.touch()
+
+            fx_data_client.convert()
+
+            assert test_file.exists() is False
 
         assert "Converting Air Unit datasets to output formats." in caplog.text
         assert "Conversion ok." in caplog.text
+
+        environ["APP_ODS_DATA_AIRNET_OUTPUT_PATH"] = output_path
