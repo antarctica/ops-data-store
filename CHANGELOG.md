@@ -18,6 +18,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Empty Air Unit network exports due to missing `fetch()` call
   [#157](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/157)
+* Previous Air Unit outputs were incorrectly retained
+  [#156](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/156)
 
 ### Removed
 

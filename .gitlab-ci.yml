@@ -84,6 +84,7 @@ test:
     - apt-get install -y libpq-dev gcc postgresql-client
     - psql -h $POSTGRES_HOST -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 'OK' AS status;"
     - poetry run python -c 'from ops_data_store.config import Config; c = Config(); print(c.DB_DSN)'
+    - echo $APP_ODS_BACKUPS_PATH
   script:
     - poetry run pytest --strict-markers --random-order --cov --cov-report=html -o junit_family=xunit2 --junitxml=test-results.xml
   coverage: '/Total coverage: \d+\.\d+/'
