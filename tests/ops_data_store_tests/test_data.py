@@ -88,6 +88,7 @@ class TestDataClient:
         caplog: pytest.LogCaptureFixture,
     ):
         """Convert succeeds."""
+        mocker.patch("ops_data_store.data.AirUnitNetworkClient.fetch", return_value=None)
         mocker.patch("ops_data_store.data.AirUnitNetworkClient.export", return_value=None)
 
         fx_data_client.convert()
