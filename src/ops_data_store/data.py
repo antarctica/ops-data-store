@@ -98,6 +98,7 @@ class DataClient:
         """
         self.logger.info("Converting Air Unit datasets to output formats.")
 
+        self.airnet_client.fetch()
         self.airnet_client.export()
 
         self.logger.info("Conversion ok.")

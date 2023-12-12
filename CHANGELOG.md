@@ -14,6 +14,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Support for syncing multiple Azure groups to an LDAP group via `auth sync` command
   [#151](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/151)
 
+### Fixed
+
+* Empty Air Unit network exports due to missing `fetch()` call
+  [#157](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/157)
+
 ### Removed
 
 * Duplicate, inconsistent parameter documentation from docblocks
