@@ -86,9 +86,11 @@ for connection details (specifically the relevant app server).
 **Note:** Calling the CLI without any command will not return any output. This is expected.
 
 **Note:** Currently all log entries down to debug level are displayed alongside programme output. This includes a debug
-message from the `psycopg` Postgres database module that can be safely ignored:
+message from the `shapely` and `psycopg` packages that can be safely ignored:
 
 ```
+YYYY-MM-SS HH:MM:SS - shapely.geos - DEBUG - Found GEOS DLL: <CDLL '/var/opt/ops-data-store/venv/lib/python3.9/site-packages/Shapely.libs/libgeos_c-c8ec7514.so.1.16.1', handle 1f0c810 at 0x7ff4c0dac820>, using it.
+YYYY-MM-SS HH:MM:SS - shapely.speedups._speedups - INFO - Numpy was not imported, continuing without requires()
 YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implementation: No module named 'psycopg_c'
 0.2.0
 ```
@@ -267,27 +269,7 @@ Within this directory, open the relevant JSON [State file](#backups-state-files)
 
 Find this checksum in the `iterations` list for details including the date of the backup, and it's location.
 
-### Migrating data from one instance to another [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
-
-This process is only supported as an ad-hoc process until a formal important, export and replication workflow is in
-place. It is assumed all data from a source instance will be moved to a target instance, outside of this scenario
-manual deviation may be needed.
-
-1. from the source instance, get the [Latest managed datasets backup (GeoPackage)](#identifying-latest-backups)
-2. copy each managed dataset layer [1]
-3. copy any QGIS layer by dumping the `layer_styles` table from the source DB and restoring in the target environment
-
-```
-$ ogr2ogr -f "PostgreSQL" PG:"user=ops-data-store password=[db password] host=[db host] dbname=ops-data-store" [source].gpkg -nln [layer] -overwrite -append
-```
-
-See the relevant 1Password entry in the [Infrastructure](#infrastructure) section for database connection details
-
-### Update user roles [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### Update user roles
 
 To assign or remove roles from the [Permissions](#permissions) to or from users:
 
@@ -296,9 +278,9 @@ To assign or remove roles from the [Permissions](#permissions) to or from users:
    that role
 3. ask an owner of the Microsoft Team related to this Azure Group to add or remove the relevant users
 4. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
-5. wait for the next [BAS IT User Sync Mechanism](#user-synchronisation-mechanism) sync point
+5. wait for the next [BAS IT User Sync](#bas-it-user-sync)
 
-Users should then have, or should not have, the relevant role(s) and relevant access to managed [Datasets](#datasets).
+Users should then have, or should no longer have, access to relevant managed [Datasets](#datasets).
 
 **Note:** If needed, BAS IT can also update team/group memberships.
 
@@ -354,9 +336,7 @@ details, and must be defined by the user, using either appropriate environment v
 
 [4] These options MUST point to an existing directory that is writable by the application user.
 
-### BAS Air Unit Network Utility [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### BAS Air Unit Network Utility
 
 The [BAS Air Unit Network Dataset utility 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset) is used to
 convert the *Waypoint* and *Route* [Managed Dataset](#managed-datasets) maintained by the BAS Air Unit into formats for
@@ -380,6 +360,8 @@ For example to run with cron every 5 minutes:
 This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.log`). See the
 [Installation](#installation) section for how to configure automated conversions in a deployed instance.
 
+Log files for automatic conversions are retained for 24 hours and then deleted via a crontab entry.
+
 ### Database
 
 [PostgreSQL](https://www.postgresql.org) is used for storing datasets. It uses the [PostGIS](https://postgis.net)
@@ -400,6 +382,12 @@ cannot currently be used but could be supported if needed.
 
 The file store may also be used for hosting the [CLI](#command-line-interface) and/or [Database](#database), however
 this is not required, and not common particularly for the database.
+
+The file system enforces permissions via owner/group and ACL mechanisms (as used by the [Web Server](#web-server))
+component.
+
+Each operating [Environment](#infrastructure) uses a separate file store. I.e. there is no single common/global
+instance, despite being available from the same mount point in all environments (for consistency).
 
 ### QGIS
 
@@ -435,36 +423,54 @@ LDAP is the Identity Provider (IDP) used by BAS IT, specifically for unix system
 groups. Group members are synced from Azure groups representing [Microsoft Teams](#microsoft-teams) as part of the Data
 Store's [Permissions](#permissions) system.
 
-### Web Server [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### Web server
 
 [Apache HTTP Server](https://httpd.apache.org) is used for hosting content from the [File Store](#file-store)
 available to end users. It is implemented as a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured at
-`/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT.
+`/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT. Automatic directory listings are disabled for this site.
 
-The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility-wip),
+The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility),
 restricted using authentication and authorisation using [LDAP](#ldap). Users must have a valid LDAP account and be a
-member of the *Viewer* role from the [Permissions](#permissions) system.
+member of the *Viewer* role from the [Permissions](#permissions) system. Automatic directory listings are enabled for
+this content.
 
-### User synchronisation mechanism [WIP]
+#### Web server permissions
 
-**Note:** This section is a work in progress and may be incomplete.
+Where restricted content needs to be shared through the web server, special file permissions are needed for the web
+server to access content whilst preventing users accessing files directly through the file system, which would bypass
+restrictions enforced by the web server.
+
+Conventional file permissions are set for a parent directory preventing world/other read (and execute for directories)
+An additional NFS ACL is set granting these removed permissions to the web server user only.
+
+To read a file from the file system, read access is required on the file itself and all parent directories up to and
+including root (`/`). The restrictive file permissions on the parent folder therefore prevent users accessing
+restricted content via the file system, even if they know the path to a file or directory.
+
+**Note:** Files or directories within this parent directory require world/other read (and execute for directories)
+permissions for the web server to access them. I.e. only the parent directory should use restricted permissions.
+
+These permissions and ACLs are set automatically in BAS IT managed instances.
+
+### BAS IT User sync
 
 As part of the Data Store's [Permissions](#permissions) system, a mechanism has been implemented by BAS IT to:
 
 - replicate relevant objects between [LDAP](#ldap) servers
 - create, update or remove [Database](#database) users and their permissions based on LDAP objects
 
-This mechanism is only accessible to BAS IT and any issues will need resolving via the BAS IT Service Desk.
+This mechanism is only accessible to BAS IT and any issues will need resolving via the BAS IT Service Desk. IT have
+access to a log file which records the results of recent syncs.
+
+**Note:** Inconsistencies can occur after a sync, however these should normally resolve themselves in the next sync.
 
 For reference, this mechanism runs on a daily schedule at:
 
-- 09:15 UTC (06:15 Rothera)
-- 15:15 UTC (12:15 Rothera)
-- 21:15 UTC (18:15 Rothera)
+- 09:00 & 09:15 UTC (06:00 & 06:15 Rothera)
+- 15:00 & 15:15 UTC (12:00 & 12:15 Rothera)
+- 21:00 & 21:15 UTC (18:00 18:15 Rothera)
 
-(Where Rothera is UTC -03:00).
+(Where the first time is the LDAP to LDAP sync and the second LDAP to Postgres. Rothera is UTC -03:00).
 
 For replicating LDAP objects between servers:
 
@@ -538,10 +544,9 @@ Mappings for roles, teams, the database and LDAP:
 | Owners  | BAS Air Unit         | [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
 | Viewers | -                    | [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704), [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef), [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9), [`691c3db1-371a-43ea-b1f3-56b2aa7ce9d0`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/691c3db1-371a-43ea-b1f3-56b2aa7ce9d0), [`9b888740-f387-4e49-a597-5b58c3f1eba8`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/9b888740-f387-4e49-a597-5b58c3f1eba8), [`906f20ee-7698-48c8-b2ff-75592384af68`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/906f20ee-7698-48c8-b2ff-75592384af68) | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
 
-The [User Synchronisation Mechanism](#user-synchronisation-mechanism) and the
-[Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
-command group are used for synchronising users, and verifying users have been synced, between these systems and between
-environments.
+The [BAS IT User Sync](#bas-it-user-sync) and the [Command Line Interface](#command-line-interface), specifically
+commands in the [`auth`](#control-cli-auth-commands) command group are used for synchronising users, and verifying
+users have been synced, between these systems and between environments.
 
 ### Backups
 
@@ -652,6 +657,8 @@ For example to run with cron every day at 04:00 (AM):
 
 This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.log`). See the
 [Installation](#installation) section for how to configure automated backups in a deployed instance.
+
+Log files for automatic backups are retained for 30 days and then deleted via a crontab entry.
 
 #### Infrastructure backups
 
@@ -934,8 +941,7 @@ respectively are recommended as conventional defaults.
 
 In addition, a mechanism must be available for creating and maintaining Postgres role and users as outlined in abstract
 in the [Permissions](#permissions) section. This must support updating permissions as needed based on the memberships of the
-relevant LDAP groups. It must be documented in the [User Synchronisation Mechanism](#user-synchronisation-mechanism)
-section.
+relevant LDAP groups. It must be documented in the [User Synchronisation Mechanism](#bas-it-user-sync) section.
 
 ### Microsoft Entra requirements
 
@@ -1136,7 +1142,9 @@ SHELL=/bin/bash
 MAILTO=monitoring@example.com
 
 ## Operations Data Store automated backups - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#backups-automation
-0 4 * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods-backups-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+0 4 * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods-backup-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+
+0 0 * * * /usr/bin/find /users/ods/logs/cron/ -name 'ods-backup-*.log' -type f -mtime +30 -delete
 ```
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
@@ -1177,6 +1185,8 @@ MAILTO=monitoring@example.com
 
 ## Operations Data Store automated conversion - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#automatic-conversion
 */5 * * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-conversion -- /var/opt/ops-data-store/venv/bin/ods-ctl data convert >> /users/ods/logs/cron/ods-conversion-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+
+0 0 * * * /usr/bin/find /users/ods/logs/cron/ -name 'ods-conversion-*.log' -type f -mtime +0 -delete
 ```
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
@@ -1401,9 +1411,9 @@ $ poetry run safety check --full-report
 The [GDAL Python bindings](https://pypi.org/project/GDAL/) are tied to the [GDAL library](https://gdal.org) version.
 
 BAS IT managed servers currently use an older version of GDAL (3.4.3) which is required by this project. Installing
-this version in a development environment is often unsupported due to it's age causing an incompatibility.
+this version in a development environment is often unsupported due to its age causing an incompatibility.
 
-Running with a the 3.4.3 Python bindings but a newer Library version will give errors such as:
+Running with the 3.4.3 Python bindings but a newer Library version will give errors such as:
 
 ```
 src/ops_data_store/data.py:4: in <module>
@@ -1420,7 +1430,7 @@ a workaround can be used to locally upgrade the Python bindings to match a newer
 updated Poetry lock file.
 
 This creates a problem when other dependencies are added or updated as the upgraded Python bindings package will also
-be included, and partial updates cannot be committed because the file includes a checksum. To workaround this problem
+be included, and partial updates cannot be committed because the file includes a checksum. To work around this problem
 the following workflow can be used:
 
 1. make other changes as needed
