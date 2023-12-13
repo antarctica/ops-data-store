@@ -430,11 +430,12 @@ Store's [Permissions](#permissions) system.
 
 [Apache HTTP Server](https://httpd.apache.org) is used for hosting content from the [File Store](#file-store)
 available to end users. It is implemented as a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured at
-`/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT.
+`/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT. Automatic directory listings are disabled for this site.
 
 The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility-wip),
 restricted using authentication and authorisation using [LDAP](#ldap). Users must have a valid LDAP account and be a
-member of the *Viewer* role from the [Permissions](#permissions) system.
+member of the *Viewer* role from the [Permissions](#permissions) system. Automatic directory listings are enabled for
+this content.
 
 ### User synchronisation mechanism [WIP]
 #### Web server permissions
