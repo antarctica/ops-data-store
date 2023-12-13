@@ -86,9 +86,11 @@ for connection details (specifically the relevant app server).
 **Note:** Calling the CLI without any command will not return any output. This is expected.
 
 **Note:** Currently all log entries down to debug level are displayed alongside programme output. This includes a debug
-message from the `psycopg` Postgres database module that can be safely ignored:
+message from the `shapely` and `psycopg` packages that can be safely ignored:
 
 ```
+YYYY-MM-SS HH:MM:SS - shapely.geos - DEBUG - Found GEOS DLL: <CDLL '/var/opt/ops-data-store/venv/lib/python3.9/site-packages/Shapely.libs/libgeos_c-c8ec7514.so.1.16.1', handle 1f0c810 at 0x7ff4c0dac820>, using it.
+YYYY-MM-SS HH:MM:SS - shapely.speedups._speedups - INFO - Numpy was not imported, continuing without requires()
 YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implementation: No module named 'psycopg_c'
 0.2.0
 ```
@@ -1401,9 +1403,9 @@ $ poetry run safety check --full-report
 The [GDAL Python bindings](https://pypi.org/project/GDAL/) are tied to the [GDAL library](https://gdal.org) version.
 
 BAS IT managed servers currently use an older version of GDAL (3.4.3) which is required by this project. Installing
-this version in a development environment is often unsupported due to it's age causing an incompatibility.
+this version in a development environment is often unsupported due to its age causing an incompatibility.
 
-Running with a the 3.4.3 Python bindings but a newer Library version will give errors such as:
+Running with the 3.4.3 Python bindings but a newer Library version will give errors such as:
 
 ```
 src/ops_data_store/data.py:4: in <module>
@@ -1420,7 +1422,7 @@ a workaround can be used to locally upgrade the Python bindings to match a newer
 updated Poetry lock file.
 
 This creates a problem when other dependencies are added or updated as the upgraded Python bindings package will also
-be included, and partial updates cannot be committed because the file includes a checksum. To workaround this problem
+be included, and partial updates cannot be committed because the file includes a checksum. To work around this problem
 the following workflow can be used:
 
 1. make other changes as needed
