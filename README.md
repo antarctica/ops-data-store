@@ -364,6 +364,8 @@ For example to run with cron every 5 minutes:
 This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.log`). See the
 [Installation](#installation) section for how to configure automated conversions in a deployed instance.
 
+Log files for automatic conversions are retained for 24 hours and then deleted via a crontab entry.
+
 ### Database
 
 [PostgreSQL](https://www.postgresql.org) is used for storing datasets. It uses the [PostGIS](https://postgis.net)
@@ -636,6 +638,8 @@ For example to run with cron every day at 04:00 (AM):
 
 This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.log`). See the
 [Installation](#installation) section for how to configure automated backups in a deployed instance.
+
+Log files for automatic backups are retained for 30 days and then deleted via a crontab entry.
 
 #### Infrastructure backups
 
@@ -1120,7 +1124,9 @@ SHELL=/bin/bash
 MAILTO=monitoring@example.com
 
 ## Operations Data Store automated backups - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#backups-automation
-0 4 * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods-backups-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+0 4 * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-backups -- /var/opt/ops-data-store/venv/bin/ods-ctl backup now >> /users/ods/logs/cron/ods-backup-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+
+0 0 * * * /usr/bin/find /users/ods/logs/cron/ -name 'ods-backup-*.log' -type f -mtime +30 -delete
 ```
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
@@ -1161,6 +1167,8 @@ MAILTO=monitoring@example.com
 
 ## Operations Data Store automated conversion - https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store#automatic-conversion
 */5 * * * * SENTRY_DSN=[Sentry DSN] /users/ods/bin/sentry-cli monitors run -e [Sentry ENV] ods-conversion -- /var/opt/ops-data-store/venv/bin/ods-ctl data convert >> /users/ods/logs/cron/ods-conversion-$(date +\%Y-\%m-\%d-\%H-\%M-\%S-\%Z).log 2>&1
+
+0 0 * * * /usr/bin/find /users/ods/logs/cron/ -name 'ods-conversion-*.log' -type f -mtime +0 -delete
 ```
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
