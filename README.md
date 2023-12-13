@@ -466,15 +466,18 @@ As part of the Data Store's [Permissions](#permissions) system, a mechanism has 
 - replicate relevant objects between [LDAP](#ldap) servers
 - create, update or remove [Database](#database) users and their permissions based on LDAP objects
 
-This mechanism is only accessible to BAS IT and any issues will need resolving via the BAS IT Service Desk.
+This mechanism is only accessible to BAS IT and any issues will need resolving via the BAS IT Service Desk. IT have
+access to a log file which records the results of recent syncs.
+
+**Note:** Inconsistencies can occur after a sync, however these should normally resolve themselves in the next sync.
 
 For reference, this mechanism runs on a daily schedule at:
 
-- 09:15 UTC (06:15 Rothera)
-- 15:15 UTC (12:15 Rothera)
-- 21:15 UTC (18:15 Rothera)
+- 09:00 & 09:15 UTC (06:00 & 06:15 Rothera)
+- 15:00 & 15:15 UTC (12:00 & 12:15 Rothera)
+- 21:00 & 21:15 UTC (18:00 18:15 Rothera)
 
-(Where Rothera is UTC -03:00).
+(Where the first time is the LDAP to LDAP sync and the second LDAP to Postgres. Rothera is UTC -03:00).
 
 For replicating LDAP objects between servers:
 
