@@ -282,7 +282,7 @@ To assign or remove roles from the [Permissions](#permissions) to or from users:
 4. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
 5. wait for the next [BAS IT User Sync Mechanism](#user-synchronisation-mechanism) sync point
 
-Users should then have, or should not have, the relevant role(s) and relevant access to managed [Datasets](#datasets).
+Users should then have, or should no longer have, access to relevant managed [Datasets](#datasets).
 
 **Note:** If needed, BAS IT can also update team/group memberships.
 
