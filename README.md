@@ -390,6 +390,9 @@ this is not required, and not common particularly for the database.
 The file system enforces permissions via owner/group and ACL mechanisms (as used by the [Web Server](#web-server))
 component.
 
+Each operating [Environment](#infrastructure) uses a separate file store. I.e. there is no single common/global
+instance, despite being available from the same mount point in all environments (for consistency).
+
 ### QGIS
 
 [QGIS](https://qgis.org) is the QGIS client end-users will use for editing and visualising geospatial data, and acts as
