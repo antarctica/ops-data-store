@@ -387,6 +387,9 @@ cannot currently be used but could be supported if needed.
 The file store may also be used for hosting the [CLI](#command-line-interface) and/or [Database](#database), however
 this is not required, and not common particularly for the database.
 
+The file system enforces permissions via owner/group and ACL mechanisms (as used by the [Web Server](#web-server))
+component.
+
 ### QGIS
 
 [QGIS](https://qgis.org) is the QGIS client end-users will use for editing and visualising geospatial data, and acts as
@@ -434,8 +437,25 @@ restricted using authentication and authorisation using [LDAP](#ldap). Users mus
 member of the *Viewer* role from the [Permissions](#permissions) system.
 
 ### User synchronisation mechanism [WIP]
+#### Web server permissions
 
 **Note:** This section is a work in progress and may be incomplete.
+Where restricted content needs to be shared through the web server, special file permissions are needed for the web
+server to access content whilst preventing users accessing files directly through the file system, which would bypass
+restrictions enforced by the web server.
+
+Conventional file permissions are set for a parent directory preventing world/other read (and execute for directories)
+An additional NFS ACL is set granting these removed permissions to the web server user only.
+
+To read a file from the file system, read access is required on the file itself and all parent directories up to and
+including root (`/`). The restrictive file permissions on the parent folder therefore prevent users accessing
+restricted content via the file system, even if they know the path to a file or directory.
+
+**Note:** Files or directories within this parent directory require world/other read (and execute for directories)
+permissions for the web server to access them. I.e. only the parent directory should use restricted permissions.
+
+These permissions and ACLs are set automatically in BAS IT managed instances.
+
 
 As part of the Data Store's [Permissions](#permissions) system, a mechanism has been implemented by BAS IT to:
 
