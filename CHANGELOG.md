@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.8.0] - 2023-12-13
+
 ### Added
 
 * Support for syncing multiple Azure groups to an LDAP group via `auth sync` command
@@ -43,7 +45,7 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#106](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/106)
 * Basic documentation on BAS IT VM backups
   [#100](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/100)
-* Include Air Unit Network Utility for managing Air Unit network datasets
+* Integrating Air Unit Network Utility for managing Air Unit network datasets
   [#139](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/139),
   [#140](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/140)
 
