@@ -269,24 +269,6 @@ Within this directory, open the relevant JSON [State file](#backups-state-files)
 
 Find this checksum in the `iterations` list for details including the date of the backup, and it's location.
 
-### Migrating data from one instance to another [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
-
-This process is only supported as an ad-hoc process until a formal important, export and replication workflow is in
-place. It is assumed all data from a source instance will be moved to a target instance, outside of this scenario
-manual deviation may be needed.
-
-1. from the source instance, get the [Latest managed datasets backup (GeoPackage)](#identifying-latest-backups)
-2. copy each managed dataset layer [1]
-3. copy any QGIS layer by dumping the `layer_styles` table from the source DB and restoring in the target environment
-
-```
-$ ogr2ogr -f "PostgreSQL" PG:"user=ops-data-store password=[db password] host=[db host] dbname=ops-data-store" [source].gpkg -nln [layer] -overwrite -append
-```
-
-See the relevant 1Password entry in the [Infrastructure](#infrastructure) section for database connection details
-
 ### Update user roles [WIP]
 
 **Note:** This section is a work in progress and may be incomplete.
