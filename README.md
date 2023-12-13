@@ -269,9 +269,7 @@ Within this directory, open the relevant JSON [State file](#backups-state-files)
 
 Find this checksum in the `iterations` list for details including the date of the backup, and it's location.
 
-### Update user roles [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### Update user roles
 
 To assign or remove roles from the [Permissions](#permissions) to or from users:
 
@@ -280,7 +278,7 @@ To assign or remove roles from the [Permissions](#permissions) to or from users:
    that role
 3. ask an owner of the Microsoft Team related to this Azure Group to add or remove the relevant users
 4. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
-5. wait for the next [BAS IT User Sync Mechanism](#user-synchronisation-mechanism) sync point
+5. wait for the next [BAS IT User Sync](#bas-it-user-sync)
 
 Users should then have, or should no longer have, access to relevant managed [Datasets](#datasets).
 
@@ -338,9 +336,7 @@ details, and must be defined by the user, using either appropriate environment v
 
 [4] These options MUST point to an existing directory that is writable by the application user.
 
-### BAS Air Unit Network Utility [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### BAS Air Unit Network Utility
 
 The [BAS Air Unit Network Dataset utility 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset) is used to
 convert the *Waypoint* and *Route* [Managed Dataset](#managed-datasets) maintained by the BAS Air Unit into formats for
@@ -427,23 +423,19 @@ LDAP is the Identity Provider (IDP) used by BAS IT, specifically for unix system
 groups. Group members are synced from Azure groups representing [Microsoft Teams](#microsoft-teams) as part of the Data
 Store's [Permissions](#permissions) system.
 
-### Web Server [WIP]
-
-**Note:** This section is a work in progress and may be incomplete.
+### Web server
 
 [Apache HTTP Server](https://httpd.apache.org) is used for hosting content from the [File Store](#file-store)
 available to end users. It is implemented as a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured at
 `/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT. Automatic directory listings are disabled for this site.
 
-The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility-wip),
+The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility),
 restricted using authentication and authorisation using [LDAP](#ldap). Users must have a valid LDAP account and be a
 member of the *Viewer* role from the [Permissions](#permissions) system. Automatic directory listings are enabled for
 this content.
 
-### User synchronisation mechanism [WIP]
 #### Web server permissions
 
-**Note:** This section is a work in progress and may be incomplete.
 Where restricted content needs to be shared through the web server, special file permissions are needed for the web
 server to access content whilst preventing users accessing files directly through the file system, which would bypass
 restrictions enforced by the web server.
@@ -460,6 +452,7 @@ permissions for the web server to access them. I.e. only the parent directory sh
 
 These permissions and ACLs are set automatically in BAS IT managed instances.
 
+### BAS IT User sync
 
 As part of the Data Store's [Permissions](#permissions) system, a mechanism has been implemented by BAS IT to:
 
@@ -551,10 +544,9 @@ Mappings for roles, teams, the database and LDAP:
 | Owners  | BAS Air Unit         | [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
 | Viewers | -                    | [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704), [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef), [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9), [`691c3db1-371a-43ea-b1f3-56b2aa7ce9d0`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/691c3db1-371a-43ea-b1f3-56b2aa7ce9d0), [`9b888740-f387-4e49-a597-5b58c3f1eba8`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/9b888740-f387-4e49-a597-5b58c3f1eba8), [`906f20ee-7698-48c8-b2ff-75592384af68`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/906f20ee-7698-48c8-b2ff-75592384af68) | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
 
-The [User Synchronisation Mechanism](#user-synchronisation-mechanism) and the
-[Command Line Interface](#command-line-interface), specifically commands in the [`auth`](#control-cli-auth-commands)
-command group are used for synchronising users, and verifying users have been synced, between these systems and between
-environments.
+The [BAS IT User Sync](#bas-it-user-sync) and the [Command Line Interface](#command-line-interface), specifically
+commands in the [`auth`](#control-cli-auth-commands) command group are used for synchronising users, and verifying
+users have been synced, between these systems and between environments.
 
 ### Backups
 
@@ -949,8 +941,7 @@ respectively are recommended as conventional defaults.
 
 In addition, a mechanism must be available for creating and maintaining Postgres role and users as outlined in abstract
 in the [Permissions](#permissions) section. This must support updating permissions as needed based on the memberships of the
-relevant LDAP groups. It must be documented in the [User Synchronisation Mechanism](#user-synchronisation-mechanism)
-section.
+relevant LDAP groups. It must be documented in the [User Synchronisation Mechanism](#bas-it-user-sync) section.
 
 ### Microsoft Entra requirements
 
