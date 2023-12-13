@@ -4,7 +4,7 @@
 
 Follow on from #...
 
-Follow [upgrade instructions](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/tree/main#upgrading-wip) to:
+Follow [upgrade instructions](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/tree/main#upgrading) to:
 
 - [ ] deploy to staging instance
 - [ ] deploy to production instance
