@@ -16,6 +16,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Updating thresholds for automatic Air Unit conversion Sentry monitoring
   [#164](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/164)
 
+### changed
+
+* Postgres DB service moved to `test` CI job rather than running for all
+  [#163](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/163)
+
 ## [0.8.0] - 2023-12-13
 
 ### Added
