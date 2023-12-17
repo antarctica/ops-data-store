@@ -85,14 +85,11 @@ for connection details (specifically the relevant app server).
 
 **Note:** Calling the CLI without any command will not return any output. This is expected.
 
-**Note:** Currently all log entries down to debug level are displayed alongside programme output. This includes a debug
-message from the `shapely` and `psycopg` packages that can be safely ignored:
+**Note:** Currently all log entries down to the _info_ level are displayed alongside programme output. This includes a
+message from the `shapely` that can be safely ignored:
 
 ```
-YYYY-MM-SS HH:MM:SS - shapely.geos - DEBUG - Found GEOS DLL: <CDLL '/var/opt/ops-data-store/venv/lib/python3.9/site-packages/Shapely.libs/libgeos_c-c8ec7514.so.1.16.1', handle 1f0c810 at 0x7ff4c0dac820>, using it.
-YYYY-MM-SS HH:MM:SS - shapely.speedups._speedups - INFO - Numpy was not imported, continuing without requires()
-YYYY-MM-SS HH:MM:SS - psycopg.pq - DEBUG - couldn't import psycopg 'c' implementation: No module named 'psycopg_c'
-0.2.0
+2023-10-23 14:01:29 - shapely.speedups._speedups - INFO - Numpy was not imported, continuing without requires()
 ```
 
 #### Control CLI `auth` commands
