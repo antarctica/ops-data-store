@@ -58,6 +58,9 @@ class DataClient:
         whether subsequent layers should replace/overwrite existing layers (if the output exists), or be included as
         additional layers. We always include subsequent layers as additional layers, automatically switching access
         mode as needed (from 'create' for the initial layer to 'update' for additional layers).
+
+        Any QGIS layer styles are also exported, with references updated to remove Postgres schema/catalog references
+        so that styles will be automatically loaded in the exported GeoPackage.
         """
         self.logger.info("Exporting datasets to GeoPackage via GDAL/OGR.")
         self.logger.info("Export path: %s", path.resolve())
@@ -93,7 +96,7 @@ class DataClient:
         self.logger.info("Fixing layer style references in GeoPackage")
         with sqlite3_connect(path) as conn:
             cur = conn.cursor()
-            cur.execute("""UPDATE layer_styles SET f_table_catalog = NULL, f_table_schema = 'main';""")
+            cur.execute("""UPDATE layer_styles SET f_table_catalog = '', f_table_schema = '';""")
 
         self.logger.info("Export ok.")
 
