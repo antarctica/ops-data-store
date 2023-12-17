@@ -3,10 +3,6 @@
 include:
   - template: 'Workflows/MergeRequest-Pipelines.gitlab-ci.yml'
 
-services:
-  - name: postgis/postgis:14-3.3-alpine
-    alias: postgres
-
 variables:
   # Python config
   PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
@@ -77,6 +73,9 @@ before_script:
 test:
   stage: 🧪 test
   needs: []
+  services:
+    - name: postgis/postgis:14-3.3-alpine
+      alias: postgres
   before_script:
     - *before_script_common
     - export PGPASSWORD=$POSTGRES_PASSWORD  # best practice way to provide password to psql
