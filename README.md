@@ -1158,8 +1158,8 @@ Create a Sentry cron monitor within the relevant Sentry subscription:
 - schedule type: *cron*
 - cron pattern: `*/5 * * * *`
 - cron timezone: *UTC*
-- grace period: `1` minutes
-- max runtime: `2` minutes
+- grace period: `5` minutes
+- max runtime: `4` minutes
 - notify: `#magic`
 - failure tolerance: `1`
 - recovery tolerance: `1`
