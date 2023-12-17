@@ -97,8 +97,7 @@ class AzureClient:
         )
         r.raise_for_status()
 
-        self.logger.debug("group ID: %s DisplayName is: %s", group_id, r.json()["displayName"])
-
+        self.logger.info("group ID: %s DisplayName is: %s", group_id, r.json()["displayName"])
         return r.json()["displayName"]
 
     def get_group_members(self, group_id: str) -> list[str]:
@@ -116,7 +115,7 @@ class AzureClient:
         r.raise_for_status()
 
         upns = [member["userPrincipalName"] for member in r.json()["value"]]
-        self.logger.debug("Members (%s): %s", len(upns), ", ".join(upns))
+        self.logger.info("Members (%s): %s", len(upns), ", ".join(upns))
         return upns
 
 

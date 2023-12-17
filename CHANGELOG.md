@@ -18,6 +18,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ### changed
 
+* Logging level raised to info
+  [#150](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/150)
 * Postgres DB service moved to `test` CI job rather than running for all
   [#163](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/163)
 
