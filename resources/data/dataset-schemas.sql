@@ -204,7 +204,7 @@ CREATE OR REPLACE TRIGGER route_waypoint_updated_by_trigger
 
 CREATE OR REPLACE VIEW route AS
     WITH route_geom AS (
-        SELECT rw.route_pid, st_makeline(w.geom ORDER BY rw.sequence) AS geom
+        SELECT rw.route_pid, st_makeline(w.geom ORDER BY rw.sequence)::geometry(LINESTRING, 4326) AS geom
         FROM route_waypoint AS rw
         JOIN waypoint w ON w.pid = rw.waypoint_pid
         GROUP BY rw.route_pid
