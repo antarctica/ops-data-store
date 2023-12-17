@@ -13,6 +13,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Corrected layer styles in GeoPackage backups
   [#160](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/160)
+* Updating thresholds for automatic Air Unit conversion Sentry monitoring
+  [#164](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/164)
 
 ## [0.8.0] - 2023-12-13
 
