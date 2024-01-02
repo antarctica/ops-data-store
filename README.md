@@ -371,6 +371,16 @@ extension for storing spatial information along with custom functions and data t
 - recording when and by who rows in managed datasets are changed
   - using the `set_updated_at` and `set_updated_by` functions
 
+#### Database permissions
+
+Database permissions form part of the Data Store's [Permissions](#permissions) system - specifically to control who
+can access underlying data. [Abstract permissions](#permissions-mapping) are implemented as Postgres grants in the
+[`resources/data/dataset-grants.sql`](resources/data/dataset-grants.sql) file.
+
+**Note:** For BAS IT managed databases, Puppet will apply these grants every 30 minutes (except for Staging
+environments which may need to requested separately). This means if an entity is dropped and recreated it may take
+half an hour for users to regain access to it.
+
 ### File store
 
 The file store holds application [Backups](#backups) and [Converted Outputs](#bas-air-unit-network-utility). It is
@@ -531,6 +541,8 @@ include multiple Azure groups forming a union of members.
 
 Users must exist in the LDAP server before they can be added to LDAP groups. Missing users will first need registering,
 at BAS this can be done by contacting the IT Service Desk.
+
+#### Permissions mapping
 
 Mappings for roles, teams, the database and LDAP:
 
@@ -937,8 +949,8 @@ to run this application. This database and account can be named anything but `op
 respectively are recommended as conventional defaults.
 
 In addition, a mechanism must be available for creating and maintaining Postgres role and users as outlined in abstract
-in the [Permissions](#permissions) section. This must support updating permissions as needed based on the memberships of the
-relevant LDAP groups. It must be documented in the [User Synchronisation Mechanism](#bas-it-user-sync) section.
+in the [Permissions](#permissions) section and more specifically in [Database Permissions](#database-permissions). This must
+support updating permissions as needed based on the memberships of the relevant LDAP groups.
 
 ### Microsoft Entra requirements
 
@@ -1071,6 +1083,9 @@ Create the schemas for managed datasets by running the contents of the
 ```
 $ ods-ctl db run --input-path dataset-schemas.sql
 ```
+
+Once database entities and roles needed for the [Permissions](#permissions) system have been created, apply the
+[Database Grants](#database-permissions) to grant access to end-users.
 
 ### Configure auth syncing
 
