@@ -9,6 +9,11 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+### Added
+
+* Database grants/permissions documentation and reference file
+  [#153](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/153)
+
 ### Fixed
 
 * Corrected geometry column registration for managed route view
