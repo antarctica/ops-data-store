@@ -588,17 +588,8 @@ likely require manual preparation).
 
 Currently, two separate backups are created:
 
-1. GeoPackages:
-    * [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
-    * can be added directly to GIS clients or used with tools such as GDAL/OGR
-    * contain managed datasets and QGIS layer style information only
-    * intended for long-term use
-2. PostgreSQL database dumps:
-    * technology specific file format for database information
-    * requires loading into a compatible Postgres database to use
-    * contains all database objects (data types, tables, views, functions, triggers)
-    * does not contain database users, roles and grants (see [Permissions](#permissions) section)
-    * not intended for long-term use (i.e. will be withdrawn in time)
+1. [GeoPackages](#geopackage-backups)
+2. [PostgreSQL database dumps](#postgresql-backups)
 
 Backups are independent of each other, i.e. if the backup limit is 6, a maximum of 6 GeoPackage, and 6 Postgres,
 backups will be retained - rather than 3 of each. Backups are captured together to try and ensure consistency.
@@ -606,9 +597,43 @@ backups will be retained - rather than 3 of each. Backups are captured together 
 The [Command Line Interface](#command-line-interface), specifically commands in the
 [`backup`](#control-cli-backup-commands) command group can be used to create and manage backups.
 
+#### GeoPackage backups
+
+GeoPackage backups:
+
+* use a [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
+* can be used directly with GIS clients or other tools such as GDAL/OGR
+* contain [Managed Datasets](#managed-datasets) and QGIS layer style information only
+
+**WARNING!** GeoPackage backups are not tested/verified.
+
 Troubleshooting steps:
 
 - [GeoPackage backups GDAL error](#geopackage-backups-gdal-error)
+
+#### PostgreSQL backups
+
+Database backups:
+
+* use a technology specific file format for database information (postgres dump)
+* requires loading into a compatible Postgres database to use
+* contains all database objects (data types, tables, views, functions, triggers) from all schemas
+* do not contain global objects (users, roles and grants - see [Permissions](#permissions) section)
+
+Database backups are intended to give additional confidence whilst this project is initially setup system. They MUST
+NOT be replied upon for ensuring information not included in the [GeoPackage Backups](#geopackage-backups), such as
+unmanaged datasets, are backed up.
+
+**WARNING!** Database backups are not tested/verified.
+
+**WARNING!** Database backups will be withdrawn in time.
+
+#### Infrastructure backups
+
+For BAS IT managed infrastructure, additional backups are maintained by BAS IT:
+
+- Virtual Machines are backed up incrementally daily and fully every week for 1 month and then a monthly backup for 6
+  months
 
 #### Backups state files
 
@@ -687,13 +712,6 @@ This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.
 [Installation](#installation) section for how to configure automated backups in a deployed instance.
 
 Log files for automatic backups are retained for 30 days and then deleted via a crontab entry.
-
-#### Infrastructure backups
-
-For BAS IT managed infrastructure, additional backups are maintained by BAS IT:
-
-- Virtual Machines are backed up incrementally daily and fully every week for 1 month and then a monthly backup for 6
-  months
 
 ### Monitoring
 
