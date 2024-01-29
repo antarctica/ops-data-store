@@ -411,6 +411,21 @@ compatibility.
 registration represents this project within Azure, granting it permission to relevant resources within the
 [Microsoft Graph API](#microsoft-graph).
 
+#### App registration secrets
+
+A client secret (and non-secret client ID) is used for this project to identify it's application registration. Separate
+secrets used for each instance and need to be rotated every 6 months (180 days).
+
+#### App registration secret rotation
+
+Currently app registration secrets are rotated manually:
+
+- from the [Application Registration](#azure-app-registrations) in the Azure Portal:
+  - from the *Certificates & secrets* section, remove the existing secret
+  - from the same section, create a new client secret with the same description and 180 day expiry date
+- update the `APP_ODS_AUTH_AZURE_CLIENT_SECRET` environment variable (via a `.env` file or through some other method)
+  in the relevant instance
+
 ### Microsoft Graph
 
 The [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/) provides programmatic access to Microsoft 365
@@ -573,17 +588,8 @@ likely require manual preparation).
 
 Currently, two separate backups are created:
 
-1. GeoPackages:
-    * [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
-    * can be added directly to GIS clients or used with tools such as GDAL/OGR
-    * contain managed datasets and QGIS layer style information only
-    * intended for long-term use
-2. PostgreSQL database dumps:
-    * technology specific file format for database information
-    * requires loading into a compatible Postgres database to use
-    * contains all database objects (data types, tables, views, functions, triggers)
-    * does not contain database users, roles and grants (see [Permissions](#permissions) section)
-    * not intended for long-term use (i.e. will be withdrawn in time)
+1. [GeoPackages](#geopackage-backups)
+2. [PostgreSQL database dumps](#postgresql-backups)
 
 Backups are independent of each other, i.e. if the backup limit is 6, a maximum of 6 GeoPackage, and 6 Postgres,
 backups will be retained - rather than 3 of each. Backups are captured together to try and ensure consistency.
@@ -591,9 +597,43 @@ backups will be retained - rather than 3 of each. Backups are captured together 
 The [Command Line Interface](#command-line-interface), specifically commands in the
 [`backup`](#control-cli-backup-commands) command group can be used to create and manage backups.
 
+#### GeoPackage backups
+
+GeoPackage backups:
+
+* use a [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
+* can be used directly with GIS clients or other tools such as GDAL/OGR
+* contain [Managed Datasets](#managed-datasets) and QGIS layer style information only
+
+**WARNING!** GeoPackage backups are not tested/verified.
+
 Troubleshooting steps:
 
 - [GeoPackage backups GDAL error](#geopackage-backups-gdal-error)
+
+#### PostgreSQL backups
+
+Database backups:
+
+* use a technology specific file format for database information (postgres dump)
+* requires loading into a compatible Postgres database to use
+* contains all database objects (data types, tables, views, functions, triggers) from all schemas
+* do not contain global objects (users, roles and grants - see [Permissions](#permissions) section)
+
+Database backups are intended to give additional confidence whilst this project is initially setup system. They MUST
+NOT be replied upon for ensuring information not included in the [GeoPackage Backups](#geopackage-backups), such as
+unmanaged datasets, are backed up.
+
+**WARNING!** Database backups are not tested/verified.
+
+**WARNING!** Database backups will be withdrawn in time.
+
+#### Infrastructure backups
+
+For BAS IT managed infrastructure, additional backups are maintained by BAS IT:
+
+- Virtual Machines are backed up incrementally daily and fully every week for 1 month and then a monthly backup for 6
+  months
 
 #### Backups state files
 
@@ -672,13 +712,6 @@ This will create per-run log files (e.g. `/path/to/logs/2023-11-20-04:00:00-UTC.
 [Installation](#installation) section for how to configure automated backups in a deployed instance.
 
 Log files for automatic backups are retained for 30 days and then deleted via a crontab entry.
-
-#### Infrastructure backups
-
-For BAS IT managed infrastructure, additional backups are maintained by BAS IT:
-
-- Virtual Machines are backed up incrementally daily and fully every week for 1 month and then a monthly backup for 6
-  months
 
 ### Monitoring
 
@@ -1049,6 +1082,22 @@ $ ln -s /path/to/venv/bin/ods-ctl ods-ctl
 $ cd ~
 ```
 
+You pay need to add `~/bin` to your `PATH` by editing:
+
+```
+$ vi ~/.bash_profile
+```
+
+And adding:
+
+```shell
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+
+export PATH
+```
+
 ### Create python app environment file
 
 Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables. See the
@@ -1088,8 +1137,9 @@ Create the schemas for managed datasets by running the contents of the
 $ ods-ctl db run --input-path dataset-schemas.sql
 ```
 
-Once database entities and roles needed for the [Permissions](#permissions) system have been created, apply the
-[Database Grants](#database-permissions) to grant access to end-users.
+Once database entities and roles needed for the [Permissions](#permissions) system have been created, ensure the
+[Database Grants](#database-permissions) to grant access to end-users are applied, either directly or by incorporating into a permissions
+management mechanism.
 
 ### Configure auth syncing
 
@@ -1207,6 +1257,20 @@ MAILTO=monitoring@example.com
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
 
+### Post installation tasks [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
+
+- save an ad-hoc layer style in QGIS to create the QGIS `layer_styles` table in the new instance
+- copy existing QGIS layer styles from an existing instance to the new instance
+- check test data can be created using the application user in QGIS
+  - suggested to add a test set of waypoints and route for verifying Air Unit conversion is working
+- check test data can be created using an LDAP user
+- check the web server can be accessed using an LDAP login
+- check the Air Unit conversion process is working (requires some test waypoints/routes and the webserver)
+- verify the Back up Sentry conversion monitor is running and ok for the new instance
+- verify the Air Unit conversion Sentry monitor is running and ok for the new instance
+
 ## Upgrading
 
 To upgrade the Python application, upgrade the Python package version using Pip:
@@ -1290,6 +1354,8 @@ all instances/environments as this diagram:
 
 - [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+- [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rzt4yigjenbkdtfho2famjzi3m&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#170 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
@@ -1297,6 +1363,8 @@ all instances/environments as this diagram:
 
 - [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+- [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#170 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 

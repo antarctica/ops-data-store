@@ -13,8 +13,12 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Database grants/permissions documentation and reference file
   [#153](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/153)
+* Cambridge production instance information
+  [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
 * Troubleshooting steps for broken GeoPackage backup
   [#179](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/179)
+* App secret rotation instructions (as part of setting up Cambridge production instance)
+  [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
 
 ### Fixed
 
@@ -25,12 +29,14 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * Updating thresholds for automatic Air Unit conversion Sentry monitoring
   [#164](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/164)
 
-### changed
+### Changed
 
 * Logging level raised to info
   [#150](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/150)
 * Postgres DB service moved to `test` CI job rather than running for all
   [#163](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/163)
+* Improving backup documentation (as part of setting up Cambridge production instance)
+  [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
 
 ## [0.8.0] - 2023-12-13
 
