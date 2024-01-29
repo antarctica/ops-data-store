@@ -411,6 +411,21 @@ compatibility.
 registration represents this project within Azure, granting it permission to relevant resources within the
 [Microsoft Graph API](#microsoft-graph).
 
+#### App registration secrets
+
+A client secret (and non-secret client ID) is used for this project to identify it's application registration. Separate
+secrets used for each instance and need to be rotated every 6 months (180 days).
+
+#### App registration secret rotation
+
+Currently app registration secrets are rotated manually:
+
+- from the [Application Registration](#azure-app-registrations) in the Azure Portal:
+  - from the *Certificates & secrets* section, remove the existing secret
+  - from the same section, create a new client secret with the same description and 180 day expiry date
+- update the `APP_ODS_AUTH_AZURE_CLIENT_SECRET` environment variable (via a `.env` file or through some other method)
+  in the relevant instance
+
 ### Microsoft Graph
 
 The [Microsoft Graph API](https://learn.microsoft.com/en-us/graph/) provides programmatic access to Microsoft 365
