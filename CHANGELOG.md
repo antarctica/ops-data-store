@@ -13,6 +13,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Database grants/permissions documentation and reference file
   [#153](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/153)
+* Cambridge production instance information
+  [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
 * Troubleshooting steps for broken GeoPackage backup
   [#179](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/179)
 

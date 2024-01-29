@@ -1290,6 +1290,8 @@ all instances/environments as this diagram:
 
 - [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+- [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rzt4yigjenbkdtfho2famjzi3m&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#170 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
@@ -1297,6 +1299,8 @@ all instances/environments as this diagram:
 
 - [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
+- [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#170 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
