@@ -1049,6 +1049,22 @@ $ ln -s /path/to/venv/bin/ods-ctl ods-ctl
 $ cd ~
 ```
 
+You pay need to add `~/bin` to your `PATH` by editing:
+
+```
+$ vi ~/.bash_profile
+```
+
+And adding:
+
+```shell
+# User specific environment and startup programs
+
+PATH=$PATH:$HOME/.local/bin:$HOME/bin
+
+export PATH
+```
+
 ### Create python app environment file
 
 Optionally, create a `.env` file to set [Configuration](#configuration) options or use relevant environment variables. See the
@@ -1088,8 +1104,9 @@ Create the schemas for managed datasets by running the contents of the
 $ ods-ctl db run --input-path dataset-schemas.sql
 ```
 
-Once database entities and roles needed for the [Permissions](#permissions) system have been created, apply the
-[Database Grants](#database-permissions) to grant access to end-users.
+Once database entities and roles needed for the [Permissions](#permissions) system have been created, ensure the
+[Database Grants](#database-permissions) to grant access to end-users are applied, either directly or by incorporating into a permissions
+management mechanism.
 
 ### Configure auth syncing
 
@@ -1206,6 +1223,20 @@ MAILTO=monitoring@example.com
 ```
 
 Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment label (e.g. `rothera-production`).
+
+### Post installation tasks [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
+
+- save an ad-hoc layer style in QGIS to create the QGIS `layer_styles` table in the new instance
+- copy existing QGIS layer styles from an existing instance to the new instance
+- check test data can be created using the application user in QGIS
+  - suggested to add a test set of waypoints and route for verifying Air Unit conversion is working
+- check test data can be created using an LDAP user
+- check the web server can be accessed using an LDAP login
+- check the Air Unit conversion process is working (requires some test waypoints/routes and the webserver)
+- verify the Back up Sentry conversion monitor is running and ok for the new instance
+- verify the Air Unit conversion Sentry monitor is running and ok for the new instance
 
 ## Upgrading
 
