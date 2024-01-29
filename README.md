@@ -591,6 +591,10 @@ backups will be retained - rather than 3 of each. Backups are captured together 
 The [Command Line Interface](#command-line-interface), specifically commands in the
 [`backup`](#control-cli-backup-commands) command group can be used to create and manage backups.
 
+Troubleshooting steps:
+
+- [GeoPackage backups GDAL error](#geopackage-backups-gdal-error)
+
 #### Backups state files
 
 To avoid issues with file systems that capture all files within their own managed backups (such as the BAS SAN),
@@ -1320,6 +1324,66 @@ Currently configured to use the *Cambridge (Staging)* platform instance.
 ### Sentry Project
 
 - [Operations Data Store 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=ii2ev4tt3w7i3t2hmx7qbgqe6q&h=magic.1password.eu)
+
+## Troubleshooting
+
+### GeoPackage backups GDAL error [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
+
+Symptoms:
+
+An error occurs with the GeoPackage backup made when running the [`backup now`](#control-cli-backup-commands) command.
+
+Prerequisites:
+
+- access to the relevant instance
+- GDAL binaries (`ogr2ogr`)
+- connection details for the relevant database
+
+Method:
+
+- in the relevant instance, create an export directly using the [`data export`](#control-cli-data-commands) command
+- if successful, check the state of the backup set (path available using the
+  [`config show`](#control-cli-config-commands)) command)
+  - remove `managed_datasets_backup.gpkg` if it exists
+- if unsuccessful, use a test script, similar to the one attached in [1], to test the GDAL Python bindings in isolation
+- if unsuccessful, use the GDAL CLI tools to export to a GeoPackage manually
+  - try exporting layers into individual files first [2]
+  - then if successful, export all layers into the same file [3]
+
+Verify any data using QGIS.
+
+Context:
+
+- https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170#note_112469
+
+References:
+
+[1] https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170#note_112581
+
+[2]
+
+```
+$ ogr2ogr -f GPKG test.gpkg PG:"host=[hostname] dbname=[database] user=[username] password=[password]" "[table]"
+```
+
+E.g.:
+
+```
+$ ogr2ogr -f GPKG test.gpkg PG:"host=db.example.com dbname=ops-data-store user=ops-data-store password=xxx" "depot"
+```
+
+[3]
+
+E.g.:
+
+```
+$ ogr2ogr -f GPKG test2.gpkg PG:"host=db.example.com dbname=ops-data-store user=ops-data-store password=xxx" "depot"
+$ ogr2ogr -f GPKG -append test2.gpkg PG:"host=db.example.com dbname=ops-data-store user=ops-data-store password=xxx" "instrument"
+$ ogr2ogr -f GPKG -append test2.gpkg PG:"host=db.example.com dbname=ops-data-store user=ops-data-store password=xxx" "..."
+$ ogr2ogr -f GPKG -append test2.gpkg PG:"host=db.example.com dbname=ops-data-store user=ops-data-store password=xxx" "layer_styles"
+```
 
 ## Development
 
