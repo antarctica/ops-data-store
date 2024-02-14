@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS public.depot
   fuel_drums_herc_180ltr     INT,
   fuel_drums_fssi_180ltr     INT,
   fuel_drums_petrol_205ltr   INT,
+  fuel_drums_kero            INT,
   fuel_drums_empty           INT,
   fuel_total_ltrs            INT,
   hazards                    TEXT,

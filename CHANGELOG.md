@@ -19,6 +19,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#179](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/179)
 * App secret rotation instructions (as part of setting up Cambridge production instance)
   [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
+* Documentation for altering structure of an existing dataset
+  [#185](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/185)
 
 ### Fixed
 

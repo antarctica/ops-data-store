@@ -922,12 +922,20 @@ the layer properties/style back to the data source and verify entry added to QGI
 
 **Note:** This section is a work in progress and may be incomplete.
 
-...
-
-In QGIS, update the properties for the updated layer/table as needed and save to the QGIS `layer_styles` table.
+1. update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) making any relevant changes
+1. create an update file with the statements to change the relevant entities in place (e.g. [1])
+1. copy the update file to each application instance and apply it using the [`db run`](#control-cli-db-commands) command
+1. in QGIS, update the properties for the updated layer/table as needed and save to the QGIS `layer_styles` table.
 
 **Note:** QGIS will create a new entry in the `layer_styles` table, with the previous style/entry no longer set as a
 default. These previous styles can be removed if needed.
+
+[1] E.g.:
+
+```sql
+ALTER TABLE EXISTING_DATASET
+ADD COLUMN NEW_COLUMN TEXT;
+```
 
 ### Removing a managed dataset [WIP]
 
