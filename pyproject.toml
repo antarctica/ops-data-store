@@ -23,7 +23,7 @@ gdal = "3.4.3"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.0.291"
-safety = "^2.3.5"
+safety = "^3.0.0"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^7.4.2"

@@ -1,32 +1,47 @@
-# Safety Security and License Configuration file
+version: '3.0'
 
-security:
-    # A severity number between 0 and 10. Some helpful reference points:
-    # - 9=ignore all vulnerabilities except CRITICAL severity.
-    # - 7=ignore all vulnerabilities except CRITICAL & HIGH severity.
-    # - 4=ignore all vulnerabilities except CRITICAL, HIGH & MEDIUM severity.
-    ignore-cvss-severity-below: 0
-    ignore-cvss-unknown-severity: False  # True or False. We recommend you set this to False.
+scanning-settings:
+  max-depth: 6
+  exclude: []
+  include-files: []
+  system:
+    targets: []
 
-    # Suppress non-zero exit codes when vulnerabilities are found.
-    # Enable this in pipelines and CI/CD processes if you want to pass builds that have vulnerabilities.
-    # We recommend you set this to False.
-    continue-on-vulnerability-error: False
 
-    # Here you can list multiple specific vulnerabilities you want to ignore/exempt (optionally for a time period)
-    # We recommend making use of the optional `reason` and `expires` keys for each vulnerability that you ignore.
-    ignore-vulnerabilities:
-        51832:  # https://pyup.io/v/51832/97c [GDAL]
-            reason: We won't be using GRIB2, see MAGIC/ops-data-store#29 for details
-            expires: '2024-04-04'
-        48545:  # https://pyup.io/v/48545/97c [GDAL]
-            reason: it's unclear whether we're vulnerable to this, see MAGIC/ops-data-store#29 for details
-            expires: '2024-04-04'
-        62044:  # https://data.safetycli.com/v/62044/f17 [Pip]
-            reason: We already upgrade to the latest version of pip, detecting this version is a bug
-            expires: '2024-05-25'
-        64227: # https://data.safetycli.com/v/64227/f17 [Jinja2]
-            reason: We don't directly depend on this and seems to be a dependency of Safety itself which will soon be updated anyway
-            expires: '2024-04-01'
+report:
+  dependency-vulnerabilities:
+    enabled: true
+    auto-ignore-in-report:
+      python:
+        environment-results: true
+        unpinned-requirements: true
+      cvss-severity: []
+      vulnerabilities:
+        48545: # https://pyup.io/v/48545/97c [GDAL]
+          reason: it's unclear whether we're vulnerable to this, see MAGIC/ops-data-store#29 for details
+          expires: '2024-07-04'
+        51832: # https://pyup.io/v/51832/97c [GDAL]
+          reason: We won't be using GRIB2, see MAGIC/ops-data-store#29 for details
+          expires: '2024-07-04'
+        62283: # https://pyup.io/v/62283/97c [GDAL]
+          reason: it's unclear whether we're vulnerable to this but we can't upgrade in any case
+          expires: '2024-07-04'
 
-# [Configuration for the `safety alert` command omitted as not used]
+fail-scan-with-exit-code:
+  dependency-vulnerabilities:
+    enabled: true
+    fail-on-any-of:
+      cvss-severity:
+        - high
+        - medium
+        - critical
+      exploitability:
+        - high
+        - medium
+        - critical
+
+security-updates:
+  dependency-vulnerabilities:
+    auto-security-updates-limit:
+      - patch
+

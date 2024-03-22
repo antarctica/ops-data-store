@@ -45,6 +45,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
 * Updated dependencies
   [#190](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/190)
+* Updated to Safety 3.x for Python vulnerabilities
+  [#178](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/178)
 
 ## [0.8.0] - 2023-12-13
 
