@@ -1335,6 +1335,8 @@ Connection details for any resources created should be stored in the MAGIC 1Pass
 
 ## Infrastructure
 
+### Environments and instances
+
 There are several instances and environments for this project:
 
 Environments:
@@ -1345,8 +1347,8 @@ Environments:
 
 Instances:
 
-* Cambridge (*Staging*) - managed by BAS IT in the wider SDA staging infrastructure
 * Cambridge (*Production*) - managed by BAS IT as general infrastructure
+* Rothera (*Staging*) - managed by BAS IT in the wider SDA/stations staging infrastructure
 * Rothera (*Production*) - managed by BAS IT in the on-station infrastructure
 
 The infrastructure needed for each instance can be summarised by this diagram:
@@ -1360,19 +1362,19 @@ all instances/environments as this diagram:
 
 ### Application servers
 
-- [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
-  - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
 - [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rzt4yigjenbkdtfho2famjzi3m&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#170 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170) for initial setup
+- [Rothera (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=rhe6qd7w46i5hrs42jhwtbnpuq&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
 ### Databases
 
-- [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
-  - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
 - [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#170 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170) for initial setup
+- [Rothera (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
+  - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
 
@@ -1386,14 +1388,14 @@ for initial setup with UKRI.
 
 ### LDAP servers
 
-- [Cambridge (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=qnqmxfsoxnj7jblkelsgxs5fhu&h=magic.1password.eu)
 - [Cambridge (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=27ra54r3yrhogzesxdpw2iuybu&h=magic.1password.eu)
+- [Rothera (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=qnqmxfsoxnj7jblkelsgxs5fhu&h=magic.1password.eu)
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=qnqmxfsoxnj7jblkelsgxs5fhu&h=magic.1password.eu)
 
 ### Reference VM
 
 Used to simulate an end user computer used by Operations, acting as a known working example for debugging and testing.
-Currently configured to use the *Cambridge (Staging)* platform instance.
+Currently configured to use the *Rothera (Staging)* platform instance.
 
 - [Windows VM 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=mb2mfbk66zrowd4kcj3kjc5tdy&h=magic.1password.eu)
 

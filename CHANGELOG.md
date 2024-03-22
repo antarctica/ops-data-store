@@ -30,6 +30,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#160](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/160)
 * Updating thresholds for automatic Air Unit conversion Sentry monitoring
   [#164](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/164)
+* Clarifying the staging instance is for Rothera not Cambridge
+  [#176](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/176)
 
 ### Changed
 
