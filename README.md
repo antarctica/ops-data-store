@@ -1559,7 +1559,7 @@ In particular this is using the free vulnerability database, which is updated le
 Checks are run automatically in [Continuous Integration](#continuous-integration). To check locally:
 
 ```
-$ poetry run safety check --full-report
+$ poetry run safety scan
 ```
 
 ### Python gdal dependency version
