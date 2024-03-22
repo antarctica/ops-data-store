@@ -385,9 +385,16 @@ class BackupClient:
         )
 
     def backup(self) -> None:
-        """Create backups and add to file sets."""
+        """
+        Create backups and add to file sets.
+
+        Backups are created by a relevant client using a generic file name, then added to the relevant backup set and
+        removed. In case this generic file is inadvertently not removed (due to an error), we try to remove it before
+        creating a new backup, as GDAL for example will not overwrite an existing file.
+        """
         self.logger.info("Creating database backup.")
         db_backup_path = self._backups_path.joinpath(self._db_backup_name)
+        db_backup_path.unlink(missing_ok=True)
         self.db_client.dump(path=db_backup_path)
         self._db_backups.add(path=db_backup_path)
         db_backup_path.unlink()
@@ -395,6 +402,7 @@ class BackupClient:
 
         self.logger.info("Creating managed dataset backup.")
         data_backup_path = self._backups_path.joinpath(self._data_backup_name)
+        data_backup_path.unlink(missing_ok=True)
         self.data_client.export(path=data_backup_path)
         self._data_backups.add(path=data_backup_path)
         data_backup_path.unlink()

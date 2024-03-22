@@ -1653,6 +1653,17 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 
 ## Testing
 
+### Test schemas and data
+
+A set of static datasets are defined for testing. These datasets are based on real [Datasets](#datasets) but sanitised
+to remove any sensitive information. To support repeatable testing these datasets do not change.
+
+See [`test-schemas.sql`](tests/resources/test-schemas.sql) for the structure of each dataset and
+[`test-data.sql`](tests/resources/test-data.sql) for related seed data (4 features for each).
+
+**Note:** This data is not yet representative. For details see
+[https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48).
+
 ### Python tests
 
 All 1st party Python code in the [`ops_data_store`](/src/ops_data_store) package must be covered by tests, defined in
@@ -1693,24 +1704,20 @@ def test_foo():
 An additional [`.test.env`](/.test.env) file is used to override some application config properties, such as the
 database. This file can be created from the [`.example.test.env`](/.example.test.env) reference file.
 
-### Test schemas and data
+#### Test limitations
 
-A set of static datasets are defined for testing. These datasets are based on real [Datasets](#datasets) but sanitised
-to remove any sensitive information. To support repeatable testing these datasets do not change.
+There is a known and major limitation with tests mocking interactions with the database leading to bugs such as
+[MAGIC/ops-data-store#124 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/124).
 
-See [`test-schemas.sql`](tests/resources/test-schemas.sql) for the structure of each dataset and
-[`test-data.sql`](tests/resources/test-data.sql) for related seed data (4 features for each).
-
-**Note:** This data is not yet representative. For details see
-[https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48).
+See [MAGIC/ops-data-store#159 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/159) for progress to
+address this.
 
 #### Running tests
 
-Tests and coverage checks are run automatically in [Continuous Integration](#continuous-integration). To check
-locally:
+Tests and coverage checks are run automatically in [Continuous Integration](#continuous-integration). To check locally:
 
 ```
-poetry run pytest --strict-markers --random-order --cov --cov-report=html tests
+$ poetry run pytest --strict-markers --random-order --cov --cov-report=html tests
 ```
 
 ### Continuous Integration

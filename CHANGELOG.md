@@ -34,6 +34,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#164](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/164)
 * Clarifying the staging instance is for Rothera not Cambridge
   [#176](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/176)
+* Preventing stuck backup files stopping future backups
+  [#181](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/181)
 
 ### Changed
 
