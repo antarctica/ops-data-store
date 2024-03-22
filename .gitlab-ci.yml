@@ -73,15 +73,8 @@ before_script:
 test:
   stage: 🧪 test
   needs: []
-  services:
-    - name: postgis/postgis:14-3.3-alpine
-      alias: postgres
   before_script:
     - *before_script_common
-    - export PGPASSWORD=$POSTGRES_PASSWORD  # best practice way to provide password to psql
-    - apt-get update
-    - apt-get install -y libpq-dev gcc postgresql-client
-    - psql -h $POSTGRES_HOST -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 'OK' AS status;"
     - poetry run python -c 'from ops_data_store.config import Config; c = Config(); print(c.DB_DSN)'
     - echo $APP_ODS_BACKUPS_PATH
   script:
