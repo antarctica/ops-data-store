@@ -374,7 +374,7 @@ extension for storing spatial information along with custom functions and data t
 #### Database permissions
 
 Database permissions form part of the Data Store's [Permissions](#permissions) system - specifically to control who
-can access underlying data. [Abstract permissions](#permissions-mapping) are implemented as Postgres grants in the
+can access underlying data. [Abstract permissions](#permissions-mappings) are implemented as Postgres grants in the
 [`resources/data/dataset-grants.sql`](resources/data/dataset-grants.sql) file.
 
 **Note:** For BAS IT managed databases, Puppet will apply these grants every 30 minutes (except for Staging
@@ -828,8 +828,11 @@ All managed datasets have two last update columns:
 - `updated_by`: identity of who last changed a row
 
 Both fields are updated when any data in a given row changes via a Postgres trigger on each table calling a simple
-functions (`NOW()` and `current_user` respectively). The value of `current_user` should correspond to a NERC username,
-and therefore an end-user (e.g. `conwat` -> *Connie Watson*).
+functions (`NOW()` and `session_user` respectively).
+
+The value of `session_user` should correspond to an end-user, specifically a NERC username, which can be resolved to a
+name or other label. E.g. `conwat` can become *Connie Watson*. `session_user` is used due to the way
+[Permissions grants](#permissions-grants) are implemented.
 
 For example:
 
