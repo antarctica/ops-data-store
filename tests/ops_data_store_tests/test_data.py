@@ -46,6 +46,7 @@ class TestDataClient:
         """
         expected_name = fx_test_data_managed_table_names[0]
 
+        mocker.patch("ops_data_store.data.GDALOpenDataSource", return_value=None)
         mocker.patch("ops_data_store.data.VectorTranslate", return_value=None)
 
         with TemporaryDirectory() as workspace:
@@ -86,6 +87,7 @@ class TestDataClient:
         """Export succeeds with existing file."""
         expected_name = fx_test_data_managed_table_names[0]
 
+        mocker.patch("ops_data_store.data.GDALOpenDataSource", return_value=None)
         mocker.patch("ops_data_store.data.VectorTranslate", return_value=None)
 
         with TemporaryDirectory() as workspace:
@@ -121,6 +123,7 @@ class TestDataClient:
         caplog: pytest.LogCaptureFixture,
     ):
         """Failed export raises error."""
+        mocker.patch("ops_data_store.data.GDALOpenDataSource", return_value=None)
         mocker.patch("ops_data_store.data.VectorTranslate", side_effect=RuntimeError("Error"))
 
         with pytest.raises(RuntimeError, match="GDAL export failed."):

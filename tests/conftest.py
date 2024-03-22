@@ -19,7 +19,11 @@ from ops_data_store.auth import AzureClient, SimpleSyncClient
 from ops_data_store.backup import BackupClient, RollingFileState, RollingFileStateIteration, RollingFileStateMeta
 from ops_data_store.config import Config
 from ops_data_store.data import DataClient
-from tests.mocks import test_check_target_users__ldap_check_users
+from tests.mocks import (
+    data_client_export_touch_path,
+    db_client_dump_touch_path,
+    test_check_target_users__ldap_check_users,
+)
 
 
 @pytest.fixture()
@@ -408,9 +412,12 @@ def fx_rfs_state_json() -> str:
 @pytest.fixture()
 def fx_backup_client(mocker: MockFixture) -> BackupClient:
     """App backup client."""
-    mocker.patch("ops_data_store.backup.DataClient", autospec=True)
-    mocker.patch("ops_data_store.backup.DBClient", autospec=True)
+    data_client_mock = mocker.patch("ops_data_store.backup.DataClient", autospec=True)
+    db_client_mock = mocker.patch("ops_data_store.backup.DBClient", autospec=True)
     mocker.patch("ops_data_store.backup.RollingFileSet", autospec=True)
+
+    data_client_mock.return_value.export = data_client_export_touch_path
+    db_client_mock.return_value.dump = db_client_dump_touch_path
 
     return BackupClient()
 

@@ -555,8 +555,25 @@ class TestBackupClient:
 
         assert isinstance(client, BackupClient)
 
-    def test_backup(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture, fx_backup_client: BackupClient):
+    def test_backup(self, caplog: pytest.LogCaptureFixture, fx_backup_client: BackupClient):
         """Can create backups."""
+        with TemporaryDirectory() as workspace:
+            fx_backup_client._backups_path = Path(workspace)
+            db_backup_path = fx_backup_client._backups_path.joinpath(fx_backup_client._db_backup_name)
+            data_backup_path = fx_backup_client._backups_path.joinpath(fx_backup_client._data_backup_name)
+
+            fx_backup_client.backup()
+
+            assert db_backup_path.exists() is False
+            assert data_backup_path.exists() is False
+
+        assert "Creating database backup." in caplog.text
+        assert "Created database backup." in caplog.text
+        assert "Creating managed dataset backup." in caplog.text
+        assert "Created managed dataset backup." in caplog.text
+
+    def test_backup_existing_path(self, caplog: pytest.LogCaptureFixture, fx_backup_client: BackupClient):
+        """Can create backups, removing existing backup files if they exist ."""
         with TemporaryDirectory() as workspace:
             fx_backup_client._backups_path = Path(workspace)
             db_backup_path = fx_backup_client._backups_path.joinpath(fx_backup_client._db_backup_name)

@@ -23,8 +23,14 @@ class TestDBClient:
 
         assert isinstance(client, DBClient)
 
-    def test_check_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_check_ok(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
         """Check succeeds."""
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__.return_value.execute.return_value = (1,)
+        mock_conn = MagicMock()
+        mock_conn.__enter__.return_value.cursor.return_value = mock_cursor
+        mocker.patch("psycopg.connect", return_value=mock_conn)
+
         client = DBClient()
 
         client.check()
@@ -33,7 +39,7 @@ class TestDBClient:
         assert "DB connection ok." in caplog.text
 
     def test_check_fail(self, caplog: pytest.LogCaptureFixture, mocker: MockFixture) -> None:
-        """Failed suck raises error."""
+        """Failed raises error."""
         mock_cursor = MagicMock()
         mock_cursor.__enter__.return_value.execute.side_effect = ProgrammingError
         mock_conn = MagicMock()
@@ -157,8 +163,14 @@ class TestDBClient:
 
         assert "Dumping database via `pg_dump`." in caplog.text
 
-    def test_fetch_ok(self, caplog: pytest.LogCaptureFixture) -> None:
+    def test_fetch_ok(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture) -> None:
         """Fetch succeeds."""
+        mock_cursor = MagicMock()
+        mock_cursor.__enter__.return_value.execute.return_value = (1,)
+        mock_conn = MagicMock()
+        mock_conn.__enter__.return_value.cursor.return_value = mock_cursor
+        mocker.patch("psycopg.connect", return_value=mock_conn)
+
         client = DBClient()
 
         # noinspection PyTypeChecker

@@ -13,8 +13,10 @@ from ops_data_store.config import Config
 class TestCliDBCheck:
     """Tests for `db check`."""
 
-    def test_ok(self, fx_cli_runner: CliRunner) -> None:
+    def test_ok(self, mocker: MockerFixture, fx_cli_runner: CliRunner) -> None:
         """Succeeds when DB is reachable."""
+        mocker.patch("ops_data_store.cli.db.DBClient.check", return_value=None)
+
         result = fx_cli_runner.invoke(app=cli, args=["db", "check"])
 
         assert result.exit_code == 0
@@ -111,7 +113,7 @@ class TestCliDBRun:
         self, mocker: MockerFixture, caplog: pytest.LogCaptureFixture, fx_cli_runner: CliRunner, fx_test_config: Config
     ):
         """Invalid input file gives error."""
-        mocker.patch("ops_data_store.cli.db.DBClient.check", side_effect=ProgrammingError())
+        mocker.patch("ops_data_store.cli.db.DBClient.execute", side_effect=ProgrammingError())
 
         with NamedTemporaryFile(mode="w") as tmp_file:
             tmp_file_path = Path(tmp_file.name)
@@ -125,7 +127,6 @@ class TestCliDBRun:
             result = fx_cli_runner.invoke(app=cli, args=["db", "run", "--input-path", tmp_file_path])
 
             assert "Loading file contents and running inside database." in caplog.text
-            assert 'syntax error at or near "INVALID"' in caplog.text
 
             assert result.exit_code == 1
             assert f"Executing SQL from input file at '{tmp_file_path.resolve()}'" in result.output
