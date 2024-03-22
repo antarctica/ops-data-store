@@ -1021,14 +1021,14 @@ In addition:
 
 ### File system requirements
 
-A file system is required for storing application backups.
+A file system is required for storing application backups and log files.
 
 This file system must:
 
 - be accessible/addressable via the Python `Path` class (i.e. a local, or mounted network, file system)
 - provide at least the created date for files via metadata the Python `Path.stat` method can access
 - provide suitable permissions for the Python application to read and write all files (i.e. via an OS user)
-- have sufficient space to maintain the number of backups configured (recommended minimum: 5GB)
+- have sufficient space to maintain the number of backups and log files configured (recommended minimum: 5GB)
 
 As this file system is used for backups, it should to the extent possible, be designed to be stable/reliable.
 
@@ -1326,6 +1326,8 @@ Connection details for any resources created should be stored in the MAGIC 1Pass
 ### BAS IT
 
 - request an application server for running Python applications
+  - where file quotas are enforced for home directories, request 10GB
+    (see [MAGIC/ops-data-store#183 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/183) for context)
 - request a Postgres database with required extensions
 - request a Windows VM (configured as a BAS workstation) with QGIS LTS installed to act as a reference VM
 - request an LDAP entity to use for managing application LDAP groups
