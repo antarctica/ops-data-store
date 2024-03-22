@@ -97,7 +97,7 @@ class DBClient:
         CREATE OR REPLACE FUNCTION set_updated_by()
         RETURNS TRIGGER AS $$
         BEGIN
-            NEW.updated_by = current_user;
+            NEW.updated_by = session_user;
             RETURN NEW;
         END;
         $$ LANGUAGE plpgsql;
