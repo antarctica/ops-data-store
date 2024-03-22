@@ -98,6 +98,7 @@ test:
     -
       changes:
         - '**/*.py'
+        - 'pyproject.toml'
       if: '$CI_COMMIT_BRANCH != "main"'
 
 lint:
@@ -106,7 +107,7 @@ lint:
   script:
     - poetry run ruff check src/ tests/ --output-format gitlab > lint-results.json
     - poetry run ruff format --check src/ tests/
-    - poetry run safety check --full-report --ignore=51832,48545,61893,62044
+    - poetry run safety check --full-report
   artifacts:
     reports:
       codequality: lint-results.json
@@ -114,6 +115,7 @@ lint:
     -
       changes:
         - '**/*.py'
+        - 'pyproject.toml'
       if: '$CI_COMMIT_BRANCH != "main"'
 
 build:
@@ -129,6 +131,7 @@ build:
     -
       changes:
         - '**/*.py'
+        - 'pyproject.toml'
       if: '$CI_COMMIT_BRANCH != "main" || $CI_COMMIT_TAG != null'
 
 package:
