@@ -179,6 +179,9 @@ Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
     - *(the user may have multiple *Ops Data Store* entries they'll need to pick from based on their current location)*
 1. select relevant layer -> *Add Layer to Project*
 
+**Note:** As QGIS exposes database schemas as part of layer hierarchy, users will need to pick from the relevant schema.
+For [MAGIC Managed Datasets](#magic-managed-datasets) the schema is: `magic_managed`.
+
 Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
 [2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
 
@@ -197,7 +200,9 @@ To configure a layer for the first time:
 1. set other layer properties (aliases, symbology, labelling, etc.) as needed
 1. *Style* -> *Save as Default* -> *Datasource Database* -> *Ok*
 
-**Note:** The first layer style saved to the database will automatically create a `layer_styles` table.
+**Note:** The first layer style saved to the database will automatically create a `public.layer_styles` table.
+
+**Note:** The QGIS [Layer Styles](#qgis-layer-styles) table is stored in the `public` Postgres schema (as it is shared).
 
 Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
 [2023-10-02.0](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/206).
@@ -336,8 +341,8 @@ details, and must be defined by the user, using either appropriate environment v
 ### BAS Air Unit Network Utility
 
 The [BAS Air Unit Network Dataset utility 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset) is used to
-convert the *Waypoint* and *Route* [Managed Dataset](#managed-datasets) maintained by the BAS Air Unit into formats for
-use in GPS devices and other activities such as printing.
+convert the *Waypoint* and *Route* [Managed Dataset](#magic-managed-datasets) maintained by the BAS Air Unit into
+formats for use in GPS devices and other activities such as printing.
 
 These datasets can be converted using the [`data convert`](#control-cli-data-commands) CLI command. Outputs are written
 to the [File Store](#file-store) and available to end-users through the [Web Server](#web-server).
@@ -542,9 +547,19 @@ In this example, BAS Air Unit team members could still view the dataset as they 
 
 These roles are implemented in the [Database](#database) using roles and users:
 
-- roles are represented as postgres roles, which are granted permissions to read or change information in all or
-  specific tables
+- roles are represented as postgres roles, which are granted permissions (using Postgres grants) to read or change
+- information in all or specific tables
 - individuals are represented as postgres users, which are assigned (inherit) one or more postgres roles
+
+#### Permissions - grants
+
+Database grants allow specific actions, such as reading or writing data. They apply to a subject (user/role) to a
+target (database object, schema/table/etc.).
+
+... why can't the grants we need be inherited from a common role to end-users (i.e. why do users need to assume a role
+to make changes?) ...
+
+#### Permissions - role assignments
 
 Users are assigned to roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP
 group 'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#microsoft-entra)
@@ -555,9 +570,9 @@ Membership information moves in one direction: from Azure (MS Teams) to LDAP, th
 include multiple Azure groups forming a union of members.
 
 Users must exist in the LDAP server before they can be added to LDAP groups. Missing users will first need registering,
-at BAS this can be done by contacting the IT Service Desk.
+at BAS by contacting the IT Service Desk.
 
-#### Permissions mapping
+#### Permissions - mappings
 
 Mappings for roles, teams, the database and LDAP:
 
@@ -603,7 +618,7 @@ GeoPackage backups:
 
 * use a [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
 * can be used directly with GIS clients or other tools such as GDAL/OGR
-* contain [Managed Datasets](#managed-datasets) and QGIS layer style information only
+* contain [Managed Datasets](#magic-managed-datasets) and QGIS layer style information only
 
 **WARNING!** GeoPackage backups are not tested/verified.
 
@@ -724,34 +739,36 @@ as [Backups](#backups-automation) using the [Sentry CLI](https://docs.sentry.io/
 
 Datasets hosted in this platform can be classed as either:
 
-- *managed*: formally defined datasets, where changes to structure of the dataset (i.e. new, changed or removed fields)
-   must be agreed between data owners (Ops) and platform operators (MAGIC)
 - *unmanaged*: any other datasets users may wish to store, which are essentially ignored by this platform
+- *magic_managed*: formally defined datasets, where changes to structure of the dataset
+  (i.e. adding, changed or removing fields) must be agreed between data owners (Ops) and platform operators (MAGIC)
+### MAGIC managed datasets
 
-### Managed datasets
 
 This platform defines base requirements for managed datasets, such that they provide minimally agreed functionality. In
 practical terms this means all managed datasets using the same base table structure, with additional fields and
 functionality extending from this.
+MAGIC managed datasets are stored in the `magic_managed` database schema.
 
 This base schema comprises:
 
-- a set of [Identifier](#managed-dataset-identifiers) fields
-- a pair of [Last Update](#managed-dataset-last-update-fields) fields
-- a set of [Geospatial](#managed-dataset-geometry-fields) fields
+- a set of [Identifier](#magic-managed-identifiers) fields
+- a pair of [Last Update](#magic-managed-last-update-fields) fields
+- a set of [Geospatial](#magic-managed-geometry-fields) fields
 
 Any additional fields are determined in these other projects:
 
 - BAS [Field Operations GIS Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - BAS [Air Unit Network Dataset 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
 
-Complete schemas for managed datasets are defined in [`dataset-schemas.sql`](resources/data/dataset-schemas.sql).
+MAGIC managed datasets are stored in the `magic_managed` schema. Definitions for these datasets are declared in
+[`dataset-schemas.sql`](resources/data/dataset-schemas.sql).
 
 See the relevant subsection for adding to, amending or removing from these schemas.
+### MAGIC managed dataset owners
 
-### Managed dataset owners
-
-Managed datasets are assigned to these teams in relation to [Permissions](#permissions) needed to change information:
+MAGIC managed datasets are assigned to these teams in relation to the [Permissions](#permissions) needed to change
+information they contain:
 
 | Dataset         | Owner (Team)         |
 |-----------------|----------------------|
@@ -760,9 +777,9 @@ Managed datasets are assigned to these teams in relation to [Permissions](#permi
 | Waypoints       | BAS Air Unit         |
 | Routes          | BAS Air Unit         |
 
-### Managed dataset identifiers
+### MAGIC managed identifiers
 
-All managed datasets have at least two identifiers, though most will have three as defined below:
+All MAGIC managed datasets have at least two identifiers, though most will have three as defined below:
 
 | Domain     | Owner    | Audience  | Column Name | Data Type | Format/Scheme                        | Required | Unique   |
 |------------|----------|-----------|-------------|-----------|--------------------------------------|----------|----------|
@@ -820,19 +837,21 @@ even if only for a time limited period. Values are uncontrolled in terms of need
 
 **Note:** These properties are nevertheless recommended in any identifier.
 
-### Managed dataset last update fields
+### MAGIC managed last update fields
 
-All managed datasets have two last update columns:
+All MAGIC managed datasets have two last update columns:
 
 - `updated_at`: timestamp of when a row was last changed
 - `updated_by`: identity of who last changed a row
 
-Both fields are updated when any data in a given row changes via a Postgres trigger on each table calling a simple
-functions (`NOW()` and `session_user` respectively).
+Both fields are updated whenever data in a row changes via a Postgres trigger on each table, which use the `NOW()` or
+`session_user` function/variable respectively.
 
-The value of `session_user` should correspond to an end-user, specifically a NERC username, which can be resolved to a
-name or other label. E.g. `conwat` can become *Connie Watson*. `session_user` is used due to the way
-[Permissions grants](#permissions-grants) are implemented.
+The value of the 'Updated By' column should correspond to an end-user, specifically a NERC username, which can be
+optionally resolved to a name or other label. E.g. `conwat` can become *Connie Watson*.
+
+**Note:** `session_user` is used due rather than `current_user` due to the way [Permissions grants](#permissions-grants)
+are implemented.
 
 For example:
 
@@ -843,11 +862,11 @@ For example:
 | `9` | `01H26N7D9SGG348R24KN6W50GX ` | `2023-10-14 09:46:23.237912 +00:00` | `conwat`   | ... |
 | ... | ...                           | ...                                 | ...        | ... |
 
-### Managed dataset geometry fields
+### MAGIC managed geometry fields
 
-All managed datasets have a PostGIS EPSG:4326 point geometry column named `geom`.
+All MAGIC managed datasets have a PostGIS EPSG:4326 point geometry column named `geom`.
 
-Managed datasets also have a set of derived fields to format the coordinates of this geometry in both:
+MAGIC managed datasets also have a set of derived fields to format the coordinates of this geometry in both:
 
 - decimal degrees (DD):
   - derived using the PostGIS `st_y()` and `st_x()` functions respectively
@@ -887,7 +906,7 @@ Update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) using the tem
 ```sql
 -- NEW_DATASET
 
-CREATE TABLE IF NOT EXISTS public.NEW_DATASET
+CREATE TABLE IF NOT EXISTS magic_managed.NEW_DATASET
 (
   pk         INTEGER                  GENERATED ALWAYS AS IDENTITY
     CONSTRAINT NEW_DATASET_pk PRIMARY KEY,
@@ -903,17 +922,17 @@ CREATE TABLE IF NOT EXISTS public.NEW_DATASET
 );
 
 CREATE INDEX IF NOT EXISTS NEW_DATASET_geom_idx
-  ON public.NEW_DATASET USING gist (geom);
+  ON magic_managed.NEW_DATASET USING gist (geom);
 
 CREATE OR REPLACE TRIGGER NEW_DATASET_updated_at_trigger
   BEFORE INSERT OR UPDATE
-  ON NEW_DATASET
+  ON magic_managed.NEW_DATASET
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_at();
 
 CREATE OR REPLACE TRIGGER NEW_DATASET_updated_by_trigger
   BEFORE INSERT OR UPDATE
-  ON NEW_DATASET
+  ON magic_managed.NEW_DATASET
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_by();
 ```
@@ -928,10 +947,10 @@ the layer properties/style back to the data source and verify entry added to QGI
 1. update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) making any relevant changes
 1. create an update file with the statements to change the relevant entities in place (e.g. [1])
 1. copy the update file to each application instance and apply it using the [`db run`](#control-cli-db-commands) command
-1. in QGIS, update the properties for the updated layer/table as needed and save to the QGIS `layer_styles` table.
+1. in QGIS, update the properties for the updated layer/table as needed and save to the QGIS `public.layer_styles` table
 
-**Note:** QGIS will create a new entry in the `layer_styles` table, with the previous style/entry no longer set as a
-default. These previous styles can be removed if needed.
+**Note:** QGIS will create a new entry in the `public.layer_styles` table, with the previous style/entry no longer set
+as a default. These previous styles can be removed if needed.
 
 [1] E.g.:
 
@@ -940,11 +959,12 @@ ALTER TABLE EXISTING_DATASET
 ADD COLUMN NEW_COLUMN TEXT;
 ```
 
-### Removing a managed dataset [WIP]
+### Removing a MAGIC managed dataset [WIP]
 
 **Note:** This section is a work in progress and may be incomplete.
 
-Manually remove any styles for the removed layer in the QGIS `layer_styles` table.
+After dropping the relevant table, manually remove any styles for the removed layer in the QGIS
+`public.layer_styles` table.
 
 ### QGIS editing support for routes
 
@@ -992,9 +1012,9 @@ Required Postgres extensions:
 - pgcrypto
 - fuzzystrmatch
 
-A single database, and an account with permissions to create, read, update and delete objects within this, is required
-to run this application. This database and account can be named anything but `ops_data_store` and `ops_data_store_app`
-respectively are recommended as conventional defaults.
+A single database, and an account with permissions to create, read, update and delete objects (inc. Postgres schemas)
+within this, is required to run this application. This database and account can be named anything but `ops_data_store`
+and `ops_data_store_app` respectively are recommended as conventional defaults.
 
 In addition, a mechanism must be available for creating and maintaining Postgres role and users as outlined in abstract
 in the [Permissions](#permissions) section and more specifically in [Database Permissions](#database-permissions). This must
@@ -1272,7 +1292,7 @@ Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment 
 
 **Note:** This section is a work in progress and may be restructured.
 
-- save an ad-hoc layer style in QGIS to create the QGIS `layer_styles` table in the new instance
+- save an ad-hoc layer style in QGIS to create the QGIS `public.layer_styles` table in the new instance
 - copy existing QGIS layer styles from an existing instance to the new instance
 - check test data can be created using the application user in QGIS
   - suggested to add a test set of waypoints and route for verifying Air Unit conversion is working
@@ -1512,9 +1532,10 @@ A `.test.env` file MUST be created as per the [Testing Configuration](#test-conf
 Set up the database and load the [Test Schemas and Data](#test-schemas-and-data):
 
 ```
-$ poetry run ops-ctl db setup
-$ poetry run ops-ctl db run --input-path tests/resources/test-schemas.sql
-$ poetry run ops-ctl db run --input-path tests/resources/test-data.sql
+$ poetry run ods-ctl db setup
+$ poetry run ods-ctl db run --input-path resources/data/dataset-schemas.sql
+$ poetry run ods-ctl db run --input-path resources/data/dataset-roles.sql
+$ poetry run ods-ctl db run --input-path resources/data/dataset-grants.sql
 ```
 
 The QGIS profile used for testing needs [downloading 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/)

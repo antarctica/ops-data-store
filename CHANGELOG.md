@@ -51,6 +51,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#178](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/178)
 * switching `updated_by` trigger to use `SESSION_USER` in preparation for using `SET ROLE` for inheriting permissions
   [#175](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/175)
+* refactor `public` schema to `magic_managed` in preparation for supporting non-MAGIC managed datasets
+  [#174](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/174)
 
 ## [0.8.0] - 2023-12-13
 
