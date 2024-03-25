@@ -97,21 +97,16 @@ class DataClient:
                 raise RuntimeError(msg) from e
 
         access_mode = "update"
-        try:
-            VectorTranslate(
-                destNameOrDestDS=target,
-                srcDS=source,
-                options=VectorTranslateOptions(
-                    format="GPKG",
-                    layerName=self._qgis_styles_table,
-                    SQLStatement=f"SELECT * FROM public.{self._qgis_styles_table};",  # noqa: S608
-                    accessMode=access_mode,
-                ),
-            )
-        except RuntimeError as e:
-            self.logger.error(e, exc_info=True)
-            msg = "GDAL export failed."
-            raise RuntimeError(msg) from e
+        VectorTranslate(
+            destNameOrDestDS=target,
+            srcDS=source,
+            options=VectorTranslateOptions(
+                format="GPKG",
+                layerName=self._qgis_styles_table,
+                SQLStatement=f"SELECT * FROM public.{self._qgis_styles_table};",  # noqa: S608
+                accessMode=access_mode,
+            ),
+        )
 
         self.logger.info("Fixing layer style references in GeoPackage")
         with sqlite3_connect(path) as conn:
