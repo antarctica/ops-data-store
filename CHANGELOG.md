@@ -53,6 +53,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#175](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/175)
 * refactor `public` schema to `magic_managed` in preparation for supporting non-MAGIC managed datasets
   [#174](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/174)
+* refactor database and GeoPackage backups to target MAGIC managed datasets and QGIS layer styles only
+  [#169](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/169)
 
 ## [0.8.0] - 2023-12-13
 

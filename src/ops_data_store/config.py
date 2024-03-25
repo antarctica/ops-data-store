@@ -93,6 +93,7 @@ class Config:
             "DATA_AIRNET_ROUTES_TABLE": self.DATA_AIRNET_ROUTES_TABLE,
             "DATA_AIRNET_ROUTE_WAYPOINTS_TABLE": self.DATA_AIRNET_ROUTE_WAYPOINTS_TABLE,
             "DATA_AIRNET_WAYPOINTS_TABLE": self.DATA_AIRNET_WAYPOINTS_TABLE,
+            "DATA_MANAGED_SCHEMA_NAME": self.DATA_MANAGED_SCHEMA_NAME,
             "DATA_MANAGED_TABLE_NAMES": self.DATA_MANAGED_TABLE_NAMES,
             "DATA_QGIS_TABLE_NAMES": self.DATA_QGIS_TABLE_NAMES,
             "DB_DSN": self.DB_DSN,
@@ -229,6 +230,11 @@ class Config:
     def DATA_AIRNET_WAYPOINTS_TABLE(self) -> str:
         """Name of table used for Air Unit Network waypoints."""
         return "waypoint"
+
+    @property
+    def DATA_MANAGED_SCHEMA_NAME(self) -> str:
+        """Name of schema used for managed datasets."""
+        return "magic_managed"
 
     @property
     def DATA_MANAGED_TABLE_NAMES(self) -> list[str]:

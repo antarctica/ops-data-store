@@ -266,6 +266,14 @@ class TestConfigAuthLdapNameContextGroups:
         environ["APP_ODS_AUTH_LDAP_CXT_GROUPS"] = ldap_name_context_groups
 
 
+class TestConfigDataManagedSchemaName:
+    """Tests for `DATA_MANAGED_SCHEMA_NAME` property."""
+
+    def test_ok(self, fx_test_data_managed_schema_name: str, fx_test_config: Config) -> None:
+        """Property can be read."""
+        assert fx_test_data_managed_schema_name == fx_test_config.DATA_MANAGED_SCHEMA_NAME
+
+
 class TestConfigDataManagedTableNames:
     """Tests for `DATA_MANAGED_TABLE_NAMES` property."""
 

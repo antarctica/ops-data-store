@@ -41,7 +41,10 @@ class DataClient:
         self.db_client = DBClient()
         self.airnet_client = AirUnitNetworkClient()
 
-        self.export_tables: list[str] = self.config.DATA_MANAGED_TABLE_NAMES + self.config.DATA_QGIS_TABLE_NAMES
+        self._magic_managed_connection = f"PG:{self.config.DB_DSN}"
+        self._magic_managed_tables = self.config.DATA_MANAGED_TABLE_NAMES
+        self._qgis_styles_table = self.config.DATA_QGIS_TABLE_NAMES[0]
+        self.export_tables = [*self._magic_managed_tables, self._qgis_styles_table]
 
     def export(self, path: Path) -> None:
         """
@@ -68,10 +71,10 @@ class DataClient:
         if path.exists():
             self.logger.info("Export path exists and will be overwritten.")
 
-        source = GDALOpenDataSource(f"PG:{self.config.DB_DSN}", GDAL_OUTPUT_FORMAT_VECTOR)
+        source = GDALOpenDataSource(self._magic_managed_connection, GDAL_OUTPUT_FORMAT_VECTOR)
         target = str(path.resolve())
 
-        for table_name in self.export_tables:
+        for table_name in self._magic_managed_tables:
             access_mode = "update"
             if not path.exists():
                 access_mode = None
@@ -84,7 +87,7 @@ class DataClient:
                     options=VectorTranslateOptions(
                         format="GPKG",
                         layerName=table_name,
-                        SQLStatement=f"SELECT * FROM {table_name};",  # noqa: S608
+                        SQLStatement=f"SELECT * FROM {self.config.DATA_MANAGED_SCHEMA_NAME}.{table_name};",  # noqa: S608
                         accessMode=access_mode,
                     ),
                 )
@@ -92,6 +95,23 @@ class DataClient:
                 self.logger.error(e, exc_info=True)
                 msg = "GDAL export failed."
                 raise RuntimeError(msg) from e
+
+        access_mode = "update"
+        try:
+            VectorTranslate(
+                destNameOrDestDS=target,
+                srcDS=source,
+                options=VectorTranslateOptions(
+                    format="GPKG",
+                    layerName=self._qgis_styles_table,
+                    SQLStatement=f"SELECT * FROM public.{self._qgis_styles_table};",  # noqa: S608
+                    accessMode=access_mode,
+                ),
+            )
+        except RuntimeError as e:
+            self.logger.error(e, exc_info=True)
+            msg = "GDAL export failed."
+            raise RuntimeError(msg) from e
 
         self.logger.info("Fixing layer style references in GeoPackage")
         with sqlite3_connect(path) as conn:
