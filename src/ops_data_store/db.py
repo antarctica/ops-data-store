@@ -2,6 +2,7 @@ import logging
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import psycopg
 from psycopg import Cursor
@@ -21,6 +22,8 @@ class DBClient:
         self.logger.info("Creating DB client.")
 
         self._dsn = self.config.DB_DSN
+        self._schema = self.config.DATA_MANAGED_SCHEMA_NAME
+        self._qgis_styles_table = f"public.{self.config.DATA_QGIS_TABLE_NAMES[0]}"
         self.logger.info("DB DSN: %s.", self._dsn)
 
         self._required_extensions: list[str] = ["postgis", "pgcrypto", "fuzzystrmatch"]
@@ -196,15 +199,48 @@ class DBClient:
 
         Wrapper around `pg_dump` command.
 
+        Only the 'managed schema' and QGIS layer styles (from the public schema) are exported to prevent additional
+        schemas affecting these backups. These are backed up separately and then combined into a single file as pg_dump
+        can't target a schema and a set of tables in one command. The intermediate files are written to a Python managed
+        temporary directory until combined (or an exception occurs).
+
         The current time is appended as a comment to the dump file to ensure uniqueness where data doesn't change.
 
         Warning: Any existing file at `path` will be overwritten.
         """
         try:
-            self.logger.info("Dumping database via `pg_dump`.")
-            subprocess_args = ["pg_dump", f"--dbname={self._dsn}", f"--file={path.resolve()}"]
-            self.logger.info(f"Args: {subprocess_args}")
-            subprocess.run(args=subprocess_args, check=True, text=True, capture_output=True)
+            with TemporaryDirectory() as workspace:
+                workspace_path = Path(workspace)
+                magic_managed_path = workspace_path.joinpath("magic_managed.sql")
+                qgis_styles_path = workspace_path.joinpath("qgis_styles.sql")
+
+                self.logger.info("Dumping MAGIC managed schema via `pg_dump`.")
+                subprocess_args = [
+                    "pg_dump",
+                    f"--schema={self._schema}",
+                    f"--dbname={self._dsn}",
+                    f"--file={magic_managed_path.resolve()}",
+                ]
+                self.logger.info(f"Args: {subprocess_args}")
+                subprocess.run(args=subprocess_args, check=True, text=True, capture_output=True)
+
+                self.logger.info("Dumping QGIS layer styles via `pg_dump`.")
+                subprocess_args = [
+                    "pg_dump",
+                    f"--table={self._qgis_styles_table}",
+                    f"--dbname={self._dsn}",
+                    f"--file={qgis_styles_path.resolve()}",
+                ]
+                self.logger.info(f"Args: {subprocess_args}")
+                subprocess.run(args=subprocess_args, check=True, text=True, capture_output=True)
+
+                self.logger.info("Combining dump files.")
+                with path.open(mode="w") as file:
+                    with magic_managed_path.open() as magic_file:
+                        file.write(magic_file.read())
+                    file.write("\n\n")
+                    with qgis_styles_path.open() as qgis_file:
+                        file.write(qgis_file.read())
 
             self.logger.info("Appending timestamp to dump file.")
             with path.open(mode="a") as file:

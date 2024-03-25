@@ -126,6 +126,12 @@ def fx_test_auth_ldap_name_context_groups(fx_test_env: Env) -> str:
 
 
 @pytest.fixture()
+def fx_test_data_managed_schema_name(fx_test_env: Env) -> str:
+    """Names of managed dataset tables."""
+    return "magic_managed"
+
+
+@pytest.fixture()
 def fx_test_data_managed_table_names(fx_test_env: Env) -> list[str]:
     """Names of managed dataset tables."""
     return fx_test_env.list("APP_ODS_DATA_MANAGED_TABLE_NAMES")
@@ -196,6 +202,7 @@ def fx_test_config_dict(
     fx_test_auth_ldap_ou_groups: str,
     fx_test_auth_ldap_name_context_users: str,
     fx_test_auth_ldap_name_context_groups: str,
+    fx_test_data_managed_schema_name: str,
     fx_test_data_managed_table_names: list[str],
     fx_test_data_qgis_table_names: list[str],
     fx_test_backups_path: Path,
@@ -226,6 +233,7 @@ def fx_test_config_dict(
         "DATA_AIRNET_ROUTES_TABLE": fx_test_data_airnet_routes_table,
         "DATA_AIRNET_ROUTE_WAYPOINTS_TABLE": fx_test_data_airnet_route_waypoints_table,
         "DATA_AIRNET_WAYPOINTS_TABLE": fx_test_data_airnet_waypoints_table,
+        "DATA_MANAGED_SCHEMA_NAME": fx_test_data_managed_schema_name,
         "DATA_MANAGED_TABLE_NAMES": fx_test_data_managed_table_names,
         "DATA_QGIS_TABLE_NAMES": fx_test_data_qgis_table_names,
         "DB_DSN": fx_test_db_dsn,

@@ -109,15 +109,19 @@ message from the `shapely` that can be safely ignored:
 
 #### Control CLI `data` commands
 
-- `ods-ctl data backup --ouput-path [path/to/file.gpkg]`: saves managed datasets and QGIS styles to GeoPackage backup
+- `ods-ctl data backup --ouput-path [path/to/file.gpkg]`: saves datasets and styles to GeoPackage backup [1]
 - `ods-ctl data convert`: saves managed routes and waypoints for printing and using in GPS devices
+
+[1] [MAGIC Managed Datasets](#magic-managed-datasets) and [QGIS Layer Styles](#qgis-layer-styles) only.
 
 #### Control CLI `db` commands
 
 - `ods-ctl db check`: verifies the database is available
 - `ods-ctl db setup`: configure a new database for use
-- `ods-ctl db backup --ouput-path [path/to/file.sql]`: saves database to SQL backup file via `pg_dump`
+- `ods-ctl db backup --ouput-path [path/to/file.sql]`: saves database to SQL backup file via `pg_dump` [1]
 - `ods-ctl db run --input-path [path/to/file.sql]`: runs SQL commands contained in the input file
+
+[1] [MAGIC Managed Datasets](#magic-managed-datasets) and [QGIS Layer Styles](#qgis-layer-styles) only.
 
 ### QGIS project
 
@@ -589,8 +593,9 @@ users have been synced, between these systems and between environments.
 
 ### Backups
 
-Managed datasets hosted in this platform, and the underlying [Database](#database) can be exported as file based
-backups, to allow undesired data changes to be recovered (i.e. where a feature is accidentally deleted).
+[MAGIC Managed Datasets](#magic-managed-datasets) hosted in this platform, their [QGIS Layer Styles](#qgis-layer-styles)
+and the underlying [Database](#database) can be exported as file based backups, to allow undesired data changes to be
+recovered (i.e. where a feature is accidentally deleted).
 
 A fixed number of backups are kept, with the oldest backup replaced by the newest when a configured limit is reached.
 This forms a backup window within which backups can be accessed. The length of this window depends on the number of
@@ -599,7 +604,8 @@ backups to keep and how often they are made (i.e. a limit of 7 with daily backup
 **Note:** Backups are intended as point-in-time snapshots of data, rather than long-term, data archives (which will
 likely require manual preparation).
 
-**Note:** Currently, backups need to be captured manually, in future they will be automated on a regular schedule.
+**Note:** Backups only include datasets managed by this project. Additional 'unmanaged' datasets, or other database
+objects, are ignored.
 
 Currently, two separate backups are created:
 
@@ -618,7 +624,7 @@ GeoPackage backups:
 
 * use a [standardised](https://www.geopackage.org), interoperable, file format for geospatial information
 * can be used directly with GIS clients or other tools such as GDAL/OGR
-* contain [Managed Datasets](#magic-managed-datasets) and QGIS layer style information only
+* contain [MAGIC Managed Datasets](#magic-managed-datasets) and QGIS layer style information only
 
 **WARNING!** GeoPackage backups are not tested/verified.
 
@@ -632,7 +638,8 @@ Database backups:
 
 * use a technology specific file format for database information (postgres dump)
 * requires loading into a compatible Postgres database to use
-* contains all database objects (data types, tables, views, functions, triggers) from all schemas
+* contains all database objects (data types, tables, views, functions, triggers) from the MAGIC Managed Datasets schema
+  and select objects from the `public` schema only
 * do not contain global objects (users, roles and grants - see [Permissions](#permissions) section)
 
 Database backups are intended to give additional confidence whilst this project is initially setup system. They MUST
