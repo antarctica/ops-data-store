@@ -845,9 +845,11 @@ as [Backups](#backups-automation) using the [Sentry CLI](https://docs.sentry.io/
 
 Datasets hosted in this platform can be classed as either:
 
-- *unmanaged*: any other datasets users may wish to store, which are essentially ignored by this platform
 - *controlled*: datasets whose schemas are formally controlled by data owners (Ops) and platform operators (MAGIC) and
   typically represent fundamental, enduring, entities such as routes, depots, AOIs, etc.
+- *planning*: other datasets Ops users may wish to store, with a wide range of maturity - essentially ignored by this
+  platform
+
 ### Controlled datasets
 
 Controlled datasets are formally reviewed to ensure a suitable schema is used. All such datasets provide minimally
@@ -1005,6 +1007,20 @@ schemas. For reading, the view includes a derived `geom` column by combining the
 included in the route into a linestring. For writing, triggers split the linestring geometry into points, which are
 converted into waypoint identifiers, using the waypoint geometry as a join. A tolerance of 1KM is used to avoid
 precision differences preventing this spatial join not need to match feature positions exactly.
+
+### Field Operations planning datasets
+
+A schema for Field Operations to plan additional activities by creating additional datasets, storing experimental data
+and prototyping changes to [Controlled](#controlled-datasets) datasets.
+
+These datasets are managed by Field Operations, and do not need to (but may) follow any conventions or requirements
+such as naming conventions, required columns, etc.
+
+It's expected that datasets will vary in maturity and importance, with data ranging from fully experimental through to
+being a definitive source of truth.
+
+Datasets are stored in the `planning_field_ops` database schema. No table schemas etc. are defined for these datasets
+in this project.
 
 ## Requirements
 
@@ -1190,11 +1206,14 @@ Note: If this command fails, please either create an issue in the 'Ops Data Stor
 Ok. Database setup complete.
 ```
 
-Create required schemas and empty controlled datasets by running the contents of the
+Create required schemas and empty controlled datasets in the database:
+
+[`schemas.sql`](resources/db/schemas.sql)
 [`dataset-controlled.sql`](resources/db/datasets-controlled.sql) file against the database.
 
 ```
-$ ods-ctl db run --input-path dataset-schemas.sql
+$ ods-ctl db run --input-path resources/db/schemas.sql
+$ ods-ctl db run --input-path resources/db/datasets-controlled.sql
 ```
 
 Once database entities and roles needed for the [Permissions](#permissions) system have been created, ensure the
@@ -1573,6 +1592,7 @@ $ poetry run ods-ctl db run --input-path resources/db/roles.sql
 $ poetry run ods-ctl db run --input-path tests/resources/db/users.sql
 
 $ poetry run ods-ctl db setup
+$ poetry run ods-ctl db run --input-path resources/db/schemas.sql
 $ poetry run ods-ctl db run --input-path resources/db/datasets-controlled.sql
 $ poetry run ods-ctl db run --input-path tests/resources/db/grants.sql
 ```

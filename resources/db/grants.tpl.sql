@@ -3,7 +3,8 @@
 -- allow ods_admin to create new schemas (and objects within)
 GRANT CREATE ON DATABASE "{{ ops-data-store-dev }}" TO ods_admin;
 
--- [SCHEMA]
+-- [CONTROLLED SCHEMA]
+--
 
 GRANT USAGE, CREATE ON SCHEMA controlled TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA controlled TO ods_admin;
@@ -46,3 +47,12 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_write_fo;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_write_au;
 GRANT SELECT ON TABLE public.layer_styles TO ods_read;
+
+-- [PLANNING FIELD OPS SCHEMA]
+--
+
+GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_admin;
+
+GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_write_fo;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_write_fo;

@@ -1,7 +1,3 @@
--- [SCHEMA]
-
-CREATE SCHEMA IF NOT EXISTS controlled;
-
 SET search_path TO controlled, public;
 
 -- DEPOT
