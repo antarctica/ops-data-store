@@ -24,6 +24,8 @@ change in form and function based on feedback from end-users and our experience 
 
 ### Limitations
 
+#### Limitations - General
+
 As an alpha project, all, or parts, of this service:
 
 - may, but should not, stop working (due to regressions or instability)
@@ -35,21 +37,31 @@ As an alpha project, all, or parts, of this service:
 
 **WARNING:** Outputs from this project should not be relied upon for operational use without thorough scrutiny.
 
+#### Limitations - Datasets
+
 In relation to operations that can be performed by end-users vs. platform operators (MAGIC):
 
-  - due to needing database permissions we can't yet assign safely
-  - due to schemas being defined within this project and risking inconsistencies due to ad-hoc, per-instance changes
 - end-users cannot define new [Controlled](#controlled-datasets) datasets/layers themselves
 - end-users cannot add, change or remove fields/attributes in Controlled datasets themselves
 
+**Note:** These are intentional limitations to ensure controlled datasets are suitably designed and can be supported.
+
 In all these cases, end-users will need to request changes are made by contacting someone from MAGIC.
+
+#### Limitations - Permissions
 
 In relation to dataset [Permissions](#permissions), support for the following is not yet available:
 
-- creating and synchronising LDAP members to the database as postgres roles and users
-- running the Azure to LDAP group sync from a hosted environment
+- running the Azure to LDAP group sync automatically, it must be run manually
+- removing an Azure group from role once synced
+- users belonging to more than one role/team (i.e. a user cannot be in Air Unit and Field Ops team)
 
-In relation to dataset and database backups, backups are not verified as being accurate or usable.
+#### Limitations - Backups
+
+In relation to dataset and database backups:
+
+- backups are not verified as being accurate or usable
+- uncontrolled/planning datasets are not included in backups
 
 ### Related projects
 
