@@ -202,7 +202,7 @@ class Config:
         """
         Number of backup iterations to keep.
 
-        Applies to per backup series - i.e. if set to `3`, 3 DB and 3 managed datasets backups will be kept.
+        Applies to per backup series - i.e. if set to `3`, 3 DB and 3 controlled datasets backups will be kept.
         """
         return self.env.int("APP_ODS_BACKUPS_COUNT")
 
@@ -233,12 +233,12 @@ class Config:
 
     @property
     def DATA_MANAGED_SCHEMA_NAME(self) -> str:
-        """Name of schema used for managed datasets."""
-        return "magic_managed"
+        """Name of schema used for controlled datasets."""
+        return "controlled"
 
     @property
     def DATA_MANAGED_TABLE_NAMES(self) -> list[str]:
-        """Names of tables used for managed datasets."""
+        """Names of tables used for controlled datasets."""
         return self.env.list("APP_ODS_DATA_MANAGED_TABLE_NAMES")
 
     @property

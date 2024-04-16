@@ -26,7 +26,7 @@ class DataClient:
     """
     Application data client.
 
-    A high level abstraction over the database client to manage datasets.
+    A high level abstraction over the database client to manage controlled datasets.
     """
 
     def __init__(self) -> None:
@@ -41,10 +41,10 @@ class DataClient:
         self.db_client = DBClient()
         self.airnet_client = AirUnitNetworkClient()
 
-        self._magic_managed_connection = f"PG:{self.config.DB_DSN}"
-        self._magic_managed_tables = self.config.DATA_MANAGED_TABLE_NAMES
+        self._connection = f"PG:{self.config.DB_DSN}"
+        self._controlled_tables = self.config.DATA_MANAGED_TABLE_NAMES
         self._qgis_styles_table = self.config.DATA_QGIS_TABLE_NAMES[0]
-        self.export_tables = [*self._magic_managed_tables, self._qgis_styles_table]
+        self.export_tables = [*self._controlled_tables, self._qgis_styles_table]
 
     def export(self, path: Path) -> None:
         """
@@ -71,10 +71,10 @@ class DataClient:
         if path.exists():
             self.logger.info("Export path exists and will be overwritten.")
 
-        source = GDALOpenDataSource(self._magic_managed_connection, GDAL_OUTPUT_FORMAT_VECTOR)
+        source = GDALOpenDataSource(self._connection, GDAL_OUTPUT_FORMAT_VECTOR)
         target = str(path.resolve())
 
-        for table_name in self._magic_managed_tables:
+        for table_name in self._controlled_tables:
             access_mode = "update"
             if not path.exists():
                 access_mode = None

@@ -1,10 +1,3 @@
--- ROLES
-
-CREATE ROLE ods_admin;
-CREATE ROLE ods_write_fo;
-CREATE ROLE ods_write_au;
-CREATE ROLE ods_read;
-
 -- CONVENTIONAL USERS
 
 CREATE ROLE ops_data_store_app WITH LOGIN PASSWORD '[REDACTED]';

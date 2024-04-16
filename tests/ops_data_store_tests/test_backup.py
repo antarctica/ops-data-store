@@ -569,8 +569,8 @@ class TestBackupClient:
 
         assert "Creating database backup." in caplog.text
         assert "Created database backup." in caplog.text
-        assert "Creating managed dataset backup." in caplog.text
-        assert "Created managed dataset backup." in caplog.text
+        assert "Creating controlled datasets backup." in caplog.text
+        assert "Created controlled datasets backup." in caplog.text
 
     def test_backup_existing_path(self, caplog: pytest.LogCaptureFixture, fx_backup_client: BackupClient):
         """Can create backups, removing existing backup files if they exist ."""
@@ -588,5 +588,5 @@ class TestBackupClient:
 
         assert "Creating database backup." in caplog.text
         assert "Created database backup." in caplog.text
-        assert "Creating managed dataset backup." in caplog.text
-        assert "Created managed dataset backup." in caplog.text
+        assert "Creating controlled datasets backup." in caplog.text
+        assert "Created controlled datasets backup." in caplog.text

@@ -199,7 +199,7 @@ class DBClient:
 
         Wrapper around `pg_dump` command.
 
-        Only the 'managed schema' and QGIS layer styles (from the public schema) are exported to prevent additional
+        Only the `controlled` schema and QGIS layer styles (from the public schema) are exported to prevent additional
         schemas affecting these backups. These are backed up separately and then combined into a single file as pg_dump
         can't target a schema and a set of tables in one command. The intermediate files are written to a Python managed
         temporary directory until combined (or an exception occurs).
@@ -211,15 +211,15 @@ class DBClient:
         try:
             with TemporaryDirectory() as workspace:
                 workspace_path = Path(workspace)
-                magic_managed_path = workspace_path.joinpath("magic_managed.sql")
+                controlled_datasets_path = workspace_path.joinpath("controlled.sql")
                 qgis_styles_path = workspace_path.joinpath("qgis_styles.sql")
 
-                self.logger.info("Dumping MAGIC managed schema via `pg_dump`.")
+                self.logger.info("Dumping controlled datasets via `pg_dump`.")
                 subprocess_args = [
                     "pg_dump",
                     f"--schema={self._schema}",
                     f"--dbname={self._dsn}",
-                    f"--file={magic_managed_path.resolve()}",
+                    f"--file={controlled_datasets_path.resolve()}",
                 ]
                 self.logger.info(f"Args: {subprocess_args}")
                 subprocess.run(args=subprocess_args, check=True, text=True, capture_output=True)
@@ -236,7 +236,7 @@ class DBClient:
 
                 self.logger.info("Combining dump files.")
                 with path.open(mode="w") as file:
-                    with magic_managed_path.open() as magic_file:
+                    with controlled_datasets_path.open() as magic_file:
                         file.write(magic_file.read())
                     file.write("\n\n")
                     with qgis_styles_path.open() as qgis_file:

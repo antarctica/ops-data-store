@@ -134,7 +134,7 @@ class TestDBClient:
         # mock needs to be localised to prevent issues loading config from `.env` files
         client.dump(path=Path("/x.sql"))
 
-        assert "Dumping MAGIC managed schema via `pg_dump`." in caplog.text
+        assert "Dumping controlled datasets via `pg_dump`." in caplog.text
         assert "DB dump ok." in caplog.text
 
     def test_dump_fail(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture):
@@ -146,7 +146,7 @@ class TestDBClient:
         with pytest.raises(RuntimeError, match="DB dump failed."):
             client.dump(path=Path("/x.sql"))
 
-        assert "Dumping MAGIC managed schema via `pg_dump`." in caplog.text
+        assert "Dumping controlled datasets via `pg_dump`." in caplog.text
 
     def test_fetch_ok(self, mocker: MockFixture, caplog: pytest.LogCaptureFixture) -> None:
         """Fetch succeeds."""

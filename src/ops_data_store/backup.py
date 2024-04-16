@@ -359,7 +359,7 @@ class BackupClient:
     """
     Application backup client.
 
-    A high level manager class for maintaining rolling database and managed dataset backups.
+    A high level manager class for maintaining rolling database and controlled dataset backups.
     """
 
     def __init__(self) -> None:
@@ -375,7 +375,7 @@ class BackupClient:
         self._max_iterations = self.config.BACKUPS_COUNT
         self._backups_path = self.config.BACKUPS_PATH
         self._db_backup_name = "db_backup.sql"
-        self._data_backup_name = "managed_datasets_backup.gpkg"
+        self._data_backup_name = "controlled_datasets_backup.gpkg"
 
         self._db_backups = RollingFileSet(
             workspace_path=self._backups_path, base_name=self._db_backup_name, max_iterations=self._max_iterations
@@ -400,10 +400,10 @@ class BackupClient:
         db_backup_path.unlink()
         self.logger.info("Created database backup.")
 
-        self.logger.info("Creating managed dataset backup.")
+        self.logger.info("Creating controlled datasets backup.")
         data_backup_path = self._backups_path.joinpath(self._data_backup_name)
         data_backup_path.unlink(missing_ok=True)
         self.data_client.export(path=data_backup_path)
         self._data_backups.add(path=data_backup_path)
         data_backup_path.unlink()
-        self.logger.info("Created managed dataset backup.")
+        self.logger.info("Created controlled datasets backup.")
