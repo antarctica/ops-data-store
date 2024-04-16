@@ -9,20 +9,22 @@ Data store for hosted, and optionally controlled, datasets for BAS Field Operati
 This Data Store is a platform provided by the British Antarctic Survey (BAS) Mapping and Geospatial Information Centre
 ([MAGIC](https://bas.ac.uk/teams/magic)) for hosting vector geospatial data used by BAS Operational Teams.
 
-It consists of a limited set of managed datasets used and controlled by the BAS Air Unit and Field Operations teams for
-planning and delivering field seasons.
+It consists of datasets used and controlled by the BAS Air Unit and Field Operations teams for planning and delivering
+field seasons. Some key datasets are further controlled by MAGIC for enhanced data management and automation.
 
 **Note:** This project is focused on needs within the British Antarctic Survey. It has been open-sourced in case it's
 of use to others with similar or related needs. Some resources, indicated with a 🛡 symbol, are not accessible publicly.
 
 ### Status
 
-This project is an early alpha. The aim is to provide a robust, useful, live service within the next few field seasons.
+This project is a mature alpha. The aim is to provide a robust, useful, live service within the next few field seasons.
 
 The aim for this season is to provide an initial minimal implementation which meets core user needs. This will likely
 change in form and function based on feedback from end-users and our experience of operating the platform.
 
 ### Limitations
+
+#### Limitations - General
 
 As an alpha project, all, or parts, of this service:
 
@@ -31,25 +33,35 @@ As an alpha project, all, or parts, of this service:
 - may change at any time (in terms of implementation or functionality)
 - may have missing or outdated documentation
 
-**Note:** Support for this project is provided on a best efforts / 'as is' basis.
+**Note:** Support for this project is provided on a best efforts, 'as is', basis.
 
 **WARNING:** Outputs from this project should not be relied upon for operational use without thorough scrutiny.
 
+#### Limitations - Datasets
+
 In relation to operations that can be performed by end-users vs. platform operators (MAGIC):
 
-  - due to needing database permissions we can't yet assign safely
-  - due to schemas being defined within this project and risking inconsistencies due to ad-hoc, per-instance changes
 - end-users cannot define new [Controlled](#controlled-datasets) datasets/layers themselves
 - end-users cannot add, change or remove fields/attributes in Controlled datasets themselves
 
+**Note:** These are intentional limitations to ensure controlled datasets are suitably designed and can be supported.
+
 In all these cases, end-users will need to request changes are made by contacting someone from MAGIC.
+
+#### Limitations - Permissions
 
 In relation to dataset [Permissions](#permissions), support for the following is not yet available:
 
-- creating and synchronising LDAP members to the database as postgres roles and users
-- running the Azure to LDAP group sync from a hosted environment
+- running the Azure to LDAP group sync automatically, it must be run manually
+- removing an Azure group from role once synced
+- users belonging to more than one role/team (i.e. a user cannot be in Air Unit and Field Ops team)
 
-In relation to dataset and database backups, backups are not verified as being accurate or usable.
+#### Limitations - Backups
+
+In relation to dataset and database backups:
+
+- backups are not verified as being accurate or usable
+- uncontrolled/planning datasets are not included in backups
 
 ### Related projects
 
@@ -60,7 +72,7 @@ Operations.
 - [BAS Field Operations Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - [BAS Air Unit Network Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
 
-This project is an evolution of an earlier [Experiment 🛡](https://gitlab.data.bas.ac.uk/felnne/ops-data-store-exp).
+This project is an evolution of a previous [Experiment 🛡](https://gitlab.data.bas.ac.uk/felnne/ops-data-store-exp).
 
 ## Usage
 
@@ -275,9 +287,25 @@ Within this directory, open the relevant JSON [State file](#backups-state-files)
 
 Find this checksum in the `iterations` list for details including the date of the backup, and it's location.
 
-### Update user roles
+### Adding a user to a role
 
-To assign or remove roles from the [Permissions](#permissions) to or from users:
+[Permissions](#permissions) are assigned to users through groups they are part of being [mapped](#permissions-mappings)
+to a roles (e.g. _viewer_).
+
+To grant a user a role, add them to _a_ group that is mapped to that role.
+
+To revoke a role from a user, remove from _all_ groups that map to that role.
+
+To assign or remove roles from the [Permissions](#permissions) system to or from users:
+
+1. ask the relevant group owner to add or remove users as needed [1]
+1. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
+1. wait for the next [BAS IT User Sync](#bas-it-user-sync)
+
+Users should then have, or no longer have, access to relevant [Datasets](#datasets).
+
+[1] If needed, BAS IT can also update team/group memberships in addition to owners.
+
 ### Adding a new controlled dataset
 
 This section relates to [Controlled datasets](#controlled-datasets).
@@ -298,12 +326,6 @@ This section relates to [Controlled datasets](#controlled-datasets).
 ```sql
 -- NEW_DATASET
 
-1. identify the relevant application role (e.g. 'Admins')
-2. from the mappings table in the [Permissions](#permissions) table, find the relevant Azure Group that corresponds to
-   that role
-3. ask an owner of the Microsoft Team related to this Azure Group to add or remove the relevant users
-4. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
-5. wait for the next [BAS IT User Sync](#bas-it-user-sync)
 CREATE TABLE IF NOT EXISTS controlled.NEW_DATASET
 (
   pk         INTEGER                  GENERATED ALWAYS AS IDENTITY
@@ -319,11 +341,9 @@ CREATE TABLE IF NOT EXISTS controlled.NEW_DATASET
   lon_ddm    TEXT                     GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
 );
 
-Users should then have, or should no longer have, access to relevant managed [Datasets](#datasets).
 CREATE INDEX IF NOT EXISTS NEW_DATASET_geom_idx
   ON controlled.NEW_DATASET USING gist (geom);
 
-**Note:** If needed, BAS IT can also update team/group memberships.
 CREATE OR REPLACE TRIGGER NEW_DATASET_updated_at_trigger
   BEFORE INSERT OR UPDATE
   ON controlled.NEW_DATASET
@@ -366,6 +386,12 @@ This section relates to [Controlled datasets](#controlled-datasets).
 
 After dropping the relevant table, manually remove any styles for the removed layer in the QGIS
 `public.layer_styles` table.
+
+### Adding a new planning dataset [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+...
 
 ## Implementation
 
@@ -423,7 +449,7 @@ details, and must be defined by the user, using either appropriate environment v
 ### BAS Air Unit Network Utility
 
 The [BAS Air Unit Network Dataset utility 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset) is used to
-convert the *Waypoint* and *Route* [Managed Dataset](#magic-managed-datasets) maintained by the BAS Air Unit into
+convert the *Waypoint* and *Route* [Controlled Datasets](#controlled-datasets) maintained by the BAS Air Unit into
 formats for use in GPS devices and other activities such as printing.
 
 These datasets can be converted using the [`data convert`](#control-cli-data-commands) CLI command. Outputs are written
@@ -452,11 +478,20 @@ Log files for automatic conversions are retained for 24 hours and then deleted v
 extension for storing spatial information along with custom functions and data types for:
 
 - creating [ULIDs](https://github.com/ulid/spec) (stored as a UUID data-type)
-  - [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension, `generate_ulid` function
+  - using the `generate_ulid` custom function
+  - which relies on the [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension
 - formatting latitude and longitude values in the Degrees, Decimal Minutes format (DDM)
-  - using the `geom_as_ddm` function and `ddm_point` data type
-- recording when and by who rows in managed datasets are changed
-  - using the `set_updated_at` and `set_updated_by` functions
+  - using the `geom_as_ddm` custom function and `ddm_point` custom data type
+- recording when and by who rows in controlled datasets are changed
+  - using the `set_updated_at` and `set_updated_by` custom functions
+
+#### Database schemas
+
+All extensions, extension support views, custom functions/types and other shared objects are stored in the default
+`public` schema.
+
+[Datasets](#datasets) are stored in schemas based on how they are controlled. See the [Datasets](#datasets) section for
+more information.
 
 #### Database permissions
 
@@ -513,6 +548,12 @@ the database client in relation to this project specifically.
 For consistency/compatibility, the QGIS profile and project developed for the wider GIS are used for consistency and
 compatibility.
 
+#### QGIS layer styles
+
+It is recommended that QGIS layer styles are stored in the platform [Database](#database) such that they are centrally
+maintained. The `layer_styles` table QGIS creates should be held in the `public` schema, as it is a shared resource
+and not relevant to how datasets are organised.
+
 ### Microsoft Entra
 
 [Microsoft Entra](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id)
@@ -522,12 +563,12 @@ registration represents this project within Azure, granting it permission to rel
 
 #### App registration secrets
 
-A client secret (and non-secret client ID) is used for this project to identify it's application registration. Separate
+A client secret (and non-secret client ID) is used for this project to identify its application registration. Separate
 secrets used for each instance and need to be rotated every 6 months (180 days).
 
 #### App registration secret rotation
 
-Currently app registration secrets are rotated manually:
+Currently, app registration secrets are rotated manually:
 
 - from the [Application Registration](#azure-app-registrations) in the Azure Portal:
   - from the *Certificates & secrets* section, remove the existing secret
@@ -858,13 +899,13 @@ agreed functionality, using the same base table structure, with additional field
 Controlled datasets are stored in the `controlled` database schema. Definitions for these datasets are declared in
 [`dataset-schemas.sql`](resources/db/datasets-controlled.sql).
 
-This base schema comprises:
+This base table schema comprises:
 
 - a set of [Identifier](#controlled-datasets-identifiers) fields
 - a pair of [Last Update](#controlled-datasets-last-update-fields) fields
 - a set of [Geospatial](#controlled-datasets-geometry-fields) fields
 
-Any additional fields are determined in these other projects:
+Additional fields originate from one of these other projects:
 
 - BAS [Field Operations GIS Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - BAS [Air Unit Network Dataset 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
@@ -999,10 +1040,10 @@ For example:
 
 ### QGIS editing support for routes
 
-The managed *Route* dataset is non-spatial, as they consist of an ordered sequence of *Waypoint* identifiers. This
+The controlled *Route* dataset is non-spatial, as they consist of an ordered sequence of *Waypoint* identifiers. This
 prevents editing of routes in QGIS which requires a linestring geometry.
 
-To support being able to edit route features in QGIS a writable view is implemented as part of the managed dataset
+To support being able to edit route features in QGIS a writable view is implemented as part of the controlled dataset
 schemas. For reading, the view includes a derived `geom` column by combining the point geometries of each waypoint
 included in the route into a linestring. For writing, triggers split the linestring geometry into points, which are
 converted into waypoint identifiers, using the waypoint geometry as a join. A tolerance of 1KM is used to avoid
@@ -1037,10 +1078,10 @@ Required infrastructure:
 
 Required OS packages for Python app server:
 
-- Python 3.9+
-- OpenSSL 1.1.1+ [1]
+- Python >= 3.9
+- OpenSSL >= 1.1.1 [1]
 - OpenLDAP (including development headers)
-- GDAL 3.4 (including development headers and the `gdal-config` binary [1])
+- GDAL 3.4 (including development headers and the `gdal-config` binary [2])
 - libxml (including the `xmllint` binary)
 - libpq (including the `pg_dump` binary)
 
@@ -1216,8 +1257,8 @@ $ ods-ctl db run --input-path resources/db/schemas.sql
 $ ods-ctl db run --input-path resources/db/datasets-controlled.sql
 ```
 
-Once database entities and roles needed for the [Permissions](#permissions) system have been created, ensure the
-[Database Grants](#database-permissions) to grant access to end-users are applied, either directly or by incorporating into a permissions
+Create database roles and uses needed for the [Permissions](#permissions) and apply required
+[Database Grants](#database-permissions), either directly against the database or by incorporating into a permissions
 management mechanism.
 
 ### Configure auth syncing
@@ -1347,7 +1388,7 @@ Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment 
 - check test data can be created using an LDAP user
 - check the web server can be accessed using an LDAP login
 - check the Air Unit conversion process is working (requires some test waypoints/routes and the webserver)
-- verify the Back up Sentry conversion monitor is running and ok for the new instance
+- verify the back-up Sentry conversion monitor is running and ok for the new instance
 - verify the Air Unit conversion Sentry monitor is running and ok for the new instance
 
 ## Upgrading
@@ -1480,9 +1521,7 @@ Currently configured to use the *Rothera (Staging)* platform instance.
 
 ## Troubleshooting
 
-### GeoPackage backups GDAL error [WIP]
-
-**Note:** This section is a work in progress and may be restructured.
+### GeoPackage backups GDAL error
 
 Symptoms:
 
@@ -1497,8 +1536,8 @@ Prerequisites:
 Method:
 
 - in the relevant instance, create an export directly using the [`data export`](#control-cli-data-commands) command
-- if successful, check the state of the backup set (path available using the
-  [`config show`](#control-cli-config-commands)) command)
+- if successful, check the state of the backup set
+  (path available using the [`config show`](#control-cli-config-commands) command)
   - remove `controlled_datasets_backup.gpkg` if it exists
 - if unsuccessful, use a test script, similar to the one attached in [1], to test the GDAL Python bindings in isolation
 - if unsuccessful, use the GDAL CLI tools to export to a GeoPackage manually
@@ -1551,10 +1590,12 @@ $ cd ops-data-store
 
 **Note:** If you do not have access to the BAS GitLab instance, clone from GitHub as a read-only copy instead.
 
+#### Local python environment
+
 [Poetry](https://python-poetry.org/docs/#installation) is used for managing the Python environment and dependencies.
 
-[pyenv](https://github.com/pyenv/pyenv) is strongly recommended to ensure the Python version is the same as the one
-used in externally provisioned environments. This is currently *3.9.18*.
+[pyenv](https://github.com/pyenv/pyenv) (`brew install pyenv`) is strongly recommended to ensure the Python version
+matches deployed instances. E.g. where the deployed Python version is `3.9.18`:
 
 ```
 $ pyenv install 3.9.18
@@ -1562,16 +1603,14 @@ $ pyenv local 3.9.18
 $ poetry install
 ```
 
-Two [Postgres](https://www.postgresql.org) databases on a host running or accessible locally with the required
-extensions available are required (one for local development and one for testing).
+#### Local development database
 
-For example, if a Postgres instance is running locally with trust based authentication for the local user:
+A local [Postgres](#database) database (`brew install postgis`) is recommended to test storing [Datasets](#datasets):
 
 ```
+$ brew services start postgresql
 $ psql -d postgres -c 'CREATE DATABASE "ops-data-store-dev";'
-$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-dev" IS '\''Ops Data Store local development DB'\'';'
-$ psql -d postgres -c 'CREATE DATABASE "ops-data-store-test";'
-$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-test" IS '\''Ops Data Store local testing DB'\'';'
+$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-dev" IS '\''Ops Data Store local development'\'';'
 ```
 
 **Note:** This database name is a convention and used in SQL files that will be run later. If changed, all references
@@ -1584,6 +1623,8 @@ It's strongly recommended to set required configuration options using a `.env` f
 
 A `.test.env` file MUST be created as per the [Testing Configuration](#test-config) section.
 
+In QGIS, create the `public.layer_styles` table by creating an ad-hoc layer and saving its style to the database (the
+created style and ad-hoc layer can be removed once the table is created).
 
 Set up the database, create schemas and assign permissions for [Controlled Datasets](#controlled-datasets):
 
@@ -1598,14 +1639,14 @@ $ poetry run ods-ctl db run --input-path tests/resources/db/grants.sql
 ```
 
 The QGIS profile used for testing needs [downloading 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/)
-from GitLab package registry (as it's too large to sensibly store in Git).
+from the GitLab package registry (as it's too large to sensibly store in Git).
 
 Once downloaded, extract and rename to `ops-data-store`. Then copy to the relevant QGIS profile directory:
 
 - macOS: `~/Library/Application\ Support/QGIS/QGIS3/profiles/`
 - Windows: `%APPDATA%\Roaming\QGIS\QGIS3\profiles/`
 
-### Running control CLI locally
+#### Running control CLI locally
 
 ```
 $ poetry run ods-ctl [COMMAND] [ARGS]
@@ -1645,7 +1686,7 @@ Checks are run automatically in [Continuous Integration](#continuous-integration
 $ poetry run safety scan
 ```
 
-### Python gdal dependency version
+### Python GDAL dependency version
 
 The [GDAL Python bindings](https://pypi.org/project/GDAL/) are tied to the [GDAL library](https://gdal.org) version.
 
@@ -1730,22 +1771,13 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 1. add new properties to `ops_data_store.config.Config` class
 2. include new properties to `ops_data_store.config.Config.dump()` method
 3. if relevant, update `ops_data_store.config.Config.validate()` method
-4. update `.env` files and templates
-5. update `.gitlab-ci.yml` variables
-6. update `tests.ops_data_store_tests.test_config` module
+4. if relevant, update `.env` files and templates
+5. if relevant, update `.gitlab-ci.yml` variables
+6. add fixture to `tests.conftest`
+7. include fixture in `tests.conftest.fx_test_config_dict` fixture
+8. update `tests.ops_data_store_tests.test_config` module
 
 ## Testing
-
-### Test schemas and data
-
-A set of static datasets are defined for testing. These datasets are based on real [Datasets](#datasets) but sanitised
-to remove any sensitive information. To support repeatable testing these datasets do not change.
-
-See [`test-schemas.sql`](tests/resources/test-schemas.sql) for the structure of each dataset and
-[`test-data.sql`](tests/resources/test-data.sql) for related seed data (4 features for each).
-
-**Note:** This data is not yet representative. For details see
-[https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48).
 
 ### Python tests
 
@@ -1857,7 +1889,7 @@ This project is maintained by the BAS Mapping and Geographic Information Centre
 
 ## License
 
-Copyright (c) 2023 UK Research and Innovation (UKRI), British Antarctic Survey.
+Copyright (c) 2023-2024 UK Research and Innovation (UKRI), British Antarctic Survey (BAS).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
