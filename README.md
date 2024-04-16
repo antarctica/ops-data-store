@@ -1739,18 +1739,11 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 5. update `.gitlab-ci.yml` variables
 6. update `tests.ops_data_store_tests.test_config` module
 
+
+
+
+
 ## Testing
-
-### Test schemas and data
-
-A set of static datasets are defined for testing. These datasets are based on real [Datasets](#datasets) but sanitised
-to remove any sensitive information. To support repeatable testing these datasets do not change.
-
-See [`test-schemas.sql`](tests/resources/test-schemas.sql) for the structure of each dataset and
-[`test-data.sql`](tests/resources/test-data.sql) for related seed data (4 features for each).
-
-**Note:** This data is not yet representative. For details see
-[https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/48).
 
 ### Python tests
 
