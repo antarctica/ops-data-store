@@ -1556,10 +1556,12 @@ $ cd ops-data-store
 
 **Note:** If you do not have access to the BAS GitLab instance, clone from GitHub as a read-only copy instead.
 
+#### Local python environment
+
 [Poetry](https://python-poetry.org/docs/#installation) is used for managing the Python environment and dependencies.
 
-[pyenv](https://github.com/pyenv/pyenv) is strongly recommended to ensure the Python version is the same as the one
-used in externally provisioned environments. This is currently *3.9.18*.
+[pyenv](https://github.com/pyenv/pyenv) (`brew install pyenv`) is strongly recommended to ensure the Python version
+matches deployed instances. E.g. where the deployed Python version is `3.9.18`:
 
 ```
 $ pyenv install 3.9.18
@@ -1567,16 +1569,14 @@ $ pyenv local 3.9.18
 $ poetry install
 ```
 
-Two [Postgres](https://www.postgresql.org) databases on a host running or accessible locally with the required
-extensions available are required (one for local development and one for testing).
+#### Local development database
 
-For example, if a Postgres instance is running locally with trust based authentication for the local user:
+A local [Postgres](#database) database (`brew install postgis`) is recommended to test storing [Datasets](#datasets):
 
 ```
+$ brew services start postgresql
 $ psql -d postgres -c 'CREATE DATABASE "ops-data-store-dev";'
-$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-dev" IS '\''Ops Data Store local development DB'\'';'
-$ psql -d postgres -c 'CREATE DATABASE "ops-data-store-test";'
-$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-test" IS '\''Ops Data Store local testing DB'\'';'
+$ psql -d postgres -c 'COMMENT ON DATABASE "ops-data-store-dev" IS '\''Ops Data Store local development'\'';'
 ```
 
 **Note:** This database name is a convention and used in SQL files that will be run later. If changed, all references
@@ -1735,9 +1735,11 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 1. add new properties to `ops_data_store.config.Config` class
 2. include new properties to `ops_data_store.config.Config.dump()` method
 3. if relevant, update `ops_data_store.config.Config.validate()` method
-4. update `.env` files and templates
-5. update `.gitlab-ci.yml` variables
-6. update `tests.ops_data_store_tests.test_config` module
+4. if relevant, update `.env` files and templates
+5. if relevant, update `.gitlab-ci.yml` variables
+6. add fixture to `tests.conftest`
+7. include fixture in `tests.conftest.fx_test_config_dict` fixture
+8. update `tests.ops_data_store_tests.test_config` module
 
 
 
