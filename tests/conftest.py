@@ -128,7 +128,7 @@ def fx_test_auth_ldap_name_context_groups(fx_test_env: Env) -> str:
 @pytest.fixture()
 def fx_test_data_managed_schema_name(fx_test_env: Env) -> str:
     """Names of managed dataset tables."""
-    return "magic_managed"
+    return "controlled"
 
 
 @pytest.fixture()
