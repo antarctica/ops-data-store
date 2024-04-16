@@ -477,6 +477,14 @@ extension for storing spatial information along with custom functions and data t
 - recording when and by who rows in controlled datasets are changed
   - using the `set_updated_at` and `set_updated_by` custom functions
 
+#### Database schemas
+
+All extensions, extension support views, custom functions/types and other shared objects are stored in the default
+`public` schema.
+
+[Datasets](#datasets) are stored in schemas based on how they are controlled. See the [Datasets](#datasets) section for
+more information.
+
 #### Database permissions
 
 Database permissions form part of the Data Store's [Permissions](#permissions) system - specifically to control who
@@ -531,6 +539,12 @@ the database client in relation to this project specifically.
 
 For consistency/compatibility, the QGIS profile and project developed for the wider GIS are used for consistency and
 compatibility.
+
+#### QGIS layer styles
+
+It is recommended that QGIS layer styles are stored in the platform [Database](#database) such that they are centrally
+maintained. The `layer_styles` table QGIS creates should be held in the `public` schema, as it is a shared resource
+and not relevant to how datasets are organised.
 
 ### Microsoft Entra
 
@@ -1056,10 +1070,10 @@ Required infrastructure:
 
 Required OS packages for Python app server:
 
-- Python 3.9+
-- OpenSSL 1.1.1+ [1]
+- Python >= 3.9
+- OpenSSL >= 1.1.1 [1]
 - OpenLDAP (including development headers)
-- GDAL 3.4 (including development headers and the `gdal-config` binary [1])
+- GDAL 3.4 (including development headers and the `gdal-config` binary [2])
 - libxml (including the `xmllint` binary)
 - libpq (including the `pg_dump` binary)
 
@@ -1601,6 +1615,8 @@ It's strongly recommended to set required configuration options using a `.env` f
 
 A `.test.env` file MUST be created as per the [Testing Configuration](#test-config) section.
 
+In QGIS, create the `public.layer_styles` table by creating an ad-hoc layer and saving its style to the database (the
+created style and ad-hoc layer can be removed once the table is created).
 
 Set up the database, create schemas and assign permissions for [Controlled Datasets](#controlled-datasets):
 
@@ -1752,10 +1768,6 @@ If using a local Postgres database installed through homebrew (where `@14` is th
 6. add fixture to `tests.conftest`
 7. include fixture in `tests.conftest.fx_test_config_dict` fixture
 8. update `tests.ops_data_store_tests.test_config` module
-
-
-
-
 
 ## Testing
 
