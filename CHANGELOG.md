@@ -13,7 +13,7 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * Database grants/permissions documentation and reference file
   [#153](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/153)
-* Cambridge production instance information
+* Information for Cambridge production instance
   [#170](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/170)
 * Troubleshooting steps for broken GeoPackage backup
   [#179](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/179)
@@ -76,7 +76,7 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ### Removed
 
-* Duplicate, inconsistent parameter documentation from docblocks
+* Duplicate, inconsistent parameter documentation from doc-blocks
   [#152](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/152)
 
 ## [0.7.0] - 2023-12-05
@@ -252,7 +252,7 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ### Changed
 
-* Python package should only published on tagged releases
+* Python package should only be published on tagged releases
   [#14](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/14)
 * Documenting IT Python version
   [#4](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/4)
