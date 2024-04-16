@@ -287,9 +287,25 @@ Within this directory, open the relevant JSON [State file](#backups-state-files)
 
 Find this checksum in the `iterations` list for details including the date of the backup, and it's location.
 
-### Update user roles
+### Adding a user to a role
 
-To assign or remove roles from the [Permissions](#permissions) to or from users:
+[Permissions](#permissions) are assigned to users through groups they are part of being [mapped](#permissions-mappings)
+to a roles (e.g. _viewer_).
+
+To grant a user a role, add them to _a_ group that is mapped to that role.
+
+To revoke a role from a user, remove from _all_ groups that map to that role.
+
+To assign or remove roles from the [Permissions](#permissions) system to or from users:
+
+1. ask the relevant group owner to add or remove users as needed [1]
+1. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
+1. wait for the next [BAS IT User Sync](#bas-it-user-sync)
+
+Users should then have, or no longer have, access to relevant [Datasets](#datasets).
+
+[1] If needed, BAS IT can also update team/group memberships in addition to owners.
+
 ### Adding a new controlled dataset
 
 This section relates to [Controlled datasets](#controlled-datasets).
@@ -310,12 +326,6 @@ This section relates to [Controlled datasets](#controlled-datasets).
 ```sql
 -- NEW_DATASET
 
-1. identify the relevant application role (e.g. 'Admins')
-2. from the mappings table in the [Permissions](#permissions) table, find the relevant Azure Group that corresponds to
-   that role
-3. ask an owner of the Microsoft Team related to this Azure Group to add or remove the relevant users
-4. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
-5. wait for the next [BAS IT User Sync](#bas-it-user-sync)
 CREATE TABLE IF NOT EXISTS controlled.NEW_DATASET
 (
   pk         INTEGER                  GENERATED ALWAYS AS IDENTITY
@@ -331,11 +341,9 @@ CREATE TABLE IF NOT EXISTS controlled.NEW_DATASET
   lon_ddm    TEXT                     GENERATED ALWAYS AS ((geom_as_ddm(geom)).x) STORED
 );
 
-Users should then have, or should no longer have, access to relevant managed [Datasets](#datasets).
 CREATE INDEX IF NOT EXISTS NEW_DATASET_geom_idx
   ON controlled.NEW_DATASET USING gist (geom);
 
-**Note:** If needed, BAS IT can also update team/group memberships.
 CREATE OR REPLACE TRIGGER NEW_DATASET_updated_at_trigger
   BEFORE INSERT OR UPDATE
   ON controlled.NEW_DATASET
