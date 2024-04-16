@@ -9,15 +9,15 @@ Data store for hosted, and optionally controlled, datasets for BAS Field Operati
 This Data Store is a platform provided by the British Antarctic Survey (BAS) Mapping and Geospatial Information Centre
 ([MAGIC](https://bas.ac.uk/teams/magic)) for hosting vector geospatial data used by BAS Operational Teams.
 
-It consists of a limited set of managed datasets used and controlled by the BAS Air Unit and Field Operations teams for
-planning and delivering field seasons.
+It consists of datasets used and controlled by the BAS Air Unit and Field Operations teams for planning and delivering
+field seasons. Some key datasets are further controlled by MAGIC for enhanced data management and automation.
 
 **Note:** This project is focused on needs within the British Antarctic Survey. It has been open-sourced in case it's
 of use to others with similar or related needs. Some resources, indicated with a 🛡 symbol, are not accessible publicly.
 
 ### Status
 
-This project is an early alpha. The aim is to provide a robust, useful, live service within the next few field seasons.
+This project is a mature alpha. The aim is to provide a robust, useful, live service within the next few field seasons.
 
 The aim for this season is to provide an initial minimal implementation which meets core user needs. This will likely
 change in form and function based on feedback from end-users and our experience of operating the platform.
@@ -31,7 +31,7 @@ As an alpha project, all, or parts, of this service:
 - may change at any time (in terms of implementation or functionality)
 - may have missing or outdated documentation
 
-**Note:** Support for this project is provided on a best efforts / 'as is' basis.
+**Note:** Support for this project is provided on a best efforts, 'as is', basis.
 
 **WARNING:** Outputs from this project should not be relied upon for operational use without thorough scrutiny.
 
@@ -60,7 +60,7 @@ Operations.
 - [BAS Field Operations Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - [BAS Air Unit Network Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
 
-This project is an evolution of an earlier [Experiment 🛡](https://gitlab.data.bas.ac.uk/felnne/ops-data-store-exp).
+This project is an evolution of a previous [Experiment 🛡](https://gitlab.data.bas.ac.uk/felnne/ops-data-store-exp).
 
 ## Usage
 
@@ -367,6 +367,12 @@ This section relates to [Controlled datasets](#controlled-datasets).
 After dropping the relevant table, manually remove any styles for the removed layer in the QGIS
 `public.layer_styles` table.
 
+### Adding a new planning dataset [WIP]
+
+**Note:** This section is a work in progress and may be incomplete.
+
+...
+
 ## Implementation
 
 ### Architecture
@@ -423,7 +429,7 @@ details, and must be defined by the user, using either appropriate environment v
 ### BAS Air Unit Network Utility
 
 The [BAS Air Unit Network Dataset utility 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset) is used to
-convert the *Waypoint* and *Route* [Managed Dataset](#magic-managed-datasets) maintained by the BAS Air Unit into
+convert the *Waypoint* and *Route* [Controlled Datasets](#controlled-datasets) maintained by the BAS Air Unit into
 formats for use in GPS devices and other activities such as printing.
 
 These datasets can be converted using the [`data convert`](#control-cli-data-commands) CLI command. Outputs are written
@@ -452,11 +458,12 @@ Log files for automatic conversions are retained for 24 hours and then deleted v
 extension for storing spatial information along with custom functions and data types for:
 
 - creating [ULIDs](https://github.com/ulid/spec) (stored as a UUID data-type)
-  - [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension, `generate_ulid` function
+  - using the `generate_ulid` custom function
+  - which relies on the [pgcrypto](https://www.postgresql.org/docs/current/pgcrypto.html) extension
 - formatting latitude and longitude values in the Degrees, Decimal Minutes format (DDM)
-  - using the `geom_as_ddm` function and `ddm_point` data type
-- recording when and by who rows in managed datasets are changed
-  - using the `set_updated_at` and `set_updated_by` functions
+  - using the `geom_as_ddm` custom function and `ddm_point` custom data type
+- recording when and by who rows in controlled datasets are changed
+  - using the `set_updated_at` and `set_updated_by` custom functions
 
 #### Database permissions
 
@@ -522,12 +529,12 @@ registration represents this project within Azure, granting it permission to rel
 
 #### App registration secrets
 
-A client secret (and non-secret client ID) is used for this project to identify it's application registration. Separate
+A client secret (and non-secret client ID) is used for this project to identify its application registration. Separate
 secrets used for each instance and need to be rotated every 6 months (180 days).
 
 #### App registration secret rotation
 
-Currently app registration secrets are rotated manually:
+Currently, app registration secrets are rotated manually:
 
 - from the [Application Registration](#azure-app-registrations) in the Azure Portal:
   - from the *Certificates & secrets* section, remove the existing secret
@@ -858,13 +865,13 @@ agreed functionality, using the same base table structure, with additional field
 Controlled datasets are stored in the `controlled` database schema. Definitions for these datasets are declared in
 [`dataset-schemas.sql`](resources/db/datasets-controlled.sql).
 
-This base schema comprises:
+This base table schema comprises:
 
 - a set of [Identifier](#controlled-datasets-identifiers) fields
 - a pair of [Last Update](#controlled-datasets-last-update-fields) fields
 - a set of [Geospatial](#controlled-datasets-geometry-fields) fields
 
-Any additional fields are determined in these other projects:
+Additional fields originate from one of these other projects:
 
 - BAS [Field Operations GIS Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - BAS [Air Unit Network Dataset 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
@@ -999,10 +1006,10 @@ For example:
 
 ### QGIS editing support for routes
 
-The managed *Route* dataset is non-spatial, as they consist of an ordered sequence of *Waypoint* identifiers. This
+The controlled *Route* dataset is non-spatial, as they consist of an ordered sequence of *Waypoint* identifiers. This
 prevents editing of routes in QGIS which requires a linestring geometry.
 
-To support being able to edit route features in QGIS a writable view is implemented as part of the managed dataset
+To support being able to edit route features in QGIS a writable view is implemented as part of the controlled dataset
 schemas. For reading, the view includes a derived `geom` column by combining the point geometries of each waypoint
 included in the route into a linestring. For writing, triggers split the linestring geometry into points, which are
 converted into waypoint identifiers, using the waypoint geometry as a join. A tolerance of 1KM is used to avoid
@@ -1216,8 +1223,8 @@ $ ods-ctl db run --input-path resources/db/schemas.sql
 $ ods-ctl db run --input-path resources/db/datasets-controlled.sql
 ```
 
-Once database entities and roles needed for the [Permissions](#permissions) system have been created, ensure the
-[Database Grants](#database-permissions) to grant access to end-users are applied, either directly or by incorporating into a permissions
+Create database roles and uses needed for the [Permissions](#permissions) and apply required
+[Database Grants](#database-permissions), either directly against the database or by incorporating into a permissions
 management mechanism.
 
 ### Configure auth syncing
@@ -1347,7 +1354,7 @@ Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment 
 - check test data can be created using an LDAP user
 - check the web server can be accessed using an LDAP login
 - check the Air Unit conversion process is working (requires some test waypoints/routes and the webserver)
-- verify the Back up Sentry conversion monitor is running and ok for the new instance
+- verify the back-up Sentry conversion monitor is running and ok for the new instance
 - verify the Air Unit conversion Sentry monitor is running and ok for the new instance
 
 ## Upgrading
@@ -1480,9 +1487,7 @@ Currently configured to use the *Rothera (Staging)* platform instance.
 
 ## Troubleshooting
 
-### GeoPackage backups GDAL error [WIP]
-
-**Note:** This section is a work in progress and may be restructured.
+### GeoPackage backups GDAL error
 
 Symptoms:
 
@@ -1497,8 +1502,8 @@ Prerequisites:
 Method:
 
 - in the relevant instance, create an export directly using the [`data export`](#control-cli-data-commands) command
-- if successful, check the state of the backup set (path available using the
-  [`config show`](#control-cli-config-commands)) command)
+- if successful, check the state of the backup set
+  (path available using the [`config show`](#control-cli-config-commands) command)
   - remove `controlled_datasets_backup.gpkg` if it exists
 - if unsuccessful, use a test script, similar to the one attached in [1], to test the GDAL Python bindings in isolation
 - if unsuccessful, use the GDAL CLI tools to export to a GeoPackage manually
@@ -1598,14 +1603,14 @@ $ poetry run ods-ctl db run --input-path tests/resources/db/grants.sql
 ```
 
 The QGIS profile used for testing needs [downloading 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/packages/)
-from GitLab package registry (as it's too large to sensibly store in Git).
+from the GitLab package registry (as it's too large to sensibly store in Git).
 
 Once downloaded, extract and rename to `ops-data-store`. Then copy to the relevant QGIS profile directory:
 
 - macOS: `~/Library/Application\ Support/QGIS/QGIS3/profiles/`
 - Windows: `%APPDATA%\Roaming\QGIS\QGIS3\profiles/`
 
-### Running control CLI locally
+#### Running control CLI locally
 
 ```
 $ poetry run ods-ctl [COMMAND] [ARGS]
@@ -1645,7 +1650,7 @@ Checks are run automatically in [Continuous Integration](#continuous-integration
 $ poetry run safety scan
 ```
 
-### Python gdal dependency version
+### Python GDAL dependency version
 
 The [GDAL Python bindings](https://pypi.org/project/GDAL/) are tied to the [GDAL library](https://gdal.org) version.
 
