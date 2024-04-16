@@ -1857,7 +1857,7 @@ This project is maintained by the BAS Mapping and Geographic Information Centre
 
 ## License
 
-Copyright (c) 2023 UK Research and Innovation (UKRI), British Antarctic Survey.
+Copyright (c) 2023-2024 UK Research and Innovation (UKRI), British Antarctic Survey (BAS).
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
