@@ -23,6 +23,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#185](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/185)
 * Documentation on file quotas
   [#183](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/183)
+* Support for unmanaged/uncontrolled/planning datasets
+  [#200](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/200)
 
 ### Fixed
 

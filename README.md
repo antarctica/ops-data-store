@@ -190,6 +190,9 @@ Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
 
 **Note:** These instructions depend on the [Adding DB Connection](#adding-db-connection) workflow.
 
+**Note:** These instructions relate to adding existing layers. See the
+[Creating Planning DB Layers](#creating-planning-db-layers) section for adding a new layer.
+
 1. open QGIS with the relevant profile and project active
 1. from the *Browser* pane -> *PostgreSQL* -> *Ops Data Store*
     - *(the user may have multiple *Ops Data Store* entries they'll need to pick from based on their current location)*
@@ -254,7 +257,21 @@ Layers should be editable as normal. The add/edit feature form should already be
 platform fields and set appropriate aliases.
 
 When editing the *Route* layer, all vertices MUST overlap with existing waypoints. QGIS will allow any coordinate to
-be selected, however when saved any vertex that does not overlap will be omitted due to the way routes are saved.
+be selected, however when saved any vertex that does not overlap will be omitted due to the way
+[routes are saved](#qgis-editing-support-for-routes).
+
+#### Creating planning DB layers
+
+**Note:** These instructions are intended for adapting into documentation by MAGIC team members.
+
+**Note:** These instructions depend on the [Adding DB Connection](#adding-db-connection) workflow.
+
+New layers can be created in the [Field Ops Planning](#field-operations-planning-datasets) DB schema as normal.
+
+Users SHOULD be advised to:
+
+- use the 'Text, unlimited length (text)' data type for string data (rather than VARCHAR or similar)
+- create a default style and save to the data source (database)
 
 ### Accessing route and waypoint outputs
 
@@ -310,7 +327,7 @@ Users should then have, or no longer have, access to relevant [Datasets](#datase
 
 This section relates to [Controlled datasets](#controlled-datasets).
 
-1. update [`dataset-schemas.sql`](resources/data/dataset-schemas.sql) using the template [1] with these changes:
+1. update [`dataset-schemas.sql`](resources/db/datasets-controlled.sql) using the template [1] with these changes:
    1. replace `NEW_DATASET` with the singular, lower case, name of the new dataset (e.g. 'cave' not 'CAVES')
        - for multi-word names use underscores as a separator (e.g. 'moon_base' not 'moon-base')
    1. if the dataset does not include a [Dataset identifier](#dataset-identifier), remove the `id` column
@@ -387,11 +404,11 @@ This section relates to [Controlled datasets](#controlled-datasets).
 After dropping the relevant table, manually remove any styles for the removed layer in the QGIS
 `public.layer_styles` table.
 
-### Adding a new planning dataset [WIP]
+### Adding a new planning dataset
 
-**Note:** This section is a work in progress and may be incomplete.
+It's intended for end users to create new planning datasets using QGIS as a database client.
 
-...
+See the [Creating Planning DB Layers (in QGIS)](#creating-planning-db-layers) section for more information.
 
 ## Implementation
 
@@ -512,7 +529,7 @@ has been implemented are indicated with `{{ default/conventional/example value }
 
 **Note:** For BAS IT managed databases, the [BAS IT User Sync](#bas-it-user-sync) will create required database users.
 A set of example users, based on the reference example users, should also be created and assigned the relevant roles
-by IT manually. See the relevant [Infrastructure](#databases) sub-section for their credentials.
+by IT manually. See the relevant [Infrastructure](#databases) subsection for their credentials.
 
 Postgres grants are required to implement the rights described in the [Permission Mappings](#permissions-mappings)
 section. Reference SQL statements for these grants are defined in the [`grants.tpl.sql`](resources/db/grants.tpl.sql)
@@ -666,6 +683,10 @@ For managing database users based on LDAP objects:
 Datasets hosted in this platform are restricted as to who can read and/or edit from them. The platform includes a
 simple permissions system to enforce these restrictions.
 
+#### Permissions - roles
+
+This system includes three roles which can be assigned to individual users:
+
 - *admin*: can view and change any information to manage and administer the platform (inc. members of MAGIC and BAS IT)
 - *owner*: can change and view information
 - *viewer*: can read information only
@@ -700,8 +721,33 @@ These roles are implemented in the [Database](#database) using roles and users:
 Database grants allow specific actions, such as reading or writing data. They apply to a subject (user/role) to a
 target (database object, schema/table/etc.).
 
-... why can't the grants we need be inherited from a common role to end-users (i.e. why do users need to assume a role
-to make changes?) ...
+Permissions to allow roles (and their assigned users) to perform specific actions (such as reading or writing data)
+are implemented using [Postgres permissions](#database-permissions).
+
+As Postgres uses a user/source centric permissions model, it's not possible to define permissions from the point of
+view of a schema, such that roles are granted permissions on any entities created within a schema automatically.
+Instead, each role (end user) needs to grant the relevant permissions for each entity created.
+
+For entities created dynamically by end-users (such as for [Planning Datasets](#field-operations-planning-datasets)),
+it isn't tenable to expect end-users apply database grants after creating new entities, however without it other users
+won't be access them.
+
+I.e.:
+
+- a user Alice creates a new table 'foo'
+- another user Bob is unable to access it because Alice hasn't granted Bob access to it
+
+To work around this limitation, end-users assume a common role to act as using `SET ROLE` (set automatically in the
+QGIS database connection). This means entities are created (and otherwise interacted with) as the same user and so does
+not require any grants to be applied.
+
+I.e.:
+
+- a user Alice, acting as a common role `field_team`, creates a new table 'foo'
+- another user Bob, also acting as the `field_team` common role, is able to access it because they are the same user
+
+**Note:** Users must be assigned to inherit from any role they wish to act as, preventing users bypassing access
+restrictions. See the [Role Assignments](#permissions-role-assignments) section for more information.
 
 #### Permissions - role assignments
 
