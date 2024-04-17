@@ -19,8 +19,10 @@ of use to others with similar or related needs. Some resources, indicated with a
 
 This project is a mature alpha. The aim is to provide a robust, useful, live service within the next few field seasons.
 
-The aim for this season is to provide an initial minimal implementation which meets core user needs. This will likely
-change in form and function based on feedback from end-users and our experience of operating the platform.
+The aim for the 2023-2024 season was to provide an initial minimal implementation to meets core user needs.
+
+Usage and feedback of this minimal implementation is helping guide which improvements and new features are needed for
+the 2024-2025 season.
 
 ### Limitations
 

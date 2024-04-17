@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.9.0] - 2024-04-17
+
 ### Added
 
 * Database grants/permissions documentation and reference file
