@@ -1,8 +1,10 @@
--- CONVENTIONAL USERS
+-- APP USERS
 
 CREATE ROLE ops_data_store_app WITH LOGIN PASSWORD '[REDACTED]';
+CREATE ROLE ods_app_eo_acq_script WITH LOGIN PASSWORD '[REDACTED]';
 
 GRANT ods_admin TO ops_data_store_app;
+GRANT ods_read TO ops_app_eo_acq_script;
 
 -- TEST USERS
 
