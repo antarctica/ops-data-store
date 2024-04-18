@@ -42,6 +42,11 @@ GRANT SELECT ON TABLE controlled.route_waypoint TO ods_read;
 GRANT SELECT, INSERT, UPDATE, DELETE ON controlled.route TO ods_write_au;
 GRANT SELECT ON controlled.route TO ods_read;
 
+-- EO ACQUISITION AOIs
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_admin;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_write_fo;
+GRANT SELECT ON TABLE controlled.eo_acq_aoi TO ods_read;
+
 -- LAYER STYLES
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_write_fo;

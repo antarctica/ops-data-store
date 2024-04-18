@@ -266,3 +266,32 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER route_delete_trigger
 INSTEAD OF DELETE ON controlled.route
 FOR EACH ROW EXECUTE FUNCTION route_delete();
+
+-- EO ACQUISITION AOIs
+
+CREATE TABLE IF NOT EXISTS controlled.eo_acq_aoi
+(
+  pk         INTEGER                  GENERATED ALWAYS AS IDENTITY
+    CONSTRAINT eo_acq_aoi_pk PRIMARY KEY,
+  pid        UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
+  id         TEXT                     NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
+  updated_by TEXT                     NOT NULL DEFAULT 'unknown',
+  geom       GEOMETRY(Polygon, 4326)  NOT NULL,
+  name       TEXT                     NOT NULL UNIQUE
+);
+
+CREATE INDEX IF NOT EXISTS eo_acq_aoi_geom_idx
+  ON controlled.eo_acq_aoi USING gist (geom);
+
+CREATE OR REPLACE TRIGGER eo_acq_aoi_updated_at_trigger
+  BEFORE INSERT OR UPDATE
+  ON controlled.eo_acq_aoi
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_at();
+
+CREATE OR REPLACE TRIGGER eo_acq_aoi_updated_by_trigger
+  BEFORE INSERT OR UPDATE
+  ON controlled.eo_acq_aoi
+  FOR EACH ROW
+  EXECUTE FUNCTION set_updated_by();

@@ -680,6 +680,18 @@ For managing database users based on LDAP objects:
 - user roles for users removed from an LDAP group will no longer inherit from the relevant base role, revoking permissions
 - user roles may inherit from multiple base Postgres roles if members of multiple application LDAP groups
 
+### MAGIC EO Acquisitions script
+
+To provide Field Operations with satellite imagery for areas they are interested in, MAGIC routinely searches for and
+downloads imagery for a given series of Areas of Interest (AOIs) through a script. This data is then synced to a
+nominated location where Field Operations can access it.
+
+These AOIs are stored as a controlled dataset within the Data Store (`controlled.eo_acq_aoi`). Field Ops create
+features in this dataset which the script reads as needed using an app DB user (`ods_app_eo_acq_script`).
+
+This script is maintained through the [MAGIC Remote Sensing](https://gitlab.data.bas.ac.uk/MAGIC/remote-sensing)
+project.
+
 ### Permissions
 
 Datasets hosted in this platform are restricted as to who can read and/or edit from them. The platform includes a
@@ -963,12 +975,13 @@ Additional fields originate from one of these other projects:
 Controlled datasets are assigned to these teams in relation to the [Permissions](#permissions) needed to change the
 data they contain:
 
-| Dataset         | Owner (Team)         |
-|-----------------|----------------------|
-| Depots          | BAS Field Operations |
-| Instruments     | BAS Field Operations |
-| Waypoints       | BAS Air Unit         |
-| Routes          | BAS Air Unit         |
+| Dataset Name        | Database Entity Name                         | Owner (Team)         |
+|---------------------|----------------------------------------------|----------------------|
+| Depots              | `depot`                                      | BAS Field Operations |
+| Instruments         | `instrument`                                 | BAS Field Operations |
+| Waypoints           | `waypoint`                                   | BAS Air Unit         |
+| Routes              | `route_container`, `route_waypoint`, `route` | BAS Air Unit         |
+| EO Acquisition AOIs | `eo_acq_aoi`                                 | MAGIC                |
 
 I.e. the Depots dataset can only be changed by the BAS Field Operations team.
 
