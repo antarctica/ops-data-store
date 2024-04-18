@@ -41,9 +41,9 @@ class AirUnitNetworkClient:
             """
             SELECT
                 pid, id, st_x(geom), st_y(geom), name, colocated_with, last_accessed_at, last_accessed_by, comment
-            FROM {}
+            FROM {}.{}
             """
-        ).format(Identifier(self.config.DATA_AIRNET_WAYPOINTS_TABLE))
+        ).format(Identifier(self.config.DATA_MANAGED_SCHEMA_NAME), Identifier(self.config.DATA_AIRNET_WAYPOINTS_TABLE))
         results = self.db_client.fetch(query=query)
         self.logger.debug(f"query count: {len(results)}")
 
@@ -72,8 +72,8 @@ class AirUnitNetworkClient:
         self.logger.info("Fetching routes and route_waypoints from database.")
 
         # noinspection SqlResolve,SqlMissingColumnAliases
-        query = SQL("""SELECT route_pid, waypoint_pid, sequence FROM {} ORDER BY route_pid, sequence""").format(
-            Identifier(self.config.DATA_AIRNET_ROUTE_WAYPOINTS_TABLE)
+        query = SQL("""SELECT route_pid, waypoint_pid, sequence FROM {}.{} ORDER BY route_pid, sequence""").format(
+            Identifier(self.config.DATA_MANAGED_SCHEMA_NAME), Identifier(self.config.DATA_AIRNET_ROUTE_WAYPOINTS_TABLE)
         )
         route_waypoint_results = self.db_client.fetch(query=query)
         self.logger.debug(f"route waypoint query count: {len(route_waypoint_results)}")
@@ -88,7 +88,9 @@ class AirUnitNetworkClient:
             )
 
         # noinspection SqlResolve,SqlMissingColumnAliases
-        query = SQL("""SELECT pid, id FROM {}""").format(Identifier(self.config.DATA_AIRNET_ROUTES_TABLE))
+        query = SQL("""SELECT pid, id FROM {}.{}""").format(
+            Identifier(self.config.DATA_MANAGED_SCHEMA_NAME), Identifier(self.config.DATA_AIRNET_ROUTES_TABLE)
+        )
         route_results = self.db_client.fetch(query=query)
         self.logger.debug(f"route query count: {len(route_results)}")
 
