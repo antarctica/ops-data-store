@@ -9,6 +9,13 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.9.1] - 2024-04-18
+
+### Fixed
+
+* Unqualified table references in air unit conversion methods
+  [#208](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/208)
+
 ## [0.9.0] - 2024-04-17
 
 ### Added
