@@ -13,6 +13,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 * EO Acquisition script AOIs controlled dataset
   [#212](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/212)
+* warning that QGIS Layer Styles could leak the name and attributes of possibly sensitive layers
+  [#196](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/196)
 
 ## [0.9.1] - 2024-04-18
 

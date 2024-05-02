@@ -54,9 +54,11 @@ In all these cases, end-users will need to request changes are made by contactin
 
 In relation to dataset [Permissions](#permissions), support for the following is not yet available:
 
-- running the Azure to LDAP group sync automatically, it must be run manually
-- removing an Azure group from role once synced
+- running the Azure to LDAP group sync automatically
+- removing an Azure group from a role once synced
 - users belonging to more than one role/team (i.e. a user cannot be in Air Unit and Field Ops team)
+- restricting QGIS layer styles to layers a user is authorised to see
+  [#196 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/196)
 
 #### Limitations - Backups
 
@@ -573,6 +575,10 @@ It is recommended that QGIS layer styles are stored in the platform [Database](#
 maintained. The `layer_styles` table QGIS creates should be held in the `public` schema, as it is a shared resource
 and not relevant to how datasets are organised.
 
+**Note:** Layer styles are accessible to all authenticated users and so the names and attributes of the table/view/layer
+each style belongs to, can be found through this table, even if the related layer is otherwise restricted. This is a
+information leak and should be considered when naming layers and their attributes if the names themselves are sensitive.
+
 ### Microsoft Entra
 
 [Microsoft Entra](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id)
@@ -696,6 +702,8 @@ project.
 
 Datasets hosted in this platform are restricted as to who can read and/or edit from them. The platform includes a
 simple permissions system to enforce these restrictions.
+
+**Note:** This permissions system does not apply to [QGIS Layer Styles](#qgis-layer-styles).
 
 #### Permissions - roles
 
@@ -1123,6 +1131,9 @@ being a definitive source of truth.
 
 Datasets are stored in the `planning_field_ops` database schema. No table schemas etc. are defined for these datasets
 in this project.
+
+**Note:** Whilst datasets in this schema are restricted, [QGIS Layer Styles](#qgis-layer-styles) that apply to them are
+not due to a general platform limitation.
 
 ## Requirements
 
