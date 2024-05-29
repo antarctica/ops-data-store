@@ -75,6 +75,7 @@ Operations.
 
 - [BAS Field Operations Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/operations/field-operations-gis-data)
 - [BAS Air Unit Network Data 🛡](https://gitlab.data.bas.ac.uk/MAGIC/air-unit-network-dataset)
+- [BAS Remote Sensing Data 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/remote-sensing)
 
 This project is an evolution of a previous [Experiment 🛡](https://gitlab.data.bas.ac.uk/felnne/ops-data-store-exp).
 
@@ -164,7 +165,10 @@ Tested with QGIS 3.28.11, macOS 12.7, Ops Data Store QGIS profile version
 **Note:** These instructions are intended for adapting into documentation by MAGIC team members.
 
 Replace `{placeholder}` values wth settings from the relevant database listed in the [Infrastructure](#infrastructure)
-section, except for `{username}` and `{password}` which should be the users BAS LDAP credentials.
+section, except for:
+
+- `{database_role}`, which should be the relevant value from the [Permissions Mapping](#permissions-mappings) section
+- `{username}` and `{password}`, which should be the users BAS LDAP credentials
 
 1. open QGIS with the relevant profile active
 2. from *Browser* pane -> *PostgreSQL* -> *New Connection*:
@@ -172,6 +176,7 @@ section, except for `{username}` and `{password}` which should be the users BAS 
     - Name: `Ops Data Store ({location})`
     - Host: `{host}`
     - Database: `{database}`
+    - Session Role: `{database_role}`
     - Authentication -> Configurations -> *Create a new authentication configuration*:
         - *(create or enter master password)*
           - *(if a single user computer (i.e. not shared) users MAY use their NERC or login password for this)*
@@ -523,17 +528,21 @@ parts of this permissions system.
 Required Postgres roles are defined in the [Permission Mappings](#permissions-mappings) section. Reference SQL
 statements to create these roles are defined in the [`roles.sql`](resources/db/roles.sql) file.
 
-Required Postgres users are defined by the members of the relevant groups listed in the
-[Permission Mappings](#permissions-mappings) section. It is strongly recommended to create a set of example users for
-each role to test/debug with. Reference SQL statements to create these roles are defined in the
+Required Postgres users are defined by a combination of:
+
+- the members of the relevant groups listed in the [Permission Mappings](#permissions-mappings) section
+- users to represent applications (see the [Project Setup](#project-setup) section for specific users required)
+- a set of example users for each role to test/debug with (strongly recommended)
+
+Reference SQL statements to create these users are defined in the
 [`users.tpl.sql`](resources/db/users.tpl.sql) file.
 
 **Note:** This reference is a template. Values that need substituting with specific values based on how the database
 has been implemented are indicated with `{{ default/conventional/example value }}`.
 
-**Note:** For BAS IT managed databases, the [BAS IT User Sync](#bas-it-user-sync) will create required database users.
-A set of example users, based on the reference example users, should also be created and assigned the relevant roles
-by IT manually. See the relevant [Infrastructure](#databases) subsection for their credentials.
+**Note:** For BAS IT managed databases, the [BAS IT User Sync](#bas-it-user-sync) will create required database users, including
+application users. A set of example users, based on the reference example users, should also be created and assigned
+the relevant roles by IT manually. See the relevant [Infrastructure](#databases) subsection for their credentials.
 
 Postgres grants are required to implement the rights described in the [Permission Mappings](#permissions-mappings)
 section. Reference SQL statements for these grants are defined in the [`grants.tpl.sql`](resources/db/grants.tpl.sql)
@@ -541,10 +550,6 @@ file.
 
 **Note:** This reference is a template. Values that need substituting with specific values based on how the database
 has been implemented are indicated with `{{ default/conventional/example value }}`.
-
-**Note:** For BAS IT managed databases, Puppet will apply a compatible set of grants every 30 minutes (except for
-Staging environments which may need to requested separately). This means if an entity is dropped and recreated it may
-take half an hour for users to regain access to it. New entities will need additional grants to be added and applied.
 
 ### File store
 
@@ -576,7 +581,7 @@ maintained. The `layer_styles` table QGIS creates should be held in the `public`
 and not relevant to how datasets are organised.
 
 **Note:** Layer styles are accessible to all authenticated users and so the names and attributes of the table/view/layer
-each style belongs to, can be found through this table, even if the related layer is otherwise restricted. This is a
+each style belongs to, can be found through this table, even if the related layer is otherwise restricted. This is an
 information leak and should be considered when naming layers and their attributes if the names themselves are sensitive.
 
 ### Microsoft Entra
@@ -689,14 +694,18 @@ For managing database users based on LDAP objects:
 ### MAGIC EO Acquisitions script
 
 To provide Field Operations with satellite imagery for areas they are interested in, MAGIC routinely searches for and
-downloads imagery for a given series of Areas of Interest (AOIs) through a script. This data is then synced to a
-nominated location where Field Operations can access it.
-
-These AOIs are stored as a controlled dataset within the Data Store (`controlled.eo_acq_aoi`). Field Ops create
-features in this dataset which the script reads as needed using an app DB user (`ods_app_eo_acq_script`).
+downloads imagery for a given series of Areas of Interest (AOIs) using a script. This data is then synced to a nominated
+location where Field Operations can access it.
 
 This script is maintained through the [MAGIC Remote Sensing](https://gitlab.data.bas.ac.uk/MAGIC/remote-sensing)
 project.
+
+To facilitate this script, this project provides:
+
+- a [controlled](#controlled-datasets) dataset for AOIs (`controlled.eo_acq_aoi`)
+- a database user with read access to this dataset (`ods_app_eo_acq_script`)
+
+See the [Database Permissions](#database-permissions) section how this user is managed and assigned permissions.
 
 ### Permissions
 
@@ -704,6 +713,38 @@ Datasets hosted in this platform are restricted as to who can read and/or edit f
 simple permissions system to enforce these restrictions.
 
 **Note:** This permissions system does not apply to [QGIS Layer Styles](#qgis-layer-styles).
+
+- for users representing end-users (individuals), a role based permissions system is used
+- for users representing applications, ad-hoc permissions are used
+
+#### Permissions - grants
+
+Permissions for users and roles to access/modify entities that are known to exist are implemented using
+[Postgres permissions](#database-permissions). This includes ad-hoc permissions needed for users representing
+applications.
+
+#### Permissions - grants (dynamic entities)
+
+For entities created dynamically by end-users (such as for [Planning Datasets](#field-operations-planning-datasets)),
+it isn't possible to pre-define permissions, or tenable to expect end-users apply database grants after creating new
+entities. Without this however other users won't be able to access them.
+
+I.e.:
+
+- a user Alice creates a new table 'foo'
+- another user Bob is unable to access it because Alice hasn't granted Bob access to it
+
+To work around this, end-users assume a common role using `SET ROLE` (set in the QGIS database connection for example).
+This means entities are created (and otherwise interacted with) as the same user, and so does not require any grants to
+be applied.
+
+I.e.:
+
+- a user Alice, acting as a common role `field_team`, creates a new table 'foo'
+- another user Bob, also acting as the `field_team` common role, is able to access it because they are the same user
+
+**Note:** Users must be assigned to inherit from any role they wish to act as, and must still login as themselves
+before acting as a common role, preventing users bypassing access restrictions.
 
 #### Permissions - roles
 
@@ -714,6 +755,8 @@ This system includes three roles which can be assigned to individual users:
 - *viewer*: can read information only
 
 Individuals can hold multiple roles at the same time (i.e. a user can hold the *owner* and *viewer* roles).
+
+**Note:** Users representing applications are assigned permissions directly, rather than via one of these roles.
 
 The *admin* and *viewer* roles are global (applies to all datasets). The *owner* role is scoped to a particular team.
 with team members only able to change datasets within their team (i.e. that their team owns). These teams are currently:
@@ -738,39 +781,6 @@ These roles are implemented in the [Database](#database) using roles and users:
 - information in all or specific tables
 - individuals are represented as postgres users, which are assigned (inherit) one or more postgres roles
 
-#### Permissions - grants
-
-Database grants allow specific actions, such as reading or writing data. They apply to a subject (user/role) to a
-target (database object, schema/table/etc.).
-
-Permissions to allow roles (and their assigned users) to perform specific actions (such as reading or writing data)
-are implemented using [Postgres permissions](#database-permissions).
-
-As Postgres uses a user/source centric permissions model, it's not possible to define permissions from the point of
-view of a schema, such that roles are granted permissions on any entities created within a schema automatically.
-Instead, each role (end user) needs to grant the relevant permissions for each entity created.
-
-For entities created dynamically by end-users (such as for [Planning Datasets](#field-operations-planning-datasets)),
-it isn't tenable to expect end-users apply database grants after creating new entities, however without it other users
-won't be access them.
-
-I.e.:
-
-- a user Alice creates a new table 'foo'
-- another user Bob is unable to access it because Alice hasn't granted Bob access to it
-
-To work around this limitation, end-users assume a common role to act as using `SET ROLE` (set automatically in the
-QGIS database connection). This means entities are created (and otherwise interacted with) as the same user and so does
-not require any grants to be applied.
-
-I.e.:
-
-- a user Alice, acting as a common role `field_team`, creates a new table 'foo'
-- another user Bob, also acting as the `field_team` common role, is able to access it because they are the same user
-
-**Note:** Users must be assigned to inherit from any role they wish to act as, preventing users bypassing access
-restrictions. See the [Role Assignments](#permissions-role-assignments) section for more information.
-
 #### Permissions - role assignments
 
 Users are assigned to roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP
@@ -788,16 +798,24 @@ at BAS by contacting the IT Service Desk.
 
 Mappings for roles, teams, the database and LDAP:
 
-| Role    | Team                 | Azure Groups                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | LDAP Group                   | Postgres Role                |
-|---------|----------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|------------------------------|
-| Admins  | -                    | [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `apps_magic_ods_write_admin` | `apps_magic_ods_write_admin` |
-| Owners  | BAS Field Operations | [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `apps_magic_ods_write_fo`    | `apps_magic_ods_write_fo`    |
-| Owners  | BAS Air Unit         | [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | `apps_magic_ods_write_au`    | `apps_magic_ods_write_au`    |
-| Viewers | -                    | [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704), [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef), [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9), [`691c3db1-371a-43ea-b1f3-56b2aa7ce9d0`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/691c3db1-371a-43ea-b1f3-56b2aa7ce9d0), [`9b888740-f387-4e49-a597-5b58c3f1eba8`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/9b888740-f387-4e49-a597-5b58c3f1eba8), [`906f20ee-7698-48c8-b2ff-75592384af68`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/906f20ee-7698-48c8-b2ff-75592384af68) | `apps_magic_ods_read`        | `apps_magic_ods_read`        |
+| Role    | Team                 | Azure Groups                                                                                                                                                             | LDAP Group                   | Postgres Role     |
+|---------|----------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------|-------------------|
+| Admins  | -                    | [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704) | `apps_magic_ods_write_admin` | `ods_write_admin` |
+| Owners  | BAS Field Operations | [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef) | `apps_magic_ods_write_fo`    | `ods_write_fo`    |
+| Owners  | BAS Air Unit         | [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9) | `apps_magic_ods_write_au`    | `ods_write_au`    |
+| Viewers | -                    | [1]                                                                                                                                                                      | `apps_magic_ods_read`        | `ods_read`        |
 
 The [BAS IT User Sync](#bas-it-user-sync) and the [Command Line Interface](#command-line-interface), specifically
 commands in the [`auth`](#control-cli-auth-commands) command group are used for synchronising users, and verifying
 users have been synced, between these systems and between environments.
+
+[1]
+
+Union of:
+
+- [`34db44b7-4441-4f60-8daa-d0c192d74704`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/34db44b7-4441-4f60-8daa-d0c192d74704)
+- [`75ec55c1-7e92-45e3-9746-e50bd71fcfef`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/75ec55c1-7e92-45e3-9746-e50bd71fcfef)
+- [`7b8458b9-dc90-445b-bff8-2442f77d58a9`](https://portal.azure.com/#view/Microsoft_AAD_IAM/GroupDetailsMenuBlade/~/Overview/groupId/7b8458b9-dc90-445b-bff8-2442f77d58a9)
 
 ### Backups
 
@@ -1222,6 +1240,8 @@ A [Sentry](https://sentry.io/) subscription is required for monitoring automated
 
 ## Installation
 
+**Note:** Ensure all steps in the [Project Setup](#project-setup) section are complete before installing.
+
 ### Install python app
 
 For the Python application, it is strongly recommended to install this project into a virtual environment:
@@ -1329,7 +1349,7 @@ $ ods-ctl db run --input-path resources/db/schemas.sql
 $ ods-ctl db run --input-path resources/db/datasets-controlled.sql
 ```
 
-Create database roles and uses needed for the [Permissions](#permissions) and apply required
+Create database roles and uses needed for the [Permissions](#permissions) system and apply required
 [Database Grants](#database-permissions), either directly against the database or by incorporating into a permissions
 management mechanism.
 
@@ -1350,7 +1370,7 @@ Then sync Azure groups to LDAP:
 $ ods-ctl auth sync -ag 34db44b7-4441-4f60-8daa-d0c192d74704 -lg apps_magic_ods_admin
 $ ods-ctl auth sync -ag 75ec55c1-7e92-45e3-9746-e50bd71fcfef -lg apps_magic_ods_write_fo
 $ ods-ctl auth sync -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -lg apps_magic_ods_write_au
-$ ods-ctl auth sync -ag 34db44b7-4441-4f60-8daa-d0c192d74704 -ag 75ec55c1-7e92-45e3-9746-e50bd71fcfef -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -ag 691c3db1-371a-43ea-b1f3-56b2aa7ce9d0 -ag 9b888740-f387-4e49-a597-5b58c3f1eba8 -ag 906f20ee-7698-48c8-b2ff-75592384af68 -lg apps_magic_ods_read
+$ ods-ctl auth sync -ag 34db44b7-4441-4f60-8daa-d0c192d74704 -ag 75ec55c1-7e92-45e3-9746-e50bd71fcfef -ag 7b8458b9-dc90-445b-bff8-2442f77d58a9 -lg apps_magic_ods_read
 ```
 
 ### Install Sentry monitoring
@@ -1487,9 +1507,7 @@ $ ods-ctl config check
 Ok. Configuration valid.
 ```
 
-## Project Setup [WIP]
-
-**Note:** This section is a work in progress and may be restructured.
+## Project Setup
 
 Connection details for any resources created should be stored in the MAGIC 1Password shared vault.
 
@@ -1516,10 +1534,12 @@ Connection details for any resources created should be stored in the MAGIC 1Pass
 - request a Windows VM (configured as a BAS workstation) with QGIS LTS installed to act as a reference VM
 - request an LDAP entity to use for managing application LDAP groups
 - request LDAP groups as needed for implementing application permissions
+- request LDAP users for application, specifically:
+  - the [MAGIC EO Acquisitions Script](#magic-eo-acquisitions-script)
 - request SAN/data volume mounted in the application server with permissions for the Python app OS user to read/write
 - request a user synchronisation mechanism between LDAP servers and between LDAP and Postgres
 - request example users for each database role are created and documented in 1Password.
-- request relevant grants be applied to create required schemas and allow app users to perform required tasks
+- request relevant grants be applied to allow Postgres database owner to grant permissions to objects it contains
 
 ## Infrastructure
 
@@ -1565,6 +1585,12 @@ all instances/environments as this diagram:
   - see [MAGIC/ops-data-store#39 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/39) for initial setup
 - [Rothera (Production) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=wmpfl7kynx63yd3yzx2dyam7y4&h=magic.1password.eu)
   - see [MAGIC/ops-data-store#40 🛡](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/40) for initial setup
+
+##### Database application users
+
+- `ods_app_eo_acq_script`:
+  - [Rothera (Staging) 🔒](https://start.1password.com/open/i?a=QSB6V7TUNVEOPPPWR6G7S2ARJ4&v=ffy5l25mjdv577qj6izuk6lo4m&i=qfrapkuwjsxxuevkoavbqiw2ne&h=magic.1password.eu)
+    - see [MAGIC/ops-data-store#218 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/218) for initial setup
 
 ### Azure App Registrations
 
