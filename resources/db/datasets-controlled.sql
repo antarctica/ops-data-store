@@ -230,7 +230,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER route_insert_trigger
+CREATE OR REPLACE TRIGGER route_insert_trigger
 INSTEAD OF INSERT ON controlled.route
 FOR EACH ROW EXECUTE FUNCTION route_insert();
 
