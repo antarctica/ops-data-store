@@ -1675,6 +1675,40 @@ $ ogr2ogr -f GPKG -append test2.gpkg PG:"host=db.example.com dbname=ops-data-sto
 $ ogr2ogr -f GPKG -append test2.gpkg PG:"host=db.example.com dbname=ops-data-store user=ops-data-store password=xxx" "layer_styles"
 ```
 
+### LDAP queries
+
+#### LDAP query - list group members
+
+```
+$ ldapsearch -x -H [Server] -D [Bind DN] -W -b "[Base DN]" member
+```
+
+Where: `[Base DN]` is `[Group name with prefix],[OU groups],[Base DN]`, E.g.: `"cn=foo,ou=groups,dc=example,dc=com"`
+
+#### LDAP query - empty group
+
+Remove all members of a group except one, as LDAP groups cannot be empty:
+
+```
+$ ldapmodify -x -H [Server] -D [Bind DN] -W -f modify_group.ldif
+```
+
+Where `modify_group.ldif` is for example:
+
+```ldif
+dn: cn=foo,ou=groups,dc=example,dc=com
+changetype: modify
+delete: member
+member: uid=conwat,ou=users,dc=example,dc=com
+
+...
+
+dn: cn=foo,ou=groups,dc=example,dc=com
+changetype: modify
+delete: member
+member: uid=...,ou=users,dc=example,dc=com
+```
+
 ## Development
 
 ### Local development environment
