@@ -9,6 +9,8 @@ GRANT CREATE ON DATABASE "{{ ops-data-store-dev }}" TO ods_admin;
 GRANT USAGE, CREATE ON SCHEMA controlled TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA controlled TO ods_admin;
 
+GRANT USAGE ON SCHEMA controlled TO ods_app_eo_acq_script;
+
 GRANT USAGE ON SCHEMA controlled TO ods_write_fo;
 GRANT USAGE ON SCHEMA controlled TO ods_write_au;
 GRANT USAGE ON SCHEMA controlled TO ods_read;
@@ -47,6 +49,9 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_admin
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_write_fo;
 GRANT SELECT ON TABLE controlled.eo_acq_aoi TO ods_read;
 
+-- [PUBLIC]
+--
+
 -- LAYER STYLES
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_write_fo;
@@ -55,9 +60,11 @@ GRANT SELECT ON TABLE public.layer_styles TO ods_read;
 
 -- [PLANNING FIELD OPS SCHEMA]
 --
+-- Disabled as these can't be safely run the `ops-data-store` user
+--
 
-GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_admin;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_admin;
-
-GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_write_fo;
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_write_fo;
+-- GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_admin;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_admin;
+--
+-- GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_write_fo;
+-- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_write_fo;
