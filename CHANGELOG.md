@@ -17,6 +17,13 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 * warning that QGIS Layer Styles could leak the name and attributes of possibly sensitive layers
   [#196](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/196)
 
+## [0.9.2] - 2024-06-10
+
+### Fixed
+
+* Permissions for QGIS layer styles ID sequence
+  [#221](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/221)
+
 ## [0.9.1] - 2024-04-18
 
 ### Fixed

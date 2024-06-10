@@ -45,6 +45,11 @@ GRANT SELECT ON controlled.route TO ods_read;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_write_fo;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE public.layer_styles TO ods_write_au;
+
+GRANT USAGE, SELECT ON SEQUENCE public.layer_styles_id_seq TO ods_admin;
+GRANT USAGE, SELECT ON SEQUENCE public.layer_styles_id_seq TO ods_write_fo;
+GRANT USAGE, SELECT ON SEQUENCE public.layer_styles_id_seq TO ods_write_au;
+
 GRANT SELECT ON TABLE public.layer_styles TO ods_read;
 
 -- [PLANNING FIELD OPS SCHEMA]
