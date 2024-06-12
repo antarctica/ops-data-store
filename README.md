@@ -697,8 +697,10 @@ To provide Field Operations with satellite imagery for areas they are interested
 downloads imagery for a given series of Areas of Interest (AOIs) using a script. This data is then synced to a nominated
 location where Field Operations can access it.
 
-This script is maintained through the [MAGIC Remote Sensing](https://gitlab.data.bas.ac.uk/MAGIC/remote-sensing)
-project.
+Whilst affiliated with this project (and set up under it), this script/functionality is not formally part of
+the Data Store but is facilitated by it.
+
+See the [MAGIC Remote Sensing](https://gitlab.data.bas.ac.uk/MAGIC/remote-sensing) project for more information.
 
 To facilitate this script, this project provides:
 
@@ -706,6 +708,10 @@ To facilitate this script, this project provides:
 - a database user with read access to this dataset (`ods_app_eo_acq_script`)
 
 See the [Database Permissions](#database-permissions) section how this user is managed and assigned permissions.
+
+See [MAGIC/ops-data-store#198 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/198) for how this was
+set up.
+
 
 ### Permissions
 

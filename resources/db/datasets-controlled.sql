@@ -251,7 +251,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER route_update_trigger
+CREATE OR REPLACE TRIGGER route_update_trigger
 INSTEAD OF UPDATE ON controlled.route
 FOR EACH ROW EXECUTE FUNCTION route_update();
 
@@ -263,7 +263,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER route_delete_trigger
+CREATE OR REPLACE TRIGGER route_delete_trigger
 INSTEAD OF DELETE ON controlled.route
 FOR EACH ROW EXECUTE FUNCTION route_delete();
 
