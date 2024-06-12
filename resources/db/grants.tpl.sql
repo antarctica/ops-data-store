@@ -65,7 +65,7 @@ GRANT SELECT ON TABLE public.layer_styles TO ods_read;
 
 -- [PLANNING FIELD OPS SCHEMA]
 --
--- Disabled as these can't be safely run the `ops-data-store` user
+-- Disabled as these can't be safely run as the `ops-data-store` user
 --
 
 -- GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_admin;
