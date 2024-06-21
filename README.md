@@ -59,6 +59,7 @@ In relation to dataset [Permissions](#permissions), support for the following is
 - users belonging to more than one role/team (i.e. a user cannot be in Air Unit and Field Ops team)
 - restricting QGIS layer styles to layers a user is authorised to see
   [#196 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/196)
+- automatically setting default session roles for new users
 
 #### Limitations - Backups
 
@@ -318,17 +319,20 @@ Find this checksum in the `iterations` list for details including the date of th
 [Permissions](#permissions) are assigned to users through groups they are part of being [mapped](#permissions-mappings)
 to a roles (e.g. _viewer_).
 
-To grant a user a role, add them to _a_ group that is mapped to that role.
+To assign a user to a role:
 
-To revoke a role from a user, remove from _all_ groups that map to that role.
-
-To assign or remove roles from the [Permissions](#permissions) system to or from users:
-
-1. ask the relevant group owner to add or remove users as needed [1]
+1. ask the relevant Azure group owner to add or remove users as needed [1]
 1. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
 1. wait for the next [BAS IT User Sync](#bas-it-user-sync)
+1. ask IT to run their script to set the default session role for the role to the user
 
-Users should then have, or no longer have, access to relevant [Datasets](#datasets).
+**Note:** Users may only be assigned to a single role.
+
+To revoke a role from a user
+
+1. ask the relevant Azure group owners to remove the user from _all_ groups that map to that role
+1. run the [`auth sync`](#control-cli-auth-commands) CLI command to update the BAS LDAP server
+1. wait for the next [BAS IT User Sync](#bas-it-user-sync)
 
 [1] If needed, BAS IT can also update team/group memberships in addition to owners.
 
@@ -751,6 +755,9 @@ I.e.:
 
 **Note:** Users must be assigned to inherit from any role they wish to act as, and must still login as themselves
 before acting as a common role, preventing users bypassing access restrictions.
+
+**Note:** Due to a [bug](https://github.com/qgis/QGIS/issues/57761) in QGIS, the Session Role setting is not respected.
+As a workaround, IT can set a default DB role for users.
 
 #### Permissions - roles
 
