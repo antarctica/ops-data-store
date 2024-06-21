@@ -716,7 +716,6 @@ See the [Database Permissions](#database-permissions) section how this user is m
 See [MAGIC/ops-data-store#198 🛡️](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/198) for how this was
 set up.
 
-
 ### Permissions
 
 Datasets hosted in this platform are restricted as to who can read and/or edit from them. The platform includes a
@@ -1689,6 +1688,15 @@ $ ogr2ogr -f GPKG -append test2.gpkg PG:"host=db.example.com dbname=ops-data-sto
 ```
 
 ### LDAP queries
+
+#### LDAP query - get user
+
+```
+$ ldapsearch -x -H [Server] -D [Bind DN] -W -b "[Base DN]" "(uid=[User])"
+```
+
+Where: `[Base DN]` is `[OU people],[Base DN]`, E.g.: `"ou=people,dc=example,dc=com"` and `[User]` is the user to find
+(E.g. `conwat`).
 
 #### LDAP query - list group members
 

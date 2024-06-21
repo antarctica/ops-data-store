@@ -64,12 +64,6 @@ GRANT USAGE, SELECT ON SEQUENCE public.layer_styles_id_seq TO ods_write_au;
 GRANT SELECT ON TABLE public.layer_styles TO ods_read;
 
 -- [PLANNING FIELD OPS SCHEMA]
---
--- Disabled as these can't be safely run as the `ops-data-store` user
---
 
--- GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_admin;
--- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_admin;
---
--- GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_write_fo;
--- GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA planning_field_ops TO ods_write_fo;
+GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_admin;
+GRANT USAGE, CREATE ON SCHEMA planning_field_ops TO ods_write_fo;
