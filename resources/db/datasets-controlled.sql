@@ -274,7 +274,7 @@ CREATE TABLE IF NOT EXISTS controlled.eo_acq_aoi
   pk         INTEGER                  GENERATED ALWAYS AS IDENTITY
     CONSTRAINT eo_acq_aoi_pk PRIMARY KEY,
   pid        UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
-  id         TEXT                     NOT NULL UNIQUE,
+  id         TEXT                     NOT NULL,
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by TEXT                     NOT NULL DEFAULT 'unknown',
   geom       GEOMETRY(Polygon, 4326)  NOT NULL
