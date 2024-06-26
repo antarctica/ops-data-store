@@ -39,6 +39,8 @@ CREATE TABLE IF NOT EXISTS controlled.depot
   terrain                    TEXT,
   annual_drift_rate_m        FLOAT,
   annual_snow_accumulation_m FLOAT,
+  pim_landing_site_lat_ddm   TEXT,
+  pim_landing_site_lon_ddm   TEXT,
   comments                   TEXT,
   info_rothera               TEXT,
   info_cambridge             TEXT
