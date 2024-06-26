@@ -16,6 +16,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#217](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/217)
 * warning that QGIS Layer Styles could leak the name and attributes of possibly sensitive layers
   [#196](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/196)
+* PIM sheet lat/lon fields added to controlled depot dataset
+  [#228](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/228)
 
 ### Fixed
 
