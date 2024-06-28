@@ -588,6 +588,11 @@ and not relevant to how datasets are organised.
 each style belongs to, can be found through this table, even if the related layer is otherwise restricted. This is an
 information leak and should be considered when naming layers and their attributes if the names themselves are sensitive.
 
+#### QGIS layer SVGs
+
+SVGs used as part of layer symbologies are stored in `./content/qgis/symbology/svgs/` within the
+[File Store](#file-store) and available through the [Web Server](#web-server) for referencing in styles.
+
 ### Microsoft Entra
 
 [Microsoft Entra](https://www.microsoft.com/en-us/security/business/identity-access/microsoft-entra-id)
@@ -635,10 +640,13 @@ Store's [Permissions](#permissions) system.
 available to end users. It is implemented as a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured at
 `/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT. Automatic directory listings are disabled for this site.
 
-The web server includes outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility),
-restricted using authentication and authorisation using [LDAP](#ldap). Users must have a valid LDAP account and be a
-member of the *Viewer* role from the [Permissions](#permissions) system. Automatic directory listings are enabled for
-this content.
+The web server includes:
+
+- outputs for converted [Routes and Waypoints datasets](#bas-air-unit-network-utility), restricted using [LDAP](#ldap)
+  - users must have a valid LDAP account and be a member of the *Viewer* role from the [Permissions](#permissions) system
+  - automatic directory listings are enabled for this content
+- [QGIS Layer SVGs](#qgis-layer-svgs)
+  - files are accessible anonymously so they can be used in QGIS layer styles
 
 #### Web server permissions
 
@@ -1364,6 +1372,12 @@ $ ods-ctl db run --input-path resources/db/datasets-controlled.sql
 Create database roles and uses needed for the [Permissions](#permissions) system and apply required
 [Database Grants](#database-permissions), either directly against the database or by incorporating into a permissions
 management mechanism.
+
+### Configure QGIS layer SVGs
+
+- within the [File Store](#file-store) create the [relevant directory](#qgis-layer-svgs) with suitable permissions for:
+  - style authors to write to it
+  - the [Web Server](#web-server) to serve files from it anonymously
 
 ### Configure auth syncing
 
