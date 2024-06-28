@@ -636,9 +636,9 @@ Store's [Permissions](#permissions) system.
 
 ### Web server
 
-[Apache HTTP Server](https://httpd.apache.org) is used for hosting content from the [File Store](#file-store)
-available to end users. It is implemented as a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured at
-`/etc/httpd/sites/10-ops-data-store.conf` and managed by BAS IT. Automatic directory listings are disabled for this site.
+[Apache HTTP Server](https://httpd.apache.org) is used for hosting content from the [File Store](#file-store), making it
+available to end users. It is managed by BAS IT and uses a [virtual host](https://httpd.apache.org/docs/2.4/vhosts/) configured in
+`/etc/httpd/sites/10-ops-data-store.conf`. Automatic directory listings are disabled for this site.
 
 The web server includes:
 
@@ -1501,6 +1501,11 @@ Replace `[Sentry DSN]`, `[Sentry ENV]` with secret and per-instance/environment 
 
 - save an ad-hoc layer style in QGIS to create the QGIS `public.layer_styles` table in the new instance
 - copy existing QGIS layer styles from an existing instance to the new instance
+
+### Post installation checks [WIP]
+
+**Note:** This section is a work in progress and may be restructured.
+
 - check test data can be created using the application user in QGIS
   - suggested to add a test set of waypoints and route for verifying Air Unit conversion is working
 - check test data can be created using an LDAP user
