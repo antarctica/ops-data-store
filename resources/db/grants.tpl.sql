@@ -48,6 +48,7 @@ GRANT SELECT ON controlled.route TO ods_read;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_write_fo;
 GRANT SELECT ON TABLE controlled.eo_acq_aoi TO ods_read;
+GRANT SELECT ON TABLE controlled.eo_acq_aoi TO ods_app_eo_acq_script;
 
 -- [PUBLIC]
 --
