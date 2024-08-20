@@ -27,6 +27,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#224](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/224)
 * Workaround for unique constraint bug with QGIS in EO AOIs controlled dataset
   [#226](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/226)
+* Missing schema qualifier in route update trigger function
+  [#233](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/233)
 
 ## [0.9.2] - 2024-06-12
 
