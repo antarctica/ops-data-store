@@ -240,7 +240,7 @@ CREATE OR REPLACE FUNCTION route_update() RETURNS TRIGGER AS $$
 BEGIN
     UPDATE controlled.route_container SET id = NEW.id
         WHERE pid = OLD.pid;
-    DELETE FROM route_waypoint
+    DELETE FROM controlled.route_waypoint
         WHERE route_pid = OLD.pid AND NEW.geom IS NOT NULL;
     INSERT INTO controlled.route_waypoint (route_pid, waypoint_pid, sequence)
         (
