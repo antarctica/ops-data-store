@@ -122,8 +122,8 @@ CREATE TABLE IF NOT EXISTS controlled.waypoint
   pk               INTEGER                  GENERATED ALWAYS AS IDENTITY
     CONSTRAINT waypoint_pk PRIMARY KEY,
   pid              UUID                     NOT NULL UNIQUE DEFAULT generate_ulid(),
-  id               TEXT                     NOT NULL,
-  name             TEXT,
+  id               VARCHAR(6)               NOT NULL,
+  name             VARCHAR(17),
   colocated_with   TEXT,
   last_accessed_at DATE,
   last_accessed_by TEXT,

@@ -29,6 +29,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#226](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/226)
 * Missing schema qualifier in route update trigger function
   [#233](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/233)
+* Column length constraints for controlled waypoint dataset (`id` and `name` columns)
+  [#235](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/235)
 
 ### Removed
 
