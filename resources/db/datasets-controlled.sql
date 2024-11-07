@@ -128,6 +128,8 @@ CREATE TABLE IF NOT EXISTS controlled.waypoint
   last_accessed_at DATE,
   last_accessed_by TEXT,
   comment          TEXT,
+  fuel             INTEGER,
+  elevation_ft     INTEGER,
   category         TEXT,
   updated_at       TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
   updated_by       TEXT                     NOT NULL DEFAULT 'unknown',
