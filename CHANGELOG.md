@@ -33,6 +33,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#233](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/233)
 * Column length constraints for controlled waypoint dataset (`id` and `name` columns)
   [#235](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/235)
+* Lack of role inheritance following use of forced `SET ROLE`
+  [#238](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/238)
 
 ### Removed
 

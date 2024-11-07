@@ -346,7 +346,9 @@ This section relates to [Controlled datasets](#controlled-datasets).
    1. if the dataset does not include a [Dataset identifier](#dataset-identifier), remove the `id` column
    1. add dataset specific columns as needed:
        - ensure to use `TEXT` for string fields rather than `VARCHAR`, use constraints to validate lengths
+1. update [`grants.tpl.sql`](resources/db/grants.tpl.sql) to grant relevant roles and ad-hoc users write access
 1. copy the statements creating the new dataset to a separate update file (e.g. `add_NEW_DATASET.sql`)
+1. add [Grants](#database-permissions) to the update file to apply schema wide read access grants to the new table [2]
 1. copy the update file to each application instance and apply it using the [`db run`](#control-cli-db-commands) command
 1. add the new table as a layer in QGIS and configure as needed (e.g. form fields, aliases, symbology)
 1. save the layer properties/style back to the data source and verify entry added to QGIS `public.layer_styles` table
@@ -386,6 +388,9 @@ CREATE OR REPLACE TRIGGER NEW_DATASET_updated_by_trigger
   FOR EACH ROW
   EXECUTE FUNCTION set_updated_by();
 ```
+
+[2] Copy any statements from the `[CONTROLLED SCHEMA]` section of [`grants.tpl.sql`](resources/db/grants.tpl.sql) which
+begin `GRANT SELECT ON ALL ...`.
 
 ### Amending an existing controlled dataset [WIP]
 
@@ -766,6 +771,9 @@ before acting as a common role, preventing users bypassing access restrictions.
 **Note:** Due to a [bug](https://github.com/qgis/QGIS/issues/57761) in QGIS, the Session Role setting is not respected.
 As a workaround, IT can set a default DB role for users.
 
+**Note:** A side effect of this `SET ROLE` approach means that role inheritance is disabled, meaning permissions must
+be granted directly to each role.
+
 #### Permissions - roles
 
 This system includes three roles which can be assigned to individual users:
@@ -774,39 +782,40 @@ This system includes three roles which can be assigned to individual users:
 - *owner*: can change and view information
 - *viewer*: can read information only
 
-Individuals can hold multiple roles at the same time (i.e. a user can hold the *owner* and *viewer* roles).
+**Note:** Users can be assigned to multiple roles but may only assume one role at a time within a session.
+
+I.e. If a user is assigned the *owner* and *viewer* roles they may act as either the *owner* or *viewer* role, not both.
 
 **Note:** Users representing applications are assigned permissions directly, rather than via one of these roles.
 
 The *admin* and *viewer* roles are global (applies to all datasets). The *owner* role is scoped to a particular team.
-with team members only able to change datasets within their team (i.e. that their team owns). These teams are currently:
+with team members only able to change datasets within their team (i.e. that their team owns). These teams are:
 
 - BAS Field Operations
 - BAS Air Unit
+
+**Note:** All roles (including teams) are granted read only access to all [Controlled Datasets](#controlled-datasets).
 
 E.g. For a dataset of field instruments owned by the BAS Field Operations team:
 
 - BAS Field Operations team members can change this dataset, as their team owns the dataset
 - BAS Air Unit team members cannot change this dataset, as though they hold the *owner* role, they are a different team
+- BAS Air Unit team members will be granted access to view the dataset
 - *admin* role holders can change this dataset, as they can change all information in the platform
 - *viewer* role holders can view but cannot change this dataset, as they can only view all information in the platform
-
-In this example, BAS Air Unit team members could still view the dataset as they would also hold the *viewer* role.
-
-**Note:** It is not currently possible to limit viewing information to a specific team, only who can change it.
 
 These roles are implemented in the [Database](#database) using roles and users:
 
 - roles are represented as postgres roles, which are granted permissions (using Postgres grants) to read or change
-- information in all or specific tables
-- individuals are represented as postgres users, which are assigned (inherit) one or more postgres roles
+  information in all or specific tables
+- individuals are represented as postgres users, which are assigned to (inherit from) a single role
 
 #### Permissions - role assignments
 
-Users are assigned to roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP
-group 'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#microsoft-entra)
-groups representing Microsoft Teams. These Teams are used by departments outside of this platform and project. The
-intention is to prevent departments needing to maintain a duplicate membership list, which may get out of sync.
+Users are assigned roles based on the membership of groups held in an [LDAP server](#ldap). I.e. members of LDAP group
+'x' are assigned to Postgres role 'x'. LDAP group members are copied from a series of [Azure](#microsoft-entra) groups
+representing Microsoft Teams. These Teams are used by departments outside of this platform and project. The intention
+is to prevent departments needing to maintain a duplicate membership list, which may get out of sync.
 
 Membership information moves in one direction: from Azure (MS Teams) to LDAP, then to Postgres. Each LDAP group can
 include multiple Azure groups forming a union of members.

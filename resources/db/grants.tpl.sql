@@ -12,42 +12,40 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA controlled TO ods_a
 GRANT USAGE ON SCHEMA controlled TO ods_app_eo_acq_script;
 
 GRANT USAGE ON SCHEMA controlled TO ods_write_fo;
+GRANT SELECT ON ALL TABLES IN SCHEMA controlled TO ods_write_fo;
+
 GRANT USAGE ON SCHEMA controlled TO ods_write_au;
+GRANT SELECT ON ALL TABLES IN SCHEMA controlled TO ods_write_au;
+
 GRANT USAGE ON SCHEMA controlled TO ods_read;
+GRANT SELECT ON ALL TABLES IN SCHEMA controlled TO ods_read;
 
 -- DEPOT
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.depot TO ods_write_fo;
-GRANT SELECT ON TABLE controlled.depot TO ods_read;
 
 -- INSTRUMENT
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.instrument TO ods_write_fo;
-GRANT SELECT ON TABLE controlled.instrument TO ods_read;
 
 -- WAYPOINT
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.waypoint TO ods_write_au;
-GRANT SELECT ON TABLE controlled.waypoint TO ods_read;
 
 -- ROUTE CONTAINER
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.route_container TO ods_write_au;
-GRANT SELECT ON TABLE controlled.route_container TO ods_read;
 
 -- ROUTE WAYPOINT
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.route_waypoint TO ods_write_au;
-GRANT SELECT ON TABLE controlled.route_waypoint TO ods_read;
 
 -- ROUTE
 GRANT SELECT, INSERT, UPDATE, DELETE ON controlled.route TO ods_write_au;
-GRANT SELECT ON controlled.route TO ods_read;
 
 -- EO ACQUISITION AOIs
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_admin;
 GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE controlled.eo_acq_aoi TO ods_write_fo;
-GRANT SELECT ON TABLE controlled.eo_acq_aoi TO ods_read;
 GRANT SELECT ON TABLE controlled.eo_acq_aoi TO ods_app_eo_acq_script;
 
 -- [PUBLIC]
