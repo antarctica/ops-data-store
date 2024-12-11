@@ -111,13 +111,14 @@ class DataClient:
         self.logger.info("Fixing layer style references in GeoPackage")
         with sqlite3_connect(path) as conn:
             cur = conn.cursor()
+            # noinspection SqlWithoutWhere
             cur.execute("""UPDATE layer_styles SET f_table_catalog = '', f_table_schema = '';""")
 
         self.logger.info("Export ok.")
 
     def convert(self) -> None:
         """
-        Convert Air Unit datasets to CSV, GPX and FPL formats.
+        Convert Air Unit datasets to PDF, CSV, GPX and FPL formats.
 
         Warning: Any existing content within the output path will be removed, and any existing outputs overwritten.
         """

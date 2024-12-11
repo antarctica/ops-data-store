@@ -22,6 +22,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
   [#227](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/227)
 * Category column in controlled waypoint dataset
   [#234](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/234)
+* Air Unit network PDF exports
+  [#234](https://gitlab.data.bas.ac.uk/MAGIC/ops-data-store/-/issues/234)
 
 ### Fixed
 

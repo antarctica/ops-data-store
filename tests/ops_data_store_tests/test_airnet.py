@@ -38,13 +38,19 @@ class TestAirnetClient:
                 "Foo",
                 datetime.date(2012, 4, 24),
                 "~conwat",
+                4,
+                12000,
                 "There's unlimited juice?",
+                "category1",
             ),
             (
                 UUID("018c36a6-ce3f-ee5f-f027-2436451e1b10"),
                 "BRAVO",
                 -75.19033329561353,
                 -70.8301666751504,
+                None,
+                None,
+                None,
                 None,
                 None,
                 None,
@@ -82,6 +88,7 @@ class TestAirnetClient:
 
             paths = list(Path(workspace).glob("**/*"))
 
+        assert "Exporting waypoints as PDF." in caplog.text
         assert "Exporting waypoints as CSVs." in caplog.text
         assert "Exporting network as GPX." in caplog.text
         assert "Exporting routes and waypoints as FPLs." in caplog.text
