@@ -99,12 +99,9 @@ lint:
   stage: 📋 lint
   needs: []
   script:
-    - poetry run ruff check src/ tests/ --output-format gitlab > lint-results.json
+    - poetry run ruff check src/ tests/
     - poetry run ruff format --check src/ tests/
     - poetry run safety --stage cicd scan --detailed-output
-  artifacts:
-    reports:
-      codequality: lint-results.json
   rules:
     -
       changes:

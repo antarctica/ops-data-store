@@ -12,8 +12,8 @@ ods-ctl = 'ops_data_store.cli:app'
 
 [tool.poetry.dependencies]
 environs = "^11.0.0"
-psycopg = {version = "^3.1.18", extras = ["binary"]}
 python = "^3.9"
+psycopg = {version = "^3.2.3", extras = ["binary"]}
 typer = "^0.9.0"
 msal = "^1.28.0"
 requests = "^2.31.0"
@@ -22,7 +22,7 @@ bas-air-unit-network-dataset = "^0.5.1"
 gdal = "3.4.3"
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.0.291"
+ruff = "^0.8.2"
 safety = "^3.0.0"
 
 [tool.poetry.group.test.dependencies]
@@ -37,6 +37,7 @@ src = ["src"]
 line-length = 120
 target-version = "py39"
 
+[tool.ruff.lint]
 select = ['A','ANN','B','B9','C90','C4','D','DTZ','E','EM','ERA','F','FA','I','N','PT','PTH','RET','RUF','S','SIM','TD','TRY','UP','W']
 #   A | builtins (variables named after builtin names)
 # ANN | annotations (type hints)
@@ -64,18 +65,18 @@ select = ['A','ANN','B','B9','C90','C4','D','DTZ','E','EM','ERA','F','FA','I','N
 #  UP | pyupgrade (old syntax)
 #   W | pycodestyle warnings (PEP8)
 
-ignore = ['ANN101', 'D100', 'D104', 'D107', 'D203', 'D212', 'D402', 'E501', 'TD002', 'UP007']
-# ANN101 | for lack of 'Self' type in Python 3.9 (available 3.11+)
+ignore = ['D100', 'D104', 'D107', 'D203', 'D212', 'D402', 'E501', 'PT001', 'TD002', 'UP007']
 #   D100 | for avoding module level docstrings
 #   D104 | for avoding package level docstrings
 #   D203 | for requring blank line before classes (which looks silly)
 #   D212 | for docstring requring multi-line comments to start on first line (which looks silly)
 #   D402 | for docstring that can't resemble their signatures (despite them being completely different)
 #   E501 | for bug-bear compatibility (as B905 overrides line length checks)
+#  PT001 | for requring Pytest figures not to use brackets (as Ruff flip-flops on this is and is too unreliable)
 #  TD002 | for allowing TODOs without an author (as issue should assign ownership)
 #  UP007 | for requring `Optional[T]` to be written as `T | None` which isn't supported by Python 3.9
 
-[tool.ruff.extend-per-file-ignores]
+[tool.ruff.lint.extend-per-file-ignores]
 "tests/*" = ["ANN201","ANN401","S101"]
 "config.py" = ["N802"]
 #   tests/* | ANN201 | ignore public functions
