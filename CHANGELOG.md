@@ -9,6 +9,8 @@ Wherever possible, a reference to an issue in the project issue tracker should b
 
 ## [Unreleased]
 
+## [0.10.0] - 2024-12-11
+
 ### Added
 
 * EO Acquisition script AOIs controlled dataset
