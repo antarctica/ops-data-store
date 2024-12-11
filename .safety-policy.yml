@@ -19,16 +19,16 @@ report:
       vulnerabilities:
         48545: # https://pyup.io/v/48545/97c [GDAL]
           reason: it's unclear whether we're vulnerable to this, see MAGIC/ops-data-store#29 for details
-          expires: '2024-07-04'
+          expires: '2025-07-04'
         51832: # https://pyup.io/v/51832/97c [GDAL]
           reason: We won't be using GRIB2, see MAGIC/ops-data-store#29 for details
-          expires: '2024-07-04'
+          expires: '2025-07-04'
         62283: # https://pyup.io/v/62283/97c [GDAL]
           reason: it's unclear whether we're vulnerable to this but we can't upgrade in any case
-          expires: '2024-07-04'
-        70612: # https://data.safetycli.com/v/70612/eda [Jinja2]
-          reason: the package authors have disputed this as a vulnerability and in our case is not a risk in any case
-          expires: '2030-07-04'
+          expires: '2025-07-04'
+        74054: # https://data.safetycli.com/v/74054/eda [GDAL]
+          reason: not reviewed but we can't upgrade in any case
+          expires: '2025-07-04'
 
 fail-scan-with-exit-code:
   dependency-vulnerabilities:

@@ -352,7 +352,7 @@ class SimpleSyncClient:
             try:
                 self.azure_client.check_group(group_id=group_id)
             except ValueError as e:
-                msg = "Azure group %s does not exist." % group_id
+                msg = f"Azure group {group_id} does not exist."
                 self.logger.error(e, exc_info=True)
                 raise RuntimeError(msg) from e
 
@@ -361,7 +361,7 @@ class SimpleSyncClient:
         if len(results) == 1 and self._target_group_id in results[0]:
             return results[0]
 
-        msg = "LDAP group %s does not exist." % self._target_group_id
+        msg = f"LDAP group {self._target_group_id} does not exist."
         self.logger.error(msg)
         raise RuntimeError(msg) from None
 
