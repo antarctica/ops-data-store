@@ -53,7 +53,8 @@ stages:
     - apt-get update
     - apt-get install -y software-properties-common
     - add-apt-repository -y ppa:deadsnakes/ppa
-    - apt-get install -y tree libxml2-utils libldap2-dev libsasl2-dev python3-pip python3-venv python3.9 python3.9-venv python3.9-dev
+    # if the base image changes from GDAL 3.4, the 'weasyprint' package should be reviewed and ideally reduced to the packages used in the Air Unit utility
+    - apt-get install -y tree libxml2-utils libldap2-dev libsasl2-dev weasyprint python3-pip python3-venv python3.9 python3.9-venv python3.9-dev
     - python3.9 --version
     - python3.9 -m pip install --upgrade pip
     - python3.9 -m pip install pipx

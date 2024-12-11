@@ -287,7 +287,7 @@ Users SHOULD be advised to:
 
 **Note:** These instructions are intended for adapting into documentation by MAGIC team members.
 
-To access the CSV, GPX and FPL outputs for waypoints and routes in the BAS Air Unit travel network:
+To access the PDF, CSV, GPX and FPL outputs for waypoints and routes in the BAS Air Unit travel network:
 
 1. visit `https://{placeholder}/content/air-unit-network/` in a web browser
 2. download the desired outputs, outputs are organised by format

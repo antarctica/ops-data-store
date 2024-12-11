@@ -40,7 +40,7 @@ class AirUnitNetworkClient:
         query = SQL(
             """
             SELECT
-                pid, id, st_x(geom), st_y(geom), name, colocated_with, last_accessed_at, last_accessed_by, comment
+                pid, id, st_x(geom), st_y(geom), name, colocated_with, last_accessed_at, last_accessed_by, fuel, elevation_ft, comment, category
             FROM {}.{}
             """
         ).format(Identifier(self.config.DATA_MANAGED_SCHEMA_NAME), Identifier(self.config.DATA_AIRNET_WAYPOINTS_TABLE))
@@ -62,7 +62,13 @@ class AirUnitNetworkClient:
             if result[7] is not None:
                 waypoint.last_accessed_by = result[7]
             if result[8] is not None:
-                waypoint.comment = result[8]
+                waypoint.fuel = result[8]
+            if result[9] is not None:
+                waypoint.elevation_ft = result[9]
+            if result[10] is not None:
+                waypoint.comment = result[10]
+            if result[11] is not None:
+                waypoint.category = result[11]
 
             self.logger.debug(f"Loading: {waypoint}")
             self.network.waypoints.append(waypoint)
@@ -112,6 +118,8 @@ class AirUnitNetworkClient:
 
     def export(self) -> None:
         """Convert network to output formats."""
+        self.logger.info("Exporting waypoints as PDF.")
+        self.network.dump_pdf()
         self.logger.info("Exporting waypoints as CSVs.")
         self.network.dump_csv()
         self.logger.info("Exporting network as GPX.")
